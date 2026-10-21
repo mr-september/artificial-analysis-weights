@@ -101,16 +101,25 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   // x axis toggle, y source toggle
   d.querySelector('#xmode button[data-v="active"]').click(); await sleep(100);
   ok('x title follows toggle', /Active parameters/.test(d.querySelector('#main').textContent));
-  // proprietary frontier: nested toggle + per-tier pills + horizontal lines
-  const linesBefore = d.querySelectorAll('#main svg line[stroke-dasharray="7 5"]').length;
+  // proprietary frontier: switch + popover menu + horizontal lines
+  const lineCount = () => d.querySelectorAll('#main svg line[stroke-dasharray="7 5"]').length;
+  ok('proprietary starts off with no lines or menu button', lineCount() === 0 && !d.querySelector('#propMenuBtn') && d.querySelector('#propOn').getAttribute('aria-checked') === 'false');
   d.querySelector('#propOn').click(); await sleep(200);
-  const pills = d.querySelectorAll('#propbox .pill'), lines = d.querySelectorAll('#main svg line[stroke-dasharray="7 5"]').length;
-  ok('proprietary toggle reveals tier pills', pills.length >= 10 && linesBefore === 0, pills.length + ' pills, ' + linesBefore + ' lines before');
-  ok('flagship tiers pre-selected as lines', lines >= 4 && lines === [...pills].filter(p => p.getAttribute('aria-pressed') === 'true').length, lines);
-  const off = [...pills].find(p => p.getAttribute('aria-pressed') === 'false'); off.click(); await sleep(150);
-  ok('clicking a tier pill adds its line', d.querySelectorAll('#main svg line[stroke-dasharray="7 5"]').length === lines + 1);
+  ok('switch turns on and draws the default 5 tiers', d.querySelector('#propOn').getAttribute('aria-checked') === 'true' && lineCount() === 5 && /5 tiers/.test(d.querySelector('#propMenuBtn').textContent), lineCount() + ' lines');
+  ok('tier menu starts closed', d.querySelector('#propMenu').hidden);
+  d.querySelector('#propMenuBtn').click(); await sleep(150);
+  const tiers = d.querySelectorAll('#propMenu .tier');
+  ok('menu lists every tier and marks the 5 defaults', !d.querySelector('#propMenu').hidden && tiers.length >= 10 && [...tiers].filter(x => x.getAttribute('aria-pressed') === 'true').length === 5, tiers.length + ' tiers');
+  const off = [...tiers].find(x => x.getAttribute('aria-pressed') === 'false'); off.click(); await sleep(150);
+  ok('picking a tier adds its line and keeps the menu open', lineCount() === 6 && !d.querySelector('#propMenu').hidden && /6 tiers/.test(d.querySelector('#propMenuBtn').textContent), lineCount() + ' lines, hidden=' + d.querySelector('#propMenu').hidden + ', btn=' + d.querySelector('#propMenuBtn').textContent);
+  d.querySelector('#propDefaults').click(); await sleep(150);
+  ok('Defaults restores the 5 flagship tiers', lineCount() === 5);
+  d.querySelector('#propNone').click(); await sleep(150);
+  ok('None clears every line', lineCount() === 0);
+  d.body.click(); await sleep(100);
+  ok('clicking elsewhere closes the menu', d.querySelector('#propMenu').hidden);
   d.querySelector('#propOn').click(); await sleep(150);
-  ok('toggle off removes lines and pills', d.querySelectorAll('#main svg line[stroke-dasharray="7 5"]').length === 0 && d.querySelectorAll('#propbox .pill').length === 0);
+  ok('switch off hides the menu button', !d.querySelector('#propMenuBtn') && d.querySelector('#propOn').getAttribute('aria-checked') === 'false');
   ok('no tok/s anywhere in tables or picks', !/tok\/s/.test(d.querySelector('#table').textContent + d.querySelector('#picks').textContent));
 
   // theme toggle

@@ -202,16 +202,30 @@
     }
     return g;
   }
+  let propOpen = false;
   function drawProp() {
-    const P = state.prop, sel = propSel();
-    $('#propbox').classList.toggle('on', P.on);
-    $('#propbox').innerHTML = `<label class="tog"><input type="checkbox" id="propOn"${P.on ? ' checked' : ''}> Proprietary frontier</label>` +
-      (P.on ? `<div class="pills sm">${data.frontier.map(t => `<button class="pill sm" data-id="${t.id}" aria-pressed="${sel.has(t.id)}" style="--pc:${propColor(t)}" title="${esc(t.name)} · ${t.best.toFixed(1)}">${esc(t.tier)}</button>`).join('')}</div>` : '');
-    $('#propOn').addEventListener('change', e => { P.on = e.target.checked; changed(); });
-    $('#propbox').querySelectorAll('.pill').forEach(b => b.addEventListener('click', () => {
+    const P = state.prop, sel = propSel(), box = $('#propbox');
+    box.classList.toggle('on', P.on);
+    box.innerHTML = `<button class="switch" id="propOn" role="switch" aria-checked="${P.on}" aria-label="Show proprietary frontier"><i></i></button><span class="swlabel">Proprietary frontier</span>` +
+      (P.on ? `<button class="chip" id="propMenuBtn" aria-expanded="${propOpen}" aria-controls="propMenu">${sel.size} tier${sel.size === 1 ? '' : 's'} ▾</button>` : '') +
+      `<div class="popover tierpanel" id="propMenu"${P.on && propOpen ? '' : ' hidden'}>
+        <div class="tiers">${data.frontier.map(t => `<button class="tier" data-id="${t.id}" aria-pressed="${sel.has(t.id)}" style="--pc:${propColor(t)}"><i></i>${esc(t.tier)}<span class="ix">${t.best.toFixed(1)}</span></button>`).join('')}</div>
+        <div class="foot"><button class="chip" id="propDefaults">Defaults</button><button class="chip" id="propNone">None</button></div>
+      </div>`;
+    if (P.on && propOpen) { const m = $('#propMenu'); m.classList.toggle('left', box.getBoundingClientRect().right - m.offsetWidth < 8); }  // align to the side with room
+    $('#propOn').addEventListener('click', () => { P.on = !P.on; if (!P.on) propOpen = false; changed(); });
+    const menuBtn = $('#propMenuBtn');
+    if (menuBtn) menuBtn.addEventListener('click', e => { e.stopPropagation(); propOpen = !propOpen; drawProp(); });
+    box.querySelectorAll('.tier').forEach(b => b.addEventListener('click', () => {
       const cur = propSel(); cur.has(b.dataset.id) ? cur.delete(b.dataset.id) : cur.add(b.dataset.id); P.sel = [...cur]; changed();
     }));
+    $('#propDefaults').addEventListener('click', () => { P.sel = null; changed(); });
+    $('#propNone').addEventListener('click', () => { P.sel = []; changed(); });
   }
+  const closeProp = () => { if (propOpen) { propOpen = false; drawProp(); } };
+  // composedPath is captured at dispatch, so clicks on controls that re-render themselves still count as inside
+  document.addEventListener('click', e => { if (!e.composedPath().includes($('#propbox'))) closeProp(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeProp(); });
 
   // ---------------------------------------------------------------- main chart
   /** Models on the overall frontier (all open models, current x metric, lookup tables ignored) that the view would otherwise hide. */
@@ -386,7 +400,7 @@
   function closePicker() { pp().hidden = true; $('#pickBtn').setAttribute('aria-expanded', 'false'); }
   $('#pickBtn').addEventListener('click', () => (pp().hidden ? openPicker() : closePicker()));
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closePicker(); });
-  document.addEventListener('click', e => { if (!pp().hidden && !e.target.closest('#setbar')) closePicker(); });
+  document.addEventListener('click', e => { if (!pp().hidden && !e.composedPath().includes($('#setbar'))) closePicker(); });
 
   // ---------------------------------------------------------------- table
   let sort = { k: 'best', dir: -1 };
