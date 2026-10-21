@@ -69,7 +69,6 @@ const now = Date.parse('2026-10-21'), ms = [
   { id: 'c', creator: 'Y', released: '2025-01-01' }, { id: 'd', creator: 'Y', released: null }];
 ok('recent 6mo', Core.modelSet(ms, { mode: 'recent', months: 6 }, now).map(m => m.id).join() === 'a');
 ok('recent 12mo', Core.modelSet(ms, { mode: 'recent', months: 12 }, now).map(m => m.id).join() === 'a,b');
-ok('latest per lab', Core.modelSet(ms, { mode: 'latest' }, now).map(m => m.id).join() === 'a,c');
 ok('featured', Core.modelSet(ms, { mode: 'featured' }, now).map(m => m.id).join() === 'a');
 
 // ranks

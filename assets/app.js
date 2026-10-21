@@ -14,6 +14,7 @@
   try { const u = new URLSearchParams(location.search).get('state'); if (u) state = merge(state, JSON.parse(u)); } catch (e) { /* bad share link */ }
   const save = () => { try { localStorage.setItem('aaw-state-v2', JSON.stringify(state)); } catch (e) { /* ignore */ } };
 
+  let hl = null;  // id of the model highlighted via a pick card or a pinned tooltip (not persisted)
   let data;
   try { data = await (await fetch('data/models.json')).json(); }
   catch (e) { $('#chart').insertAdjacentHTML('beforeend', '<p class="empty">Could not load data/models.json. If you opened this file directly, serve the folder over HTTP.</p>'); return; }
@@ -33,12 +34,22 @@
   const DEFAULT_PROP_TIERS = ['Claude Opus', 'Claude Sonnet', 'GPT Astra', 'Claude Haiku', 'GPT Luna'];
   const PROP_COLORS = ['#e5484d', '#2f6fed', '#2a9d5c', '#d19200', '#c13ccf', '#0891b2', '#7c8b00', '#e0558a', '#5b6472', '#b4541a', '#3f8f8f', '#8a5cf6', '#c2410c', '#0e7490', '#4d7c0f'];
   const USABLE_TPS = 3;  // silent usability floor applied to the roofline estimate; speeds themselves are not shown
+  const swatch = (c, hollow) => `<i class="dot${hollow ? ' hollow' : ''}" style="${hollow ? 'color' : 'background'}:${c}"></i>`;
+  const legend = items => items.map(([sw, t]) => `<span>${sw}${t}</span>`).join('');
+  const ARCH_KEY = [[swatch('var(--dense)'), 'Dense'], [swatch('var(--moe)'), 'Mixture of experts'], [swatch('var(--lookup)'), 'Lookup tables']];
   const CLS_SHORT = { fit: 'fits', offload: 'RAM offload', ssd: 'SSD paging', none: 'no fit' };
 
   function logTicks(a, b) {
     const out = [];
     for (let e = Math.floor(Math.log10(a)); e <= Math.ceil(Math.log10(b)); e++) for (const k of [1, 2, 5]) { const v = k * 10 ** e; if (v >= a && v <= b) out.push(v); }
     return out;
+  }
+  /** Drop ticks that would be closer than minGap px, preferring round ones (powers of ten, then 5s, then 2s). */
+  function thin(ticks, px, minGap = 46) {
+    const rank = t => { const m = t / 10 ** Math.floor(Math.log10(t)); return m === 1 ? 0 : m === 5 ? 1 : m === 2 ? 2 : 3; };
+    const kept = [];
+    for (const t of [...ticks].sort((a, b) => rank(a) - rank(b) || a - b)) if (kept.every(k => Math.abs(px(k) - px(t)) >= minGap)) kept.push(t);
+    return kept.sort((a, b) => a - b);
   }
   function linTicks(a, b, n = 6) {
     const raw = (b - a) / n, mag = 10 ** Math.floor(Math.log10(raw)), f = raw / mag;
@@ -57,7 +68,7 @@
   };
   // ---------------------------------------------------------------- generic scatter
   function scatter(el, c) {
-    const W = Math.max(320, el.clientWidth), H = c.height(W);
+    const W = Math.max(260, el.clientWidth), H = c.height(W);
     const M = { l: c.bare ? 14 : 48, r: 16, t: 12, b: c.bare ? 12 : 44 };
     const iw = W - M.l - M.r, ih = H - M.t - M.b;
     const sx = c.xlog ? v => M.l + (Math.log(v / c.x0) / Math.log(c.x1 / c.x0)) * iw : v => M.l + ((v - c.x0) / (c.x1 - c.x0)) * iw;
@@ -65,13 +76,14 @@
     const pts = c.pts.map(p => ({ ...p, px: sx(p.x), py: sy(p.y) }));
     let g = '';
     if (!c.bare) {
-      for (const t of c.xTicks) g += `<line class="gridline" x1="${sx(t)}" x2="${sx(t)}" y1="${M.t}" y2="${M.t + ih}"/><text x="${sx(t)}" y="${M.t + ih + 16}" text-anchor="middle">${c.xFmt(t)}</text>`;
+      for (const t of thin(c.xTicks, sx)) g += `<line class="gridline" x1="${sx(t)}" x2="${sx(t)}" y1="${M.t}" y2="${M.t + ih}"/><text x="${sx(t)}" y="${M.t + ih + 16}" text-anchor="middle">${c.xFmt(t)}</text>`;
       for (const t of c.yTicks) g += `<line class="gridline" x1="${M.l}" x2="${M.l + iw}" y1="${sy(t)}" y2="${sy(t)}"/><text x="${M.l - 8}" y="${sy(t) + 4}" text-anchor="end">${t}</text>`;
       g += `<line class="axisline" x1="${M.l}" x2="${M.l + iw}" y1="${M.t + ih}" y2="${M.t + ih}"/><line class="axisline" x1="${M.l}" x2="${M.l}" y1="${M.t}" y2="${M.t + ih}"/>`;
       g += `<text class="axtitle" x="${M.l + iw / 2}" y="${H - 6}" text-anchor="middle">${esc(c.xTitle)}</text>`;
       g += `<text class="axtitle" transform="translate(13 ${M.t + ih / 2}) rotate(-90)" text-anchor="middle">${esc(c.yTitle)}</text>`;
     }
-    if (c.under) g += c.under({ sx, sy, M, iw, ih, W, H });
+    const boxes = [];  // label boxes already taken: axis labels first, then point labels
+    if (c.under) { const u = c.under({ sx, sy, M, iw, ih, W, H, pts }); g += u.svg ?? u; boxes.push(...(u.avoid ?? [])); }
     if (c.frontier) {
       const f = Core.frontier(pts.filter(p => p.linkX == null).map(p => ({ x: p.x, y: p.y, px: p.px, py: p.py })));
       if (f.length > 1) g += `<path class="front" d="${f.map((p, i) => (i ? 'L' : 'M') + p.px.toFixed(1) + ' ' + p.py.toFixed(1)).join('')}"/>`;
@@ -91,7 +103,7 @@
         `<circle cx="${p.px}" cy="${p.py}" r="${r}" fill="${p.hollow || p.ring ? 'var(--card)' : col}" fill-opacity="${p.hollow || p.ring ? 1 : .86}" stroke="${col}" stroke-width="${p.hollow ? 1.8 : p.ring ? 2 : 1}" ${p.hollow ? 'stroke-dasharray="3 2"' : ''}/></g>`;
     }
     // labels: greedy, priority-ordered, avoiding earlier labels and every point
-    const boxes = [], placed = [];
+    const placed = [];
     const hit = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
     const cand = pts.map((p, i) => ({ p, i })).filter(({ p }) => p.label && !p.faded).sort((a, b) => b.p.label - a.p.label);
     for (const { p } of cand.slice(0, c.maxLabels || 40)) {
@@ -128,7 +140,7 @@
     svg.addEventListener('mouseleave', () => { if (!pinned) tip.hidden = true; });
     svg.addEventListener('click', ev => {
       const p = nearest(ev);
-      if (p && p !== pinned) { pinned = p; show(p, true); state.hl = p.m.id; } else { pinned = null; tip.hidden = true; tip.classList.remove('pinned'); state.hl = null; }
+      if (p && p !== pinned) { pinned = p; show(p, true); hl = p.m.id; } else { pinned = null; tip.hidden = true; tip.classList.remove('pinned'); hl = null; }
     });
   }
 
@@ -182,10 +194,10 @@
   }
 
   function drawMain() {
-    const base = inSet(), extra = frontierExtras(base), set = base.concat(extra); evalAll(set);
+    const base = inSet(), extra = frontierExtras(base), set = base.concat(extra);
     const f = state.filter.trim().toLowerCase();
     const xv = m => (state.x === 'active' ? m.active : m.total);
-    const pts = set.map(m => ({ x: xv(m), y: m.best, m, color: colorOf(m), hollow: m.variants[0].estimated, hl: state.hl === m.id }));
+    const pts = set.map(m => ({ x: xv(m), y: m.best, m, color: colorOf(m), hollow: m.variants[0].estimated, hl: hl === m.id }));
     const log = state.xscale === 'log';
     $('#setcount').textContent = state.pick ? `${base.length} chosen` : `${base.length} of ${models.length} open models` + (extra.length ? ` + ${extra.length} on the frontier` : '');
     if (!pts.length) { $('#main').innerHTML = '<p class="empty">No models match this view. Widen the model set above.</p>'; return; }
@@ -210,43 +222,56 @@
       height: W => Math.round(Math.min(560, Math.max(360, W * 0.56))), frontier: true, tip: m => tipHTML(m, false), aria: 'Scatter plot of intelligence index versus parameter count',
       under: ctx => propLinesSvg(lines, ctx),
     });
-    $('#mainLegend').innerHTML = `<span><i class="dot" style="background:var(--dense)"></i>Dense</span><span><i class="dot" style="background:var(--moe)"></i>Mixture of experts</span><span><i class="dot" style="background:var(--lookup)"></i>Has lookup tables (ring = size without them, shaded span = the tables)</span><span><i class="dot hollow" style="color:var(--muted)"></i>Score estimated by AA</span>`;
+    $('#mainLegend').innerHTML = legend([...ARCH_KEY.slice(0, 2), [ARCH_KEY[2][0], 'Lookup tables (ring: size without them, shaded span: the tables)'], [swatch('var(--muted)', true), 'Score estimated by AA']]);
   }
 
   // ---------------------------------------------------------------- quadrant
   const usable = m => m.ev.cls !== 'none' && m.ev.tps >= USABLE_TPS;
 
   function drawQuad() {
-    const el = $('#quad'), set = inSet(); evalAll(set);
+    const el = $('#quad'), set = inSet();
     const ok = set.filter(usable), rows = ok.filter(m => m.lean != null);
-    $('#quadLegend').innerHTML = `<span><i class="dot" style="background:var(--dense)"></i>Dense</span><span><i class="dot" style="background:var(--moe)"></i>MoE</span><span><i class="dot" style="background:var(--lookup)"></i>Lookup tables</span><span>${rows.length} models shown` + (ok.length > rows.length ? `; ${ok.length - rows.length} more fit but lack enough benchmarks to place` : '') + `</span>`;
-    if (!rows.length) { el.innerHTML = `<p class="empty">Nothing fits with these settings. Try 3-bit, more memory, SSD paging (under Advanced), or a wider model set.</p>`; return; }
+    const shown = `${rows.length} models shown` + (ok.length > rows.length ? `; ${ok.length - rows.length} more fit but lack enough benchmarks to place` : '');
+    if (!rows.length) {
+      $('#quadLegend').innerHTML = ''; el.innerHTML = `<p class="empty">Nothing fits with these settings. Try 3-bit, more memory, SSD paging (under Advanced), or a wider model set.</p>`; return; }
     // y: intelligence rank minus speed rank; speed is approximated by fewer active parameters
     const ri = Core.ranks(rows.map(m => m.best)), rs = Core.ranks(rows.map(m => -Math.log(m.active)));
     const lo = Math.min(...rows.map(m => m.best)), hi = Math.max(...rows.map(m => m.best));
     const rOf = m => 3 + 14 * (hi > lo ? (m.best - lo) / (hi - lo) : 0.5);  // higher score, visibly bigger dot
-    const pts = rows.map((m, i) => ({ x: m.lean, y: ri[i] - rs[i], m, color: colorOf(m), hollow: m.variants[0].estimated, hl: state.hl === m.id, name: m.name, r: rOf(m), label: m.best }));
-    $('#quadLegend').insertAdjacentHTML('beforeend', `<span><svg width="52" height="22" aria-hidden="true"><circle cx="6" cy="11" r="3.5" fill="var(--muted)" fill-opacity=".5"/><circle cx="34" cy="11" r="10" fill="var(--muted)" fill-opacity=".5"/></svg>bigger dot = higher Intelligence Index (${lo.toFixed(0)}–${hi.toFixed(0)})</span>`);
+    const pts = rows.map((m, i) => ({ x: m.lean, y: ri[i] - rs[i], m, color: colorOf(m), hollow: m.variants[0].estimated, hl: hl === m.id, name: m.name, r: rOf(m), label: m.best }));
+    const sizeKey = `<svg width="52" height="22" aria-hidden="true"><circle cx="6" cy="11" r="3.5" fill="var(--muted)" fill-opacity=".5"/><circle cx="34" cy="11" r="10" fill="var(--muted)" fill-opacity=".5"/></svg>`;
+    $('#quadLegend').innerHTML = legend([...ARCH_KEY, [sizeKey, `bigger dot = higher Intelligence Index (${lo.toFixed(0)}–${hi.toFixed(0)})`], ['', shown]]);
     // Centre the cross on the middle of the plotted range and scale so the points fill ~90% of each axis.
     const span = vals => { const lo = Math.min(...vals), hi = Math.max(...vals), c = (lo + hi) / 2, h = Math.max((hi - lo) / 2, 1e-6) / 0.9; return [c, c - h, c + h]; };
     const [cx0, x0, x1] = span(pts.map(p => p.x)), [cy0, y0, y1] = span(pts.map(p => p.y));
     scatter(el, {
       pts, bare: true, xlog: false, x0, x1, y0, y1, tip: m => tipHTML(m, true), aria: 'Quadrant chart of coding-versus-knowledge lean against speed-versus-intelligence', maxLabels: 28,
       height: W => Math.round(Math.min(600, Math.max(400, W * 0.64))),
-      under: ({ sx, sy, M, iw, ih }) => {
+      under: ({ sx, sy, M, iw, ih, W, pts: placed }) => {
         const cx = sx(cx0), cy = sy(cy0), l = M.l, r = M.l + iw, t = M.t, b = M.t + ih;
-        const lab = (x, y, anchor, text) => `<text class="axlab" x="${x}" y="${y}" text-anchor="${anchor}">${text}</text>`;
-        return `<rect x="${l}" y="${t}" width="${iw}" height="${ih}" fill="none" stroke="var(--border)"/>` +
+        const narrow = W < 520, fs = narrow ? 12 : 14, avoid = [];
+        // each label tries its candidate spots and takes the one with the fewest data points underneath
+        const lab = (text, anchor, spots) => {
+          const w = text.replace(/&amp;/g, '&').length * fs * 0.58 + 6, h = fs + 5;
+          const boxOf = ([x, y]) => ({ x: anchor === 'end' ? x - w : x, y: y - fs, w, h });
+          const under = b => placed.filter(p => p.px > b.x - p.r && p.px < b.x + b.w + p.r && p.py > b.y - p.r && p.py < b.y + b.h + p.r).length;
+          const best = spots.reduce((a, sp) => (under(boxOf(sp)) < under(boxOf(a)) ? sp : a));
+          avoid.push(boxOf(best));
+          return `<text class="axlab" style="font-size:${fs}px" x="${best[0]}" y="${best[1]}" text-anchor="${anchor}">${text}</text>`;
+        };
+        const svg = `<rect x="${l}" y="${t}" width="${iw}" height="${ih}" fill="none" stroke="var(--border)"/>` +
           `<line class="axisline" x1="${cx}" x2="${cx}" y1="${t}" y2="${b}" stroke-dasharray="4 4"/><line class="axisline" x1="${l}" x2="${r}" y1="${cy}" y2="${cy}" stroke-dasharray="4 4"/>` +
-          lab(l + 10, cy - 9, 'start', '← knowledge &amp; chat') + lab(r - 10, cy - 9, 'end', 'coding &amp; agents →') +
-          lab(cx + 10, t + 20, 'start', '↑ smarter') + lab(cx + 10, b - 10, 'start', '↓ faster');
+          lab(narrow ? '← knowledge' : '← knowledge &amp; chat', 'start', [[l + 8, cy - 8], [l + 8, cy + fs + 8]]) +
+          lab(narrow ? 'coding →' : 'coding &amp; agents →', 'end', [[r - 8, cy - 8], [r - 8, cy + fs + 8]]) +
+          lab('↑ smarter', 'start', [[cx + 8, t + fs + 6]]) + lab('↓ faster', 'start', [[cx + 8, b - 8]]);
+        return { svg, avoid };
       },
     });
   }
 
   // ---------------------------------------------------------------- picks
   function drawPicks() {
-    const set = inSet(); evalAll(set);
+    const set = inSet();
     const ok = set.filter(usable);
     const by = (list, key) => list.reduce((a, m) => (a == null || key(m) > key(a) ? m : a), null);
     const picks = [];
@@ -261,8 +286,8 @@
     if (smart) { const fast = by(ok.filter(m => m.best >= 0.6 * smart.best), m => -m.active); if (fast && fast !== smart) picks.push(['Lightest that is still capable', fast]); }
     $('#picks').innerHTML = picks.length ? picks.map(([t, m]) =>
       `<button class="pick" data-id="${m.id}"><small>${t}</small><b>${esc(m.name)}</b><div class="meta">Index ${m.best.toFixed(1)} · <span class="badge ${m.ev.cls}">${CLS_SHORT[m.ev.cls]}</span><br>${fmtB(m.total)} total · ${fmtB(m.active)} active · ${fmtGB(m.ev.total)}</div></button>`).join('')
-      : '<p class="empty" style="grid-column:1/-1">No model in the current set runs usably on this hardware.</p>';
-    $('#picks').querySelectorAll('.pick').forEach(b => b.addEventListener('click', () => { state.hl = b.dataset.id; drawQuad(); drawMain(); $('#quad').scrollIntoView({ block: 'center', behavior: 'smooth' }); }));
+      : '<p class="empty">No model in the current set runs usably on this hardware.</p>';
+    $('#picks').querySelectorAll('.pick').forEach(b => b.addEventListener('click', () => { hl = b.dataset.id; drawQuad(); drawMain(); $('#quad').scrollIntoView({ block: 'center', behavior: 'smooth' }); }));
   }
 
   // ---------------------------------------------------------------- hardware box
@@ -280,19 +305,19 @@
       rows += `<div class="hwrow"><span class="k">Memory speed</span><div class="pills" id="pUC">${Hardware.U_CLASSES.map(u => pill('data-v', u.id, u.label, h.uClass === u.id).replace('<button', `<button title="${esc(u.hint)} (~${u.bw} GB/s)"`)).join('')}</div></div>`;
     }
     const precNote = state.prec === 'q4' ? (hw.fp4 ? 'NVFP4: native 4-bit floats on this GPU' : 'GGUF Q4_K_M (no native FP4 on this GPU)') : q.label;
-    rows += `<div class="hwrow"><span class="k">Precision</span><div class="pills" id="pPrec">${[['native', 'Unquantized'], ['q8', '8-bit'], ['q4', '4-bit'], ['q3', '3-bit']].map(([k, l]) => pill('data-v', k, l, state.prec === k)).join('')}<span class="note" style="align-self:center;margin-left:6px">${esc(precNote)}</span></div></div>`;
+    rows += `<div class="hwrow"><span class="k">Precision</span><div class="pills" id="pPrec">${[['native', 'Unquantized'], ['q8', '8-bit'], ['q4', '4-bit'], ['q3', '3-bit']].map(([k, l]) => pill('data-v', k, l, state.prec === k)).join('')}<span class="note">${esc(precNote)}</span></div></div>`;
     rows += `<div class="hwsum"><span><b>${esc(hw.label)}</b></span><span>${fmtGB(hw.unified ? hw.usable : hw.vram)} ${hw.unified ? 'usable by GPU' : 'VRAM'}</span></div>`;
     rows += `<details class="adv"><summary>Advanced</summary><div class="row"><label class="tog">Headroom for context &amp; runtime <input type="range" id="hRes" min="1" max="32" value="${state.reserve}"> <b id="hResOut">${state.reserve} GB</b></label></div><div class="row"><label class="tog"><input type="checkbox" id="hSsd"${h.ssd ? ' checked' : ''}> Allow paging weights from an NVMe SSD (~6 GB/s, slow)</label></div></details>`;
     $('#hwbox').innerHTML = rows;
     const B = $('#hwbox'), on = (sel, fn) => B.querySelectorAll(sel).forEach(b => b.addEventListener('click', () => fn(b)));
-    on('#pMode .pill', b => { h.mode = b.dataset.v; changed(true); });
-    on('#pVram .pill', b => { h.vram = +b.dataset.v; changed(true); });
-    on('#pGpu .pill', b => { h.gpu = b.dataset.v; changed(true); });
-    on('#pRam .pill', b => { h.ram = +b.dataset.v; changed(true); });
-    on('#pU .pill', b => { h.uGB = +b.dataset.v; changed(true); });
-    on('#pUC .pill', b => { h.uClass = b.dataset.v; changed(true); });
-    on('#pPrec .pill', b => { state.prec = b.dataset.v; changed(true); });
-    const res = B.querySelector('#hRes'); res.addEventListener('input', () => { state.reserve = +res.value; $('#hResOut').textContent = state.reserve + ' GB'; changed(false, true); });
+    on('#pMode .pill', b => { h.mode = b.dataset.v; changed({ hw: true }); });
+    on('#pVram .pill', b => { h.vram = +b.dataset.v; changed({ hw: true }); });
+    on('#pGpu .pill', b => { h.gpu = b.dataset.v; changed({ hw: true }); });
+    on('#pRam .pill', b => { h.ram = +b.dataset.v; changed({ hw: true }); });
+    on('#pU .pill', b => { h.uGB = +b.dataset.v; changed({ hw: true }); });
+    on('#pUC .pill', b => { h.uClass = b.dataset.v; changed({ hw: true }); });
+    on('#pPrec .pill', b => { state.prec = b.dataset.v; changed({ hw: true }); });
+    const res = B.querySelector('#hRes'); res.addEventListener('input', () => { state.reserve = +res.value; $('#hResOut').textContent = state.reserve + ' GB'; changed({ controls: false }); });
     B.querySelector('#hSsd').addEventListener('change', e => { h.ssd = e.target.checked; changed(); });
   }
 
@@ -313,7 +338,7 @@
       <div class="list">${section('Featured', featured)}${section('All other models · labs by newest release', others)}</div>`;
     pp().hidden = false; $('#pickBtn').setAttribute('aria-expanded', 'true');
     const P = pp(), boxes = () => [...P.querySelectorAll('input[type=checkbox]')];
-    const commit = () => { state.pick = boxes().filter(b => b.checked).map(b => b.value); changed(false, true, true); };
+    const commit = () => { state.pick = boxes().filter(b => b.checked).map(b => b.value); changed(); };
     P.onchange = commit;
     P.querySelector('#pkQ').addEventListener('input', e => {
       const q = e.target.value.trim().toLowerCase();
@@ -336,7 +361,7 @@
   // ---------------------------------------------------------------- table
   let sort = { k: 'best', dir: -1 };
   function drawTable() {
-    const set = inSet(); evalAll(set);
+    const set = inSet();
     const f = state.filter.trim().toLowerCase(), q = quantNow();
     const cols = [
       ['name', 'Model', m => m.name, m => esc(m.name)], ['creator', 'Lab', m => m.creator, m => esc(m.creator)],
@@ -362,29 +387,34 @@
     seg($('#xmode'), [['total', 'Total params'], ['active', 'Active params']], () => state.x, v => { state.x = v; });
     seg($('#xscale'), [['log', 'Log'], ['linear', 'Linear']], () => state.xscale, v => { state.xscale = v; });
     const m = $('#months'); m.value = state.set.months; $('#monthsOut').textContent = state.set.months + (state.set.months === 1 ? ' month' : ' months');
-    m.oninput = () => { state.set.months = +m.value; $('#monthsOut').textContent = m.value + (m.value === '1' ? ' month' : ' months'); changed(false, true); };
+    m.oninput = () => { state.set.months = +m.value; $('#monthsOut').textContent = m.value + (m.value === '1' ? ' month' : ' months'); changed({ controls: false }); };
     $('#monthsWrap').style.display = !state.pick && state.set.mode === 'recent' ? '' : 'none';
     drawProp();
     $('#q').oninput = e => { state.filter = e.target.value; drawMain(); drawTable(); };
     $('#q').value = state.filter;
   }
 
-  /** rebuildHw: redraw the hardware box; light: skip the control redraw (sliders); keepPicker: still refresh the set-mode pills */
-  function changed(rebuildHw, light, keepPicker) {
+  /** Persist and redraw. hw: also rebuild the hardware box; controls: false while dragging a slider (keeps focus). */
+  function changed({ hw = false, controls = true } = {}) {
     save();
-    if (!light || keepPicker) drawControls();
-    if (rebuildHw) drawHw();
+    if (controls) drawControls();
+    if (hw) drawHw();
     drawAll();
   }
-  function drawAll() { drawMain(); drawQuad(); drawPicks(); drawTable(); }
+  function drawAll() { evalAll(models); drawMain(); drawQuad(); drawPicks(); drawTable(); }
 
   $('#theme').addEventListener('click', () => {
-    const d = document.documentElement, next = (d.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark' ? 'light' : 'dark';
-    d.dataset.theme = next; try { localStorage.setItem('theme', next); } catch (e) { /* ignore */ }
-    drawAll();
+    const root = document.documentElement, dark = (root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark';
+    root.dataset.theme = dark ? 'light' : 'dark';
+    try { localStorage.setItem('theme', root.dataset.theme); } catch (e) { /* ignore */ }
+    drawAll();  // chart colours are read from CSS variables
   });
-  let rt; new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(() => { drawMain(); drawQuad(); }, 80); }).observe(document.querySelector('main'));
+  // Charts are drawn at pixel width, so redraw when the width (not the height) changes.
+  let rt, lastW = 0;
+  new ResizeObserver(([e]) => {
+    if (Math.abs(e.contentRect.width - lastW) < 1) return;
+    lastW = e.contentRect.width; clearTimeout(rt); rt = setTimeout(() => { drawMain(); drawQuad(); }, 80);
+  }).observe(document.querySelector('main'));
 
   drawControls(); drawHw(); drawAll();
-  window.__aaw = { state, models, Core, Hardware };   // handy for debugging in the console
-})();
+  })();

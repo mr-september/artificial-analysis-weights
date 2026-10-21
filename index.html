@@ -14,7 +14,7 @@
 </head>
 <body>
 <div class="bar"><div class="wrap">
-  <a class="brand" href="#top"><i></i>Intelligence vs Weights</a>
+  <a class="brand" href="#top"><i></i><span>Intelligence vs Weights</span></a>
   <nav>
     <a class="hide-s" href="#chart">Chart</a>
     <a class="hide-s" href="#models">Table</a>
@@ -41,9 +41,7 @@
 
   <section class="card" id="chart">
     <header>
-      <div>
-        <h2>Intelligence vs parameters</h2>
-      </div>
+      <h2>Intelligence vs parameters</h2>
       <div class="tools">
         <div class="seg" id="xmode" role="group" aria-label="X axis"></div>
         <div class="seg" id="xscale" role="group" aria-label="X scale"></div>
@@ -55,22 +53,18 @@
   </section>
 
   <section class="card" id="run">
-    <header>
-      <div>
-        <h2>What should I run?</h2>
-      </div>
-    </header>
+    <header><h2>What should I run?</h2></header>
     <div class="hwbox" id="hwbox"></div>
     <div class="chart" id="quad"></div>
     <div class="legend" id="quadLegend"></div>
-    <h3 style="margin-top:20px">Top picks for this hardware</h3>
+    <h3>Top picks for this hardware</h3>
     <div class="picks" id="picks"></div>
   </section>
 
   <section class="card" id="models">
     <header>
-      <div><h2>All models in this view</h2></div>
-      <div class="tools"><input type="search" id="q" placeholder="Filter by name or lab" style="min-width:220px"></div>
+      <h2>All models in this view</h2>
+      <div class="tools"><input type="search" id="q" placeholder="Filter by name or lab" aria-label="Filter models by name or lab"></div>
     </header>
     <div class="tablewrap"><table id="table"></table></div>
   </section>
@@ -79,7 +73,7 @@
     <h2>Notes</h2>
     <ul>
       <li><b>Sizes.</b> Total parameters set memory, active parameters (MoE) set speed, and lookup parameters (n-gram or per-layer embedding tables) take memory but almost no bandwidth, so they can sit on SSD. The frontier ignores lookup tables, and frontier models are always shown.</li>
-      <li><b>Fit.</b> Weights fill VRAM, then RAM, then SSD if allowed. A model counts as runnable if a bandwidth roofline gives it a few tokens per second. Hardware figures are rough (<code>assets/hardware.js</code>).</li>
+      <li><b>Fit.</b> Weights fill VRAM, then RAM, then SSD if allowed. A model counts as runnable if a bandwidth roofline gives it a few tokens per second. Hardware figures are rough; see <code>assets/hardware.js</code>.</li>
       <li><b>Precision.</b> 4-bit means NVFP4 on RTX 5000 / Blackwell and Q4_K_M elsewhere. AA scored hosted endpoints, so quantized local copies will score lower.</li>
       <li><b>Quadrant.</b> Horizontal: coding and agentic percentile minus knowledge and instruction-following percentile (AA has no creative-writing eval). Vertical: intelligence rank minus speed rank, with fewer active parameters as the speed proxy. Dot size is the Intelligence Index.</li>
       <li><b>Proprietary lines.</b> Closed models publish no sizes, so they appear only as score lines.</li>
@@ -88,7 +82,7 @@
   </section>
 
   <footer>
-    <div>Data: <a href="https://artificialanalysis.ai/">Artificial Analysis</a>, <a href="https://huggingface.co/">Hugging Face</a>. This project is independent and not affiliated with or endorsed by either. <span id="updated"></span></div>
+    Data: <a href="https://artificialanalysis.ai/">Artificial Analysis</a>, <a href="https://huggingface.co/">Hugging Face</a>. This project is independent and not affiliated with or endorsed by either. <span id="updated"></span>
   </footer>
 </main>
 

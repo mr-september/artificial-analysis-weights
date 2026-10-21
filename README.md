@@ -41,7 +41,7 @@ python scripts/update.py        # refresh data (optional)
 python -m http.server 8000      # then open http://localhost:8000
 ```
 
-Tests: open `http://localhost:8000/tests/core.test.html` and `.../tests/ui.test.html`.
+Tests (open via the local server; each prints PASS/FAIL): `tests/core.test.html` (fit and placement maths), `tests/ui.test.html` (interactions), `tests/responsive.test.html` (no overflow from 320 to 2560 px).
 
 ## Corrections
 

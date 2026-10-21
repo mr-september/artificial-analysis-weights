@@ -1,0 +1,25 @@
+<!doctype html><meta charset="utf-8"><title>responsive checks</title>
+<pre id="out">running…</pre>
+<div id="frames"></div>
+<script>
+// Loads the site at a range of widths and reports horizontal overflow and elements spilling past the viewport.
+const WIDTHS = [320, 360, 390, 768, 1024, 1280, 1920, 2560];
+const states = { default: '', prop: '%7B%22prop%22:%7B%22on%22:true%7D%7D', unified: '%7B%22hw%22:%7B%22mode%22:%22unified%22%7D%7D' };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+(async () => {
+  const out = []; let fail = 0;
+  for (const [name, st] of Object.entries(states)) for (const w of WIDTHS) {
+    const f = document.createElement('iframe'); f.style.cssText = `width:${w}px;height:900px;border:0;display:block`;
+    f.src = `../index.html?state=${st}`; document.getElementById('frames').appendChild(f);
+    await new Promise(r => f.addEventListener('load', r)); await sleep(700);
+    const d = f.contentDocument, root = d.documentElement;
+    const bad = [...d.querySelectorAll('body *')].filter(e => !e.closest('svg, .tablewrap, .pickpanel, [hidden]') && e.getBoundingClientRect().right > w + 1 && getComputedStyle(e).position !== 'fixed').slice(0, 4).map(e => e.tagName + '.' + (e.className.baseVal ?? e.className) + '#' + e.id + ':' + Math.round(e.getBoundingClientRect().right));
+    const svgW = d.querySelector('#main svg').getBoundingClientRect().width, cardW = d.querySelector('#chart').getBoundingClientRect().width;
+    const ok = root.scrollWidth <= w + 1 && bad.length === 0 && svgW <= cardW;
+    if (!ok) fail++;
+    out.push(`${ok ? 'PASS' : 'FAIL'} ${name} @${w}px scrollW=${root.scrollWidth} chartW=${Math.round(svgW)}/${Math.round(cardW)} ${bad.join(' ')}`);
+    f.remove();
+  }
+  document.getElementById('out').textContent = (fail ? 'FAILED ' + fail : 'ALL PASSED') + '\n' + out.join('\n');
+})();
+</script>

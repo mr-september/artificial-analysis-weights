@@ -77,8 +77,6 @@ const Core = (() => {
     };
   }
 
-  const speedBand = tps => (tps >= 20 ? 'fast' : tps >= 8 ? 'good' : tps >= 3 ? 'slow' : 'crawl');
-
   /** Upper-left Pareto frontier: points not dominated by a smaller-x, higher-y point. */
   function frontier(pts) {
     const s = [...pts].sort((a, b) => a.x - b.x || b.y - a.y);
@@ -95,11 +93,6 @@ const Core = (() => {
     if (f.mode === 'recent') {
       const cut = now - f.months * 30.44 * DAY;
       return models.filter(m => m.released && Date.parse(m.released) >= cut);
-    }
-    if (f.mode === 'latest') {
-      const newest = {};
-      for (const m of models) if (m.released) newest[m.creator] = Math.max(newest[m.creator] || 0, Date.parse(m.released));
-      return models.filter(m => m.released && Date.parse(m.released) >= newest[m.creator] - 90 * DAY);
     }
     return models;
   }
@@ -145,6 +138,6 @@ const Core = (() => {
     return out;
   }
 
-  return { QUANTS, quant, DEFAULTS, gbPerB, evaluate, speedBand, frontier, modelSet, addLean, ranks };
+  return { QUANTS, quant, DEFAULTS, gbPerB, evaluate, frontier, modelSet, addLean, ranks };
 })();
 if (typeof module !== 'undefined') module.exports = Core;
