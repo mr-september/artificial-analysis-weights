@@ -206,7 +206,7 @@
   function drawProp() {
     const P = state.prop, sel = propSel(), box = $('#propbox');
     box.classList.toggle('on', P.on);
-    box.innerHTML = `<button class="switch" id="propOn" role="switch" aria-checked="${P.on}" aria-label="Show proprietary frontier"><i></i></button><span class="swlabel">Proprietary frontier</span>` +
+    box.innerHTML = `<button class="switch" id="propOn" role="switch" aria-checked="${P.on}" aria-label="Show closed models as score lines"><i></i></button><span class="swlabel" title="Best closed-model scores as dashed lines (closed models publish no sizes)">Closed models</span>` +
       (P.on ? `<button class="chip" id="propMenuBtn" aria-expanded="${propOpen}" aria-controls="propMenu">${sel.size} tier${sel.size === 1 ? '' : 's'} ▾</button>` : '') +
       `<div class="popover tierpanel" id="propMenu"${P.on && propOpen ? '' : ' hidden'}>
         <div class="tiers">${data.frontier.map(t => `<button class="tier" data-id="${t.id}" aria-pressed="${sel.has(t.id)}" style="--pc:${propColor(t)}"><i></i>${esc(t.tier)}<span class="ix">${t.best.toFixed(1)}</span></button>`).join('')}</div>
@@ -426,7 +426,7 @@
     el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { set(b.dataset.v); changed(); }));
   }
   function drawControls() {
-    const modes = [['curated', 'Featured'], ['recent', 'Recent'], ['featured', 'AA picks'], ['all', 'All']];
+    const modes = [['curated', 'Featured'], ['recent', 'Recent'], ['featured', 'AA\'s picks'], ['all', 'All']];
     if (state.pick) modes.push(['custom', `Custom (${state.pick.length})`]);
     seg($('#setmode'), modes, () => (state.pick ? 'custom' : state.set.mode), v => { if (v !== 'custom') { state.pick = null; state.set.mode = v; } });
     seg($('#xmode'), [['total', 'Total params'], ['active', 'Active params']], () => state.x, v => { state.x = v; });

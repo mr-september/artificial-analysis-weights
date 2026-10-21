@@ -3,8 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Intelligence vs Weights</title>
-<meta name="description" content="Artificial Analysis Intelligence Index plotted against open-weights parameter counts, with a hardware-aware guide to which model to run locally. Unofficial; data from Artificial Analysis.">
+<title>Open-weights LLMs: intelligence vs size, and what you can run locally</title>
+<meta name="description" content="Artificial Analysis Intelligence Index plotted against parameter count for open-weights LLMs, plus a guide to what runs locally on your GPU, RAM or unified memory. Unofficial; data from Artificial Analysis and Hugging Face.">
+<link rel="canonical" href="https://mr-september.github.io/artificial-analysis-weights/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Open-weights LLMs: intelligence vs size, and what you can run locally">
+<meta property="og:description" content="Artificial Analysis Intelligence Index plotted against parameter count for open-weights LLMs, plus a guide to what runs locally on your GPU, RAM or unified memory. Unofficial; data from Artificial Analysis and Hugging Face.">
+<meta property="og:url" content="https://mr-september.github.io/artificial-analysis-weights/">
+<meta property="og:image" content="https://mr-september.github.io/artificial-analysis-weights/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%238040fb'/%3E%3Ccircle cx='11' cy='20' r='4' fill='%23fff'/%3E%3Ccircle cx='21' cy='11' r='4' fill='%23ff7a33'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +23,7 @@
 </head>
 <body>
 <div class="bar"><div class="wrap">
-  <a class="brand" href="#top"><i></i><span>Intelligence vs Weights</span></a>
+  <a class="brand" href="#top"><i></i><span>Open-weights: intelligence vs size</span></a>
   <nav>
     <a class="hide-s" href="#chart">Chart</a>
     <a class="hide-s" href="#models">Table</a>
@@ -26,8 +35,8 @@
 
 <main class="wrap" id="top">
   <section class="hero">
-    <h1>Intelligence vs weights</h1>
-    <p>Open-weights models by Artificial Analysis Intelligence Index. Unofficial.</p>
+    <h1>Open-weights: intelligence vs size</h1>
+    <p>Artificial Analysis scores against model size, plus what runs on your hardware. Unofficial companion to Artificial Analysis.</p>
   </section>
 
   <div class="setbar" id="setbar" role="group" aria-label="Which models to show">
@@ -76,7 +85,7 @@
       <li><b>Fit.</b> Weights fill VRAM, then RAM, then SSD if allowed. A model counts as runnable if a bandwidth roofline gives it a few tokens per second. Hardware figures are rough; see <code>assets/hardware.js</code>.</li>
       <li><b>Precision.</b> 4-bit means NVFP4 on RTX 5000 / Blackwell and Q4_K_M elsewhere. AA scored hosted endpoints, so quantized local copies will score lower.</li>
       <li><b>Quadrant.</b> Horizontal: coding and agentic percentile minus knowledge and instruction-following percentile (AA has no creative-writing eval). Vertical: speed, approximated by fewer active parameters. Dot size is the Intelligence Index, and a ring marks models that nothing beats on both speed and intelligence.</li>
-      <li><b>Proprietary lines.</b> Closed models publish no sizes, so they appear only as score lines.</li>
+      <li><b>Closed models.</b> They publish no sizes, so they appear only as dashed score lines, one per product tier.</li>
       <li><b>Data.</b> Scores, dates and parameter counts come from Artificial Analysis; exact sizes from Hugging Face. Lookup sizes and the Featured list are hand-curated in <code>data/</code>.</li>
     </ul>
   </section>

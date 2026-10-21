@@ -101,7 +101,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   // x axis toggle, y source toggle
   d.querySelector('#xmode button[data-v="active"]').click(); await sleep(100);
   ok('x title follows toggle', /Active parameters/.test(d.querySelector('#main').textContent));
-  // proprietary frontier: switch + popover menu + horizontal lines
+  // closed models: switch + popover menu + horizontal lines
   const lineCount = () => d.querySelectorAll('#main svg line[stroke-dasharray="7 5"]').length;
   ok('proprietary starts off with no lines or menu button', lineCount() === 0 && !d.querySelector('#propMenuBtn') && d.querySelector('#propOn').getAttribute('aria-checked') === 'false');
   d.querySelector('#propOn').click(); await sleep(200);
