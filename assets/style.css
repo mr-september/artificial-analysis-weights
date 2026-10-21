@@ -192,6 +192,9 @@ td.name a { color: inherit; }
 .propbox .chip:disabled { opacity: .45; cursor: default; border-color: var(--border); }
 .seg { box-sizing: border-box; }
 
+.bar nav .gh { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 32px; padding: 0; }
+.gh svg { width: 17px; height: 17px; fill: currentColor; }
+.gh:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 /* support: a quiet heart in the top bar, plus a footer line */
 .support { position: relative; }
 .bar nav .heart { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 32px; padding: 0; }
