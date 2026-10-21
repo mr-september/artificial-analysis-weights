@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Intelligence vs Weights</title>
+<meta name="description" content="Artificial Analysis Intelligence Index plotted against open-weights parameter counts, with a hardware-aware guide to which model to run locally. Unofficial; data from Artificial Analysis.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%238040fb'/%3E%3Ccircle cx='11' cy='20' r='4' fill='%23fff'/%3E%3Ccircle cx='21' cy='11' r='4' fill='%23ff7a33'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<script>try{var t=new URLSearchParams(location.search).get('theme')||localStorage.getItem('theme');if(!t&&matchMedia('(prefers-color-scheme: dark)').matches)t='dark';if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<div class="bar"><div class="wrap">
+  <a class="brand" href="#top"><i></i>Intelligence vs Weights</a>
+  <nav>
+    <a class="hide-s" href="#chart">Chart</a>
+    <a class="hide-s" href="#models">Table</a>
+    <a class="hide-s" href="#method">Method</a>
+    <button id="theme" aria-label="Toggle dark mode" title="Toggle dark mode">◐</button>
+    <a class="cta" href="#run">What should I run? ↓</a>
+  </nav>
+</div></div>
+
+<main class="wrap" id="top">
+  <section class="hero">
+    <h1>How much model do you get per billion weights?</h1>
+    <p>The <b>Artificial Analysis Intelligence Index</b> against the size of every open-weights model it has scored, plus a guide to what fits and runs well on your hardware. Unofficial; all benchmark data is from <a href="https://artificialanalysis.ai/leaderboards/models">artificialanalysis.ai</a>, refreshed every few days.</p>
+  </section>
+
+  <div class="setbar" id="setbar" role="group" aria-label="Which models to show">
+    <span class="lbl">Models</span>
+    <div class="seg" id="setmode"></div>
+    <label class="tog" id="monthsWrap">last <input type="range" id="months" min="1" max="24" step="1"> <b id="monthsOut"></b></label>
+    <span class="count" id="setcount"></span>
+  </div>
+
+  <section class="card" id="chart">
+    <header>
+      <div>
+        <h2>Intelligence vs parameters</h2>
+        <p class="sub" id="chartSub"></p>
+      </div>
+      <div class="tools">
+        <div class="seg" id="xmode" role="group" aria-label="X axis"></div>
+        <div class="seg" id="xscale" role="group" aria-label="X scale"></div>
+        <a class="chip" href="#run" style="text-decoration:none">What should I run? ↓</a>
+      </div>
+    </header>
+    <div class="chart" id="main"></div>
+    <div class="legend" id="mainLegend"></div>
+  </section>
+
+  <section class="card" id="run">
+    <header>
+      <div>
+        <h2>What should I run?</h2>
+        <p class="sub">Pick your hardware. Models that fit (with the placement and speed shown) appear below, positioned by what they are good at and how fast they are.</p>
+      </div>
+    </header>
+    <div class="run">
+      <div class="panel" id="hwpanel"></div>
+      <div>
+        <div class="tools" style="margin-bottom:8px;justify-content:space-between">
+          <div class="seg" id="yaxis" role="group" aria-label="Speed source"></div>
+          <label class="tog">Min speed
+            <select id="minspeed"><option value="1">any</option><option value="3">3 tok/s</option><option value="8">8 tok/s</option><option value="20">20 tok/s</option></select>
+          </label>
+        </div>
+        <div class="chart" id="quad"></div>
+        <div class="legend" id="quadLegend"></div>
+      </div>
+    </div>
+    <h3 style="margin-top:20px">Top picks for this hardware</h3>
+    <div class="picks" id="picks"></div>
+  </section>
+
+  <section class="card" id="models">
+    <header>
+      <div><h2>All models in this view</h2><p class="sub">Click a column to sort. Footprint and speed follow the hardware and quantization selected above.</p></div>
+      <div class="tools"><input type="search" id="q" placeholder="Filter by name or lab" style="min-width:220px"></div>
+    </header>
+    <div class="tablewrap"><table id="table"></table></div>
+  </section>
+
+  <section class="card prose" id="method">
+    <h2>How this works</h2>
+    <h3>Three kinds of "size"</h3>
+    <p><b>Total</b> parameters set the memory you need to hold the weights. <b>Active</b> parameters (mixture-of-experts) set how much is read per token, so they set decode speed. <b>Lookup</b> parameters (n-gram and per-layer embedding tables, as in Qwen3.8-Flash-Next, LongCat and Gemma 4 E-series) are table lookups: they take memory but almost no bandwidth, so they can sit in system RAM or on SSD. The main chart lets you switch between total and active; the guide below uses all three.</p>
+    <h3>Fit and speed estimate</h3>
+    <p>Weights are placed in VRAM first, then system RAM, then (if allowed) SSD. For a MoE, <code>30%</code> of active parameters are assumed to be always-read (attention, shared experts) and are placed first; routed experts fill what is left, and their reads are spread evenly across wherever they live. Decode speed is <code>55%</code> of peak bandwidth divided by bytes read per token, summed over tiers. This is a roofline ceiling for single-stream decoding: it ignores prompt processing, KV-cache growth, multi-GPU communication and kernel quality, and real numbers are usually lower. Treat it as a way to separate "comfortable" from "painful", not as a benchmark. Hardware figures are approximate spec-sheet values and live in <code>assets/hardware.js</code>.</p>
+    <h3>Quantization</h3>
+    <p>Footprints use effective bits-per-weight of common GGUF quants. The Intelligence Index was measured on providers' hosted (typically near-native precision) endpoints, so quantized local copies will score somewhat lower, and heavily so below about 4 bits for small models.</p>
+    <h3>The quadrant</h3>
+    <p>Horizontal: relative percentile on coding and agentic evaluations (Terminal-Bench, τ²-bench, SciCode, APEX-Agents, …) minus percentile on knowledge and instruction-following evaluations (Omniscience, IFBench, AA-LCR, GPQA, HLE). Artificial Analysis publishes no creative-writing or roleplay evaluation, so the left end means "knowledge and chat strength relative to coding", not measured creativity. Vertical: the Intelligence Index against speed, using AA's measured hosted output speed (available for about half of the models) or the estimate for your hardware.</p>
+    <h3>Data</h3>
+    <p>Scores, speed, release dates, parameter counts and the model-picker defaults come from Artificial Analysis pages. Exact totals and stored sizes come from Hugging Face safetensors headers; lookup-table sizes are curated from model cards in <code>data/overrides.json</code>. Where AA and Hugging Face disagree by more than 8% the AA figure is kept and a note appears in the model's tooltip. Missing or wrong? Open an issue or edit the overrides.</p>
+  </section>
+
+  <footer>
+    <div>Data: <a href="https://artificialanalysis.ai/">Artificial Analysis</a>, <a href="https://huggingface.co/">Hugging Face</a>. This project is independent and not affiliated with or endorsed by either. <span id="updated"></span></div>
+  </footer>
+</main>
+
+<script src="assets/core.js"></script>
+<script src="assets/hardware.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

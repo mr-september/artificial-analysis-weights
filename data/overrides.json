@@ -1,0 +1,8 @@
+{
+  "_doc": "Curated corrections, keyed by AA family id. Fields: total_b, active_b, lookup_b (sparse-lookup params such as n-gram / per-layer embedding tables that can live in slow memory), note, source. Everything else is derived automatically.",
+  "qwen3-8-flash-next": {"lookup_b": 51, "source": "HF model card: '125B with 6B activated, plus 51B n-gram embedding and 4B MTP'"},
+  "longcat-2-0": {"lookup_b": 135, "source": "HF model card: '135B N-gram Embedding parameters are included in the model'"},
+  "longcat-flash-lite": {"lookup_b": 30, "source": "HF model card: 'allocating over 30B parameters to embeddings' (lower bound)"},
+  "gemma-4-e2b": {"lookup_b": 2.8, "source": "HF model card: 2.3B effective, 5.1B with embeddings (per-layer embeddings)"},
+  "gemma-4-e4b": {"lookup_b": 3.5, "source": "HF model card: 4.5B effective, 8B with embeddings (per-layer embeddings)"}
+}

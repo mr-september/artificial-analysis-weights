@@ -1,0 +1,71 @@
+<!doctype html><meta charset="utf-8"><title>core tests</title>
+<pre id="out">running…</pre>
+<script src="../assets/core.js"></script>
+<script>
+const out = []; let fail = 0;
+const ok = (name, cond, extra = '') => { out.push((cond ? 'PASS ' : 'FAIL ') + name + (cond ? '' : '  ' + extra)); if (!cond) fail++; };
+const near = (a, b, tol = 1e-6) => Math.abs(a - b) <= tol * Math.max(1, Math.abs(b));
+const q4 = Core.quant('q4'), q16 = Core.quant('bf16');
+const dense = { total: 30, active: 30, lookup: 0, arch: 'dense', native_gb: 60 };
+const moe = { total: 400, active: 20, lookup: 0, arch: 'moe', native_gb: 800 };
+const lk = { total: 100, active: 10, lookup: 40, arch: 'moe-lookup', native_gb: 200 };
+const gpu = (vram, ram) => ({ vram, ram, bwV: 1000, bwR: 100, unified: false, ssd: false });
+const O = { reserve: 0, osReserve: 0 };
+
+// footprint
+ok('gbPerB bf16 = 2', near(Core.gbPerB(dense, q16), 2));
+ok('gbPerB q4 = 4.85/8', near(Core.gbPerB(dense, q4), 4.85 / 8));
+ok('quant never inflates a 4.5-bpw checkpoint', near(Core.gbPerB({ total: 100, native_gb: 56.25 }, q16), 0.5625), String(Core.gbPerB({ total: 100, native_gb: 56.25 }, q16)));
+
+// dense: all in VRAM at q4 = 30*0.60625 = 18.19 GB
+let e = Core.evaluate(dense, gpu(24, 0), { ...O, q: q4 });
+ok('dense fits 24GB at q4', e.cls === 'fit', JSON.stringify(e));
+ok('dense speed = eff*BW/bytes', near(e.tps, 0.55 * 1000 / (30 * 4.85 / 8), 1e-6), e.tps);
+e = Core.evaluate(dense, gpu(12, 32), { ...O, q: q4 });
+ok('dense spills to RAM when VRAM short', e.cls === 'offload', JSON.stringify(e));
+ok('spilled dense is slower than all-VRAM', e.tps < Core.evaluate(dense, gpu(24, 0), { ...O, q: q4 }).tps);
+e = Core.evaluate(dense, gpu(8, 8), { ...O, q: q4 });
+ok('dense does not fit 16GB total', e.cls === 'none');
+e = Core.evaluate(dense, { ...gpu(8, 8), ssd: true }, { ...O, q: q4 });
+ok('dense pages from SSD when allowed', e.cls === 'ssd' && e.tps > 0, JSON.stringify(e));
+
+// MoE: 400B q4 = 242.5 GB; hot = 0.3*20*0.60625 = 3.64 GB in VRAM, experts in RAM
+e = Core.evaluate(moe, gpu(24, 256), { ...O, q: q4 });
+ok('MoE offloads experts to RAM', e.cls === 'offload', JSON.stringify(e));
+const readV = e.v, readR = e.r;
+ok('MoE: all weights placed', near(e.v + e.r + e.s, 400 * 4.85 / 8, 1e-6), e.v + e.r + e.s);
+ok('MoE decode much faster than dense of same size', e.tps > 1, e.tps);
+ok('MoE not fit in 64GB RAM', Core.evaluate(moe, gpu(24, 64), { ...O, q: q4 }).cls === 'none');
+
+// lookup tables cost memory but no bandwidth
+const noLk = { ...lk, lookup: 0, total: 60, arch: 'moe' };
+const a = Core.evaluate(lk, gpu(100, 100), { ...O, q: q4 }), b = Core.evaluate(noLk, gpu(100, 100), { ...O, q: q4 });
+ok('lookup model: same speed as without lookup tables', near(a.tps, b.tps, 1e-9), a.tps + ' vs ' + b.tps);
+ok('lookup model: lookup bytes placed in RAM first', near(a.lookupOff, 40 * 4.85 / 8, 1e-6), a.lookupOff);
+
+// unified memory
+const uni = { vram: 96, ram: 0, bwV: 546, bwR: 546, unified: true, ssd: false };
+e = Core.evaluate(dense, uni, { ...O, q: q4 }); ok('unified: dense fits in pool', e.cls === 'fit');
+ok('unified: no phantom RAM tier', Core.evaluate(moe, uni, { ...O, q: q4 }).cls === 'none');
+
+// CPU only
+e = Core.evaluate(dense, { vram: 0, ram: 64, bwV: 90, bwR: 90, unified: false, ssd: false }, { ...O, q: q4 });
+ok('CPU-only: runs from RAM, labelled fit', e.cls === 'fit' && near(e.tps, 0.55 * 90 / (30 * 4.85 / 8), 1e-6), JSON.stringify(e));
+
+// frontier
+const fr = Core.frontier([{ x: 1, y: 5 }, { x: 2, y: 4 }, { x: 3, y: 9 }, { x: 4, y: 9 }, { x: 5, y: 12 }]);
+ok('frontier keeps only improving points', JSON.stringify(fr.map(p => p.x)) === '[1,3,5]', JSON.stringify(fr));
+
+// model sets
+const now = Date.parse('2026-10-21'), ms = [
+  { id: 'a', creator: 'X', released: '2026-10-01', featured: true }, { id: 'b', creator: 'X', released: '2026-03-01' },
+  { id: 'c', creator: 'Y', released: '2025-01-01' }, { id: 'd', creator: 'Y', released: null }];
+ok('recent 6mo', Core.modelSet(ms, { mode: 'recent', months: 6 }, now).map(m => m.id).join() === 'a');
+ok('recent 12mo', Core.modelSet(ms, { mode: 'recent', months: 12 }, now).map(m => m.id).join() === 'a,b');
+ok('latest per lab', Core.modelSet(ms, { mode: 'latest' }, now).map(m => m.id).join() === 'a,c');
+ok('featured', Core.modelSet(ms, { mode: 'featured' }, now).map(m => m.id).join() === 'a');
+
+// ranks
+ok('ranks', JSON.stringify(Core.ranks([10, 30, 20])) === '[0,1,0.5]');
+document.getElementById('out').textContent = (fail ? 'FAILED ' + fail : 'ALL PASSED') + '\n' + out.join('\n');
+</script>

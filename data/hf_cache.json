@@ -1,0 +1,1640 @@
+{
+"CohereForAI/c4ai-command-a-03-2025": {
+"created": "2025-03-11",
+"downloads": 1534,
+"dtypes_b": {
+"BF16": 111.058
+},
+"license": "cc-by-nc-4.0",
+"repo": "CohereForAI/c4ai-command-a-03-2025",
+"stored_gb": 222.1,
+"total_b": 111.058
+},
+"CohereLabs/North-Mini-Code-1.0": {
+"created": "2026-06-05",
+"downloads": 7320,
+"dtypes_b": {
+"BF16": 30.484
+},
+"license": "apache-2.0",
+"repo": "CohereLabs/North-Mini-Code-1.0",
+"stored_gb": 61.0,
+"total_b": 30.484
+},
+"CohereLabs/command-a-plus-05-2026-bf16": {
+"created": "2026-05-11",
+"downloads": 19877,
+"dtypes_b": {
+"BF16": 218.75
+},
+"license": "apache-2.0",
+"repo": "CohereLabs/command-a-plus-05-2026-bf16",
+"stored_gb": 437.5,
+"total_b": 218.75
+},
+"CohereLabs/tiny-aya-global": {
+"created": "2026-02-13",
+"downloads": 8242,
+"dtypes_b": {
+"BF16": 3.349
+},
+"license": "cc-by-nc-4.0",
+"repo": "CohereLabs/tiny-aya-global",
+"stored_gb": 6.7,
+"total_b": 3.349
+},
+"IFM/K2-Horizon-0.9B": {
+"created": "2026-09-01",
+"downloads": 16920,
+"dtypes_b": {
+"BF16": 1.078
+},
+"license": "apache-2.0",
+"repo": "IFM/K2-Horizon-0.9B",
+"stored_gb": 2.2,
+"total_b": 1.078
+},
+"IFM/K2-Horizon-3.7B": {
+"created": "2026-09-01",
+"downloads": 24302,
+"dtypes_b": {
+"BF16": 5.058
+},
+"license": "apache-2.0",
+"repo": "IFM/K2-Horizon-3.7B",
+"stored_gb": 10.1,
+"total_b": 5.058
+},
+"IFM/K2-Horizon-375B-A23B": {
+"created": "2026-09-01",
+"downloads": 19011,
+"dtypes_b": {
+"BF16": 379.167
+},
+"license": "apache-2.0",
+"repo": "IFM/K2-Horizon-375B-A23B",
+"stored_gb": 758.3,
+"total_b": 379.167
+},
+"IFM/K2-Horizon-7B": {
+"created": "2026-09-01",
+"downloads": 86107,
+"dtypes_b": {
+"BF16": 8.999
+},
+"license": "apache-2.0",
+"repo": "IFM/K2-Horizon-7B",
+"stored_gb": 18.0,
+"total_b": 8.999
+},
+"IFM/K2-Horizon-MoVA-36B-A4B": {
+"created": "2026-09-01",
+"downloads": 15011,
+"dtypes_b": {
+"BF16": 37.445
+},
+"license": "apache-2.0",
+"repo": "IFM/K2-Horizon-MoVA-36B-A4B",
+"stored_gb": 74.9,
+"total_b": 37.445
+},
+"LGAI-EXAONE/EXAONE-4.0-1.2B": {
+"created": "2025-07-11",
+"downloads": 16634,
+"dtypes_b": {
+"BF16": 1.279
+},
+"license": "other",
+"repo": "LGAI-EXAONE/EXAONE-4.0-1.2B",
+"stored_gb": 2.6,
+"total_b": 1.279
+},
+"LGAI-EXAONE/EXAONE-4.0-32B": {
+"created": "2025-07-11",
+"downloads": 24169,
+"dtypes_b": {
+"BF16": 32.003
+},
+"license": "other",
+"repo": "LGAI-EXAONE/EXAONE-4.0-32B",
+"stored_gb": 64.0,
+"total_b": 32.003
+},
+"LGAI-EXAONE/EXAONE-4.5-33B": {
+"created": "2026-04-04",
+"downloads": 42286,
+"dtypes_b": {
+"BF16": 34.35
+},
+"license": "other",
+"repo": "LGAI-EXAONE/EXAONE-4.5-33B",
+"stored_gb": 68.7,
+"total_b": 34.35
+},
+"LGAI-EXAONE/K-EXAONE-2.0-750B-A37B": {
+"created": "2026-07-29",
+"downloads": 3479,
+"dtypes_b": {
+"BF16": 749.357,
+"F32": 0.0
+},
+"license": "apache-2.0",
+"repo": "LGAI-EXAONE/K-EXAONE-2.0-750B-A37B",
+"stored_gb": 1498.7,
+"total_b": 749.357
+},
+"LLM360/K2-Think-V2": {
+"created": "2026-01-08",
+"downloads": 535,
+"dtypes_b": {
+"F32": 72.55
+},
+"license": "apache-2.0",
+"repo": "LLM360/K2-Think-V2",
+"stored_gb": 290.2,
+"total_b": 72.55
+},
+"LLM360/K2-V2-Instruct": {
+"created": "2025-12-03",
+"downloads": 337,
+"dtypes_b": {},
+"license": "apache-2.0",
+"repo": "LLM360/K2-V2-Instruct",
+"stored_gb": null,
+"total_b": null
+},
+"LiquidAI/LFM2-24B-A2B": {
+"created": "2026-02-24",
+"downloads": 3033,
+"dtypes_b": {
+"BF16": 23.844,
+"F32": 0.0
+},
+"license": "other",
+"repo": "LiquidAI/LFM2-24B-A2B",
+"stored_gb": 47.7,
+"total_b": 23.844
+},
+"LiquidAI/LFM2.5-1.2B-Instruct": {
+"created": "2026-01-06",
+"downloads": 115580,
+"dtypes_b": {
+"BF16": 1.17
+},
+"license": "other",
+"repo": "LiquidAI/LFM2.5-1.2B-Instruct",
+"stored_gb": 2.3,
+"total_b": 1.17
+},
+"LiquidAI/LFM2.5-1.2B-Thinking": {
+"created": "2026-01-20",
+"downloads": 7652,
+"dtypes_b": {
+"BF16": 1.17
+},
+"license": "other",
+"repo": "LiquidAI/LFM2.5-1.2B-Thinking",
+"stored_gb": 2.3,
+"total_b": 1.17
+},
+"LiquidAI/LFM2.5-2.6B": {
+"created": "2026-07-28",
+"downloads": 103485,
+"dtypes_b": {
+"BF16": 2.697
+},
+"license": "other",
+"repo": "LiquidAI/LFM2.5-2.6B",
+"stored_gb": 5.4,
+"total_b": 2.697
+},
+"LiquidAI/LFM2.5-8B-A1B": {
+"created": "2026-05-28",
+"downloads": 33909,
+"dtypes_b": {
+"BF16": 8.468,
+"F32": 0.0
+},
+"license": "other",
+"repo": "LiquidAI/LFM2.5-8B-A1B",
+"stored_gb": 16.9,
+"total_b": 8.468
+},
+"LiquidAI/LFM2.5-VL-1.6B": {
+"created": "2026-01-05",
+"downloads": 28768,
+"dtypes_b": {
+"BF16": 1.597
+},
+"license": "other",
+"repo": "LiquidAI/LFM2.5-VL-1.6B",
+"stored_gb": 3.2,
+"total_b": 1.597
+},
+"MiniMaxAI/MiniMax-M3": {
+"created": "2026-06-02",
+"downloads": 200238,
+"dtypes_b": {
+"BF16": 426.994,
+"F32": 0.046
+},
+"license": "other",
+"repo": "MiniMaxAI/MiniMax-M3",
+"stored_gb": 854.2,
+"total_b": 427.04
+},
+"Motif-Technologies/Motif-3": {
+"created": "2026-08-07",
+"downloads": 2291,
+"dtypes_b": {
+"BF16": 314.842
+},
+"license": "mit",
+"repo": "Motif-Technologies/Motif-3",
+"stored_gb": 629.7,
+"total_b": 314.842
+},
+"MultiverseComputingCAI/Hypernova-60B-2605": {
+"created": "2026-04-30",
+"downloads": 1577,
+"dtypes_b": {
+"BF16": 2.036,
+"U8": 56.623
+},
+"license": "apache-2.0",
+"repo": "MultiverseComputingCAI/Hypernova-60B-2605",
+"stored_gb": 34.2,
+"total_b": 58.659
+},
+"Nanbeige/Nanbeige4.1-3B": {
+"created": "2026-02-10",
+"downloads": 3485,
+"dtypes_b": {
+"BF16": 3.934
+},
+"license": "apache-2.0",
+"repo": "Nanbeige/Nanbeige4.1-3B",
+"stored_gb": 7.9,
+"total_b": 3.934
+},
+"NousResearch/DeepHermes-3-Llama-3-8B-Preview": {
+"created": "2025-02-12",
+"downloads": 1068,
+"dtypes_b": {
+"BF16": 8.03
+},
+"license": "llama3",
+"repo": "NousResearch/DeepHermes-3-Llama-3-8B-Preview",
+"stored_gb": 16.1,
+"total_b": 8.03
+},
+"NousResearch/DeepHermes-3-Mistral-24B-Preview": {
+"created": "2025-03-02",
+"downloads": 532,
+"dtypes_b": {
+"BF16": 23.572
+},
+"license": "apache-2.0",
+"repo": "NousResearch/DeepHermes-3-Mistral-24B-Preview",
+"stored_gb": 47.1,
+"total_b": 23.572
+},
+"NousResearch/Hermes-4-405B": {
+"created": "2025-08-06",
+"downloads": 1167,
+"dtypes_b": {
+"BF16": 405.853
+},
+"license": "llama3",
+"repo": "NousResearch/Hermes-4-405B",
+"stored_gb": 811.7,
+"total_b": 405.853
+},
+"NousResearch/Hermes-4-70B": {
+"created": "2025-08-18",
+"downloads": 1567,
+"dtypes_b": {
+"BF16": 70.554
+},
+"license": "llama3",
+"repo": "NousResearch/Hermes-4-70B",
+"stored_gb": 141.1,
+"total_b": 70.554
+},
+"PrimeIntellect/INTELLECT-3": {
+"created": "2025-11-26",
+"downloads": 799,
+"dtypes_b": {
+"BF16": 106.852,
+"F32": 0.0
+},
+"license": "mit",
+"repo": "PrimeIntellect/INTELLECT-3",
+"stored_gb": 213.7,
+"total_b": 106.852
+},
+"Qwen/Qwen3-Coder-Next": {
+"created": "2026-01-30",
+"downloads": 522825,
+"dtypes_b": {
+"BF16": 79.674
+},
+"license": "apache-2.0",
+"repo": "Qwen/Qwen3-Coder-Next",
+"stored_gb": 159.4,
+"total_b": 79.674
+},
+"Qwen/Qwen3-Next-80B-A3B-Instruct": {
+"created": "2025-09-09",
+"downloads": 174878,
+"dtypes_b": {
+"BF16": 81.325
+},
+"license": "apache-2.0",
+"repo": "Qwen/Qwen3-Next-80B-A3B-Instruct",
+"stored_gb": 162.7,
+"total_b": 81.325
+},
+"Qwen/Qwen3-Next-80B-A3B-Thinking": {
+"created": "2025-09-09",
+"downloads": 39392,
+"dtypes_b": {
+"BF16": 81.325
+},
+"license": "apache-2.0",
+"repo": "Qwen/Qwen3-Next-80B-A3B-Thinking",
+"stored_gb": 162.7,
+"total_b": 81.325
+},
+"Qwen/Qwen3-Omni-30B-A3B-Instruct": {
+"created": "2025-09-20",
+"downloads": 725255,
+"dtypes_b": {
+"BF16": 35.26
+},
+"license": "other",
+"repo": "Qwen/Qwen3-Omni-30B-A3B-Instruct",
+"stored_gb": 70.5,
+"total_b": 35.26
+},
+"Qwen/Qwen3-Omni-30B-A3B-Thinking": {
+"created": "2025-09-15",
+"downloads": 231938,
+"dtypes_b": {
+"BF16": 31.719
+},
+"license": "other",
+"repo": "Qwen/Qwen3-Omni-30B-A3B-Thinking",
+"stored_gb": 63.4,
+"total_b": 31.719
+},
+"Qwen/Qwen3.5-0.8B": {
+"created": "2026-02-28",
+"downloads": 3232007,
+"dtypes_b": {
+"BF16": 0.873,
+"F32": 0.0
+},
+"license": "apache-2.0",
+"repo": "Qwen/Qwen3.5-0.8B",
+"stored_gb": 1.7,
+"total_b": 0.873
+},
+"Qwen/Qwen3.5-122B-A10B": {
+"created": "2026-02-24",
+"downloads": 702649,
+"dtypes_b": {
+"BF16": 125.086,
+"F32": 0.0
+},
+"license": "apache-2.0",
+"repo": "Qwen/Qwen3.5-122B-A10B",
+"stored_gb": 250.2,
+"total_b": 125.086
+},
+"Qwen/Qwen3.5-2B": {
+"created": "2026-02-28",
+"downloads": 2867039,
+"dtypes_b": {
+"BF16": 2.274,
+"F32": 0.0
+},
+"license": "apache-2.0",
+"repo": "Qwen/Qwen3.5-2B",
+"stored_gb": 4.5,
+"total_b": 2.274
+},
+"Qwen/Qwen3.5-397B-A17B": {
+"created": "2026-02-16",
+"downloads": 606872,
+"dtypes_b": {
+"BF16": 403.398,
+"F32": 0.0
+},
+"license": "apache-2.0",
+"repo": "Qwen/Qwen3.5-397B-A17B",
+"stored_gb": 806.8,
+"total_b": 403.398
+},
+"Qwen/Qwen3.5-4B": {
+"created": "2026-02-27",
+"downloads": 7832237,
+"dtypes_b": {
+"BF16": 4.66,
+"F32": 0.0
+},
+"license": "apache-2.0",
+"repo": "Qwen/Qwen3.5-4B",
+"stored_gb": 9.3,
+"total_b": 4.66
+},
+"Qwen/Qwen3.5-9B": {
+"created": "2026-02-27",
+"downloads": 7266088,
+"dtypes_b": {
+"BF16": 9.653,
+"F32": 0.0
+},
+"license": "apache-2.0",
+"repo": "Qwen/Qwen3.5-9B",
+"stored_gb": 19.3,
+"total_b": 9.653
+},
+"Qwen/Qwen3.6-35B-A3B": {
+"created": "2026-04-15",
+"downloads": 3641803,
+"dtypes_b": {
+"BF16": 35.952
+},
+"license": "apache-2.0",
+"repo": "Qwen/Qwen3.6-35B-A3B",
+"stored_gb": 71.9,
+"total_b": 35.952
+},
+"Qwen/Qwen3.8-2.4T-A95B": {
+"created": "2026-08-08",
+"downloads": 25844,
+"dtypes_b": {
+"BF16": 2446.183
+},
+"license": "other",
+"repo": "Qwen/Qwen3.8-2.4T-A95B",
+"stored_gb": 4892.4,
+"total_b": 2446.183
+},
+"Qwen/Qwen3.8-27B": {
+"created": "2026-08-05",
+"downloads": 7586857,
+"dtypes_b": {
+"BF16": 27.781
+},
+"license": "apache-2.0",
+"repo": "Qwen/Qwen3.8-27B",
+"stored_gb": 55.6,
+"total_b": 27.781
+},
+"Qwen/Qwen3.8-Flash-Next": {
+"created": "2026-08-24",
+"downloads": 2530599,
+"dtypes_b": {
+"BF16": 180.0,
+"I64": 0.0
+},
+"license": "other",
+"repo": "Qwen/Qwen3.8-Flash-Next",
+"stored_gb": 360.0,
+"total_b": 180.0
+},
+"RekaAI/reka-flash-3": {
+"created": "2025-03-11",
+"downloads": 840,
+"dtypes_b": {
+"BF16": 20.905
+},
+"license": "apache-2.0",
+"repo": "RekaAI/reka-flash-3",
+"stored_gb": 41.8,
+"total_b": 20.905
+},
+"ServiceNow-AI/Apriel-1.6-15b-Thinker": {
+"created": "2025-11-28",
+"downloads": 1557,
+"dtypes_b": {
+"BF16": 14.864
+},
+"license": "mit",
+"repo": "ServiceNow-AI/Apriel-1.6-15b-Thinker",
+"stored_gb": 29.7,
+"total_b": 14.864
+},
+"XiaomiMiMo/MiMo-V2.6-Flash-RL": {
+"created": "2026-09-21",
+"downloads": 106849,
+"dtypes_b": {
+"BF16": 4.101,
+"F32": 0.0,
+"F8_E4M3": 3.86,
+"U8": 302.795
+},
+"license": "mit",
+"repo": "XiaomiMiMo/MiMo-V2.6-Flash-RL",
+"stored_gb": 177.7,
+"total_b": 310.756
+},
+"XiaomiMiMo/MiMo-V2.6-Pro-RL": {
+"created": "2026-09-21",
+"downloads": 103649,
+"dtypes_b": {
+"BF16": 10.647,
+"F32": 0.0,
+"F8_E4M3": 13.379,
+"U8": 1000.191
+},
+"license": "mit",
+"repo": "XiaomiMiMo/MiMo-V2.6-Pro-RL",
+"stored_gb": 573.5,
+"total_b": 1024.217
+},
+"ai21labs/AI21-Jamba-Large-1.7": {
+"created": "2025-07-02",
+"downloads": 30,
+"dtypes_b": {
+"BF16": 398.555
+},
+"license": "other",
+"repo": "ai21labs/AI21-Jamba-Large-1.7",
+"stored_gb": 797.1,
+"total_b": 398.555
+},
+"ai21labs/AI21-Jamba-Mini-1.7": {
+"created": "2025-07-01",
+"downloads": 279,
+"dtypes_b": {
+"BF16": 51.57
+},
+"license": "other",
+"repo": "ai21labs/AI21-Jamba-Mini-1.7",
+"stored_gb": 103.1,
+"total_b": 51.57
+},
+"ai21labs/AI21-Jamba-Reasoning-3B": {
+"created": "2025-10-05",
+"downloads": 41755,
+"dtypes_b": {
+"BF16": 3.197
+},
+"license": "apache-2.0",
+"repo": "ai21labs/AI21-Jamba-Reasoning-3B",
+"stored_gb": 6.4,
+"total_b": 3.197
+},
+"ai9stars/G9v3-39A5B": {
+"created": "2026-07-21",
+"downloads": 1198,
+"dtypes_b": {
+"BF16": 38.967,
+"F32": 0.0
+},
+"license": "apache-2.0",
+"repo": "ai9stars/G9v3-39A5B",
+"stored_gb": 77.9,
+"total_b": 38.967
+},
+"ai9stars/G9v3-3B": {
+"created": "2026-07-21",
+"downloads": 1749,
+"dtypes_b": {
+"BF16": 2.989
+},
+"license": "apache-2.0",
+"repo": "ai9stars/G9v3-3B",
+"stored_gb": 6.0,
+"total_b": 2.989
+},
+"allenai/Molmo-7B-D-0924": {
+"created": "2024-09-25",
+"downloads": 19176,
+"dtypes_b": {
+"F32": 8.021
+},
+"license": "apache-2.0",
+"repo": "allenai/Molmo-7B-D-0924",
+"stored_gb": 32.1,
+"total_b": 8.021
+},
+"allenai/Molmo2-8B": {
+"created": "2025-12-14",
+"downloads": 46053,
+"dtypes_b": {
+"F32": 8.662
+},
+"license": "apache-2.0",
+"repo": "allenai/Molmo2-8B",
+"stored_gb": 34.6,
+"total_b": 8.662
+},
+"allenai/Olmo-3-7B-Instruct": {
+"created": "2025-11-19",
+"downloads": 384377,
+"dtypes_b": {
+"BF16": 7.298
+},
+"license": "apache-2.0",
+"repo": "allenai/Olmo-3-7B-Instruct",
+"stored_gb": 14.6,
+"total_b": 7.298
+},
+"allenai/Olmo-3-7B-Think": {
+"created": "2025-11-18",
+"downloads": 489660,
+"dtypes_b": {
+"BF16": 7.298
+},
+"license": "apache-2.0",
+"repo": "allenai/Olmo-3-7B-Think",
+"stored_gb": 14.6,
+"total_b": 7.298
+},
+"allenai/Olmo-3.1-32B-Instruct": {
+"created": "2025-12-10",
+"downloads": 19300,
+"dtypes_b": {
+"BF16": 32.234
+},
+"license": "apache-2.0",
+"repo": "allenai/Olmo-3.1-32B-Instruct",
+"stored_gb": 64.5,
+"total_b": 32.234
+},
+"allenai/Olmo-3.1-32B-Think": {
+"created": "2025-12-10",
+"downloads": 19757,
+"dtypes_b": {
+"BF16": 32.234
+},
+"license": "apache-2.0",
+"repo": "allenai/Olmo-3.1-32B-Think",
+"stored_gb": 64.5,
+"total_b": 32.234
+},
+"arcee-ai/Trinity-Large-Thinking": {
+"created": "2026-04-01",
+"downloads": 2284,
+"dtypes_b": {
+"BF16": 398.635,
+"F32": 0.0
+},
+"license": "other",
+"repo": "arcee-ai/Trinity-Large-Thinking",
+"stored_gb": 797.3,
+"total_b": 398.635
+},
+"baidu/ERNIE-4.5-300B-A47B-Paddle": {
+"created": "2025-06-28",
+"downloads": 497,
+"dtypes_b": {
+"F32": 0.027,
+"U16": 300.447
+},
+"license": "apache-2.0",
+"repo": "baidu/ERNIE-4.5-300B-A47B-Paddle",
+"stored_gb": 603.0,
+"total_b": 300.474
+},
+"deepseek-ai/DeepSeek-V4-Pro-0813": {
+"created": "2026-08-13",
+"downloads": 156682,
+"dtypes_b": {
+"BF16": 2.955,
+"F32": 0.091,
+"F8_E4M3": 23.953,
+"I64": 0.002,
+"I8": 1623.498
+},
+"license": "mit",
+"repo": "deepseek-ai/DeepSeek-V4-Pro-0813",
+"stored_gb": 892.7,
+"total_b": 1650.498
+},
+"deepseek-ai/DeepSeek-V4.1-Flash-1017": {
+"created": "2026-10-17",
+"downloads": 27737,
+"dtypes_b": {
+"BF16": 1.976,
+"F32": 0.042,
+"F8_E4M3": 204.015,
+"I8": 557.171
+},
+"license": "mit",
+"repo": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+"stored_gb": 510.3,
+"total_b": 763.205
+},
+"google/diffusiongemma-26B-A4B-it": {
+"created": "2026-06-09",
+"downloads": 662343,
+"dtypes_b": {
+"BF16": 25.824
+},
+"license": "apache-2.0",
+"repo": "google/diffusiongemma-26B-A4B-it",
+"stored_gb": 51.6,
+"total_b": 25.824
+},
+"google/gemma-3-270m": {
+"created": "2025-08-05",
+"downloads": 64455,
+"dtypes_b": {
+"BF16": 0.268
+},
+"license": "gemma",
+"repo": "google/gemma-3-270m",
+"stored_gb": 0.5,
+"total_b": 0.268
+},
+"google/gemma-4-12B-it": {
+"created": "2026-05-23",
+"downloads": 1692786,
+"dtypes_b": {
+"BF16": 11.96
+},
+"license": "apache-2.0",
+"repo": "google/gemma-4-12B-it",
+"stored_gb": 23.9,
+"total_b": 11.96
+},
+"google/gemma-4-26B-A4B-it": {
+"created": "2026-03-11",
+"downloads": 10065405,
+"dtypes_b": {
+"BF16": 25.806
+},
+"license": "apache-2.0",
+"repo": "google/gemma-4-26B-A4B-it",
+"stored_gb": 51.6,
+"total_b": 25.806
+},
+"google/gemma-4-31B-it": {
+"created": "2026-03-11",
+"downloads": 8894902,
+"dtypes_b": {
+"BF16": 31.273
+},
+"license": "apache-2.0",
+"repo": "google/gemma-4-31B-it",
+"stored_gb": 62.5,
+"total_b": 31.273
+},
+"google/gemma-4-E2B-it": {
+"created": "2026-03-02",
+"downloads": 2812741,
+"dtypes_b": {
+"BF16": 5.123
+},
+"license": "apache-2.0",
+"repo": "google/gemma-4-E2B-it",
+"stored_gb": 10.2,
+"total_b": 5.123
+},
+"google/gemma-4-E4B-it": {
+"created": "2026-03-02",
+"downloads": 4106524,
+"dtypes_b": {
+"BF16": 7.996
+},
+"license": "apache-2.0",
+"repo": "google/gemma-4-E4B-it",
+"stored_gb": 16.0,
+"total_b": 7.996
+},
+"ibm-granite/granite-4.0-350m": {
+"created": "2025-10-07",
+"downloads": 24483,
+"dtypes_b": {
+"BF16": 0.352
+},
+"license": "apache-2.0",
+"repo": "ibm-granite/granite-4.0-350m",
+"stored_gb": 0.7,
+"total_b": 0.352
+},
+"ibm-granite/granite-4.0-h-1b": {
+"created": "2025-10-07",
+"downloads": 2766,
+"dtypes_b": {
+"BF16": 1.462
+},
+"license": "apache-2.0",
+"repo": "ibm-granite/granite-4.0-h-1b",
+"stored_gb": 2.9,
+"total_b": 1.462
+},
+"ibm-granite/granite-4.0-h-350m": {
+"created": "2025-10-07",
+"downloads": 4355,
+"dtypes_b": {
+"BF16": 0.34
+},
+"license": "apache-2.0",
+"repo": "ibm-granite/granite-4.0-h-350m",
+"stored_gb": 0.7,
+"total_b": 0.34
+},
+"ibm-granite/granite-4.0-h-small": {
+"created": "2025-09-16",
+"downloads": 25783,
+"dtypes_b": {
+"BF16": 32.207
+},
+"license": "apache-2.0",
+"repo": "ibm-granite/granite-4.0-h-small",
+"stored_gb": 64.4,
+"total_b": 32.207
+},
+"ibm-granite/granite-4.0-micro": {
+"created": "2025-09-16",
+"downloads": 22104,
+"dtypes_b": {
+"BF16": 3.403
+},
+"license": "apache-2.0",
+"repo": "ibm-granite/granite-4.0-micro",
+"stored_gb": 6.8,
+"total_b": 3.403
+},
+"ibm-granite/granite-4.2-30b": {
+"created": "2026-08-07",
+"downloads": 38344,
+"dtypes_b": {
+"BF16": 29.277
+},
+"license": "apache-2.0",
+"repo": "ibm-granite/granite-4.2-30b",
+"stored_gb": 58.6,
+"total_b": 29.277
+},
+"ibm-granite/granite-4.2-3b": {
+"created": "2026-08-07",
+"downloads": 40898,
+"dtypes_b": {
+"BF16": 3.66
+},
+"license": "apache-2.0",
+"repo": "ibm-granite/granite-4.2-3b",
+"stored_gb": 7.3,
+"total_b": 3.66
+},
+"ibm-granite/granite-4.2-8b": {
+"created": "2026-08-07",
+"downloads": 90464,
+"dtypes_b": {
+"BF16": 8.792
+},
+"license": "apache-2.0",
+"repo": "ibm-granite/granite-4.2-8b",
+"stored_gb": 17.6,
+"total_b": 8.792
+},
+"inclusionAI/Ling-3.0-flash-Fin": {
+"created": "2026-09-03",
+"downloads": 1916,
+"dtypes_b": {
+"BF16": 127.486,
+"F32": 0.0
+},
+"license": "mit",
+"repo": "inclusionAI/Ling-3.0-flash-Fin",
+"stored_gb": 255.0,
+"total_b": 127.486
+},
+"inclusionAI/Ling-3.0-flash-VL": {
+"created": "2026-09-04",
+"downloads": 14534,
+"dtypes_b": {
+"BF16": 124.848,
+"F32": 0.0
+},
+"license": "mit",
+"repo": "inclusionAI/Ling-3.0-flash-VL",
+"stored_gb": 249.7,
+"total_b": 124.848
+},
+"inclusionAI/Ling-3.0-tiny-int4": {
+"created": "2026-08-10",
+"downloads": 8413,
+"dtypes_b": {
+"BF16": 0.948,
+"F32": 0.0,
+"I32": 6.946
+},
+"license": "mit",
+"repo": "inclusionAI/Ling-3.0-tiny-int4",
+"stored_gb": 5.8,
+"total_b": 7.893
+},
+"inclusionAI/Ling-3.1-flash": {
+"created": "2026-10-13",
+"downloads": 2905,
+"dtypes_b": {
+"BF16": 1.492,
+"F32": 0.001,
+"F8_E4M3": 570.629
+},
+"license": "mit",
+"repo": "inclusionAI/Ling-3.1-flash",
+"stored_gb": 573.8,
+"total_b": 572.121
+},
+"inclusionAI/Ring-2.6-1T": {
+"created": "2026-05-14",
+"downloads": 1327,
+"dtypes_b": {
+"BF16": 15.92,
+"F32": 0.0,
+"F8_E4M3": 1009.495
+},
+"license": "mit",
+"repo": "inclusionAI/Ring-2.6-1T",
+"stored_gb": 1041.8,
+"total_b": 1025.414
+},
+"inclusionAI/Ring-flash-2.0": {
+"created": "2025-09-19",
+"downloads": 728,
+"dtypes_b": {
+"BF16": 102.89,
+"F32": 0.0
+},
+"license": "mit",
+"repo": "inclusionAI/Ring-flash-2.0",
+"stored_gb": 205.8,
+"total_b": 102.89
+},
+"meituan-longcat/LongCat-2.0": {
+"created": "2026-07-05",
+"downloads": 2497,
+"dtypes_b": {
+"BF16": 1775.271,
+"F32": 0.289
+},
+"license": "mit",
+"repo": "meituan-longcat/LongCat-2.0",
+"stored_gb": 3551.7,
+"total_b": 1775.56
+},
+"meituan-longcat/LongCat-Flash-Lite": {
+"created": "2026-01-27",
+"downloads": 3254,
+"dtypes_b": {
+"BF16": 69.057,
+"F32": 0.017
+},
+"license": "mit",
+"repo": "meituan-longcat/LongCat-Flash-Lite",
+"stored_gb": 138.2,
+"total_b": 69.073
+},
+"meta-llama/Llama-3.2-11B-Vision-Instruct": {
+"created": "2024-09-18",
+"downloads": 61052,
+"dtypes_b": {
+"BF16": 10.67
+},
+"license": "llama3.2",
+"repo": "meta-llama/Llama-3.2-11B-Vision-Instruct",
+"stored_gb": 21.3,
+"total_b": 10.67
+},
+"meta-llama/Llama-3.2-90B-Vision": {
+"created": "2024-09-19",
+"downloads": 45,
+"dtypes_b": {
+"BF16": 88.593
+},
+"license": "llama3.2",
+"repo": "meta-llama/Llama-3.2-90B-Vision",
+"stored_gb": 177.2,
+"total_b": 88.593
+},
+"meta-llama/Llama-3.3-70B-Instruct": {
+"created": "2024-11-26",
+"downloads": 233922,
+"dtypes_b": {
+"BF16": 70.554
+},
+"license": "llama3.3",
+"repo": "meta-llama/Llama-3.3-70B-Instruct",
+"stored_gb": 141.1,
+"total_b": 70.554
+},
+"meta-llama/Llama-4-Maverick-17B-128E-Instruct": {
+"created": "2025-04-01",
+"downloads": 9921,
+"dtypes_b": {
+"BF16": 401.584
+},
+"license": "other",
+"repo": "meta-llama/Llama-4-Maverick-17B-128E-Instruct",
+"stored_gb": 803.2,
+"total_b": 401.584
+},
+"meta-llama/Llama-4-Scout-17B-16E-Instruct": {
+"created": "2025-04-02",
+"downloads": 155941,
+"dtypes_b": {
+"BF16": 108.642
+},
+"license": "other",
+"repo": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+"stored_gb": 217.3,
+"total_b": 108.642
+},
+"meta-llama/Meta-Llama-3.1-405B": {
+"created": "2024-07-16",
+"downloads": 37251,
+"dtypes_b": {
+"BF16": 405.853
+},
+"license": "llama3.1",
+"repo": "meta-llama/Meta-Llama-3.1-405B",
+"stored_gb": 811.7,
+"total_b": 405.853
+},
+"meta-models/Muse-Glimmer-30B": {
+"created": "2026-08-09",
+"downloads": 226753,
+"dtypes_b": {
+"BF16": 29.777
+},
+"license": "apache-2.0",
+"repo": "meta-models/Muse-Glimmer-30B",
+"stored_gb": 59.6,
+"total_b": 29.777
+},
+"meta-models/Muse-Spark-Open-816B-A42B": {
+"created": "2026-09-15",
+"downloads": 2592,
+"dtypes_b": {
+"BF16": 821.906,
+"F32": 0.13
+},
+"license": "other",
+"repo": "meta-models/Muse-Spark-Open-816B-A42B",
+"stored_gb": 1644.3,
+"total_b": 822.037
+},
+"microsoft/Phi-4-mini-instruct": {
+"created": "2025-02-19",
+"downloads": 369483,
+"dtypes_b": {
+"BF16": 3.836
+},
+"license": "mit",
+"repo": "microsoft/Phi-4-mini-instruct",
+"stored_gb": 7.7,
+"total_b": 3.836
+},
+"microsoft/Phi-4-multimodal-instruct": {
+"created": "2025-02-24",
+"downloads": 140340,
+"dtypes_b": {
+"BF16": 5.574
+},
+"license": "mit",
+"repo": "microsoft/Phi-4-multimodal-instruct",
+"stored_gb": 12.8,
+"total_b": 5.574
+},
+"microsoft/phi-4": {
+"created": "2024-12-11",
+"downloads": 372960,
+"dtypes_b": {
+"BF16": 14.66
+},
+"license": "mit",
+"repo": "microsoft/phi-4",
+"stored_gb": 29.3,
+"total_b": 14.66
+},
+"mistralai/Magistral-Small-2509": {
+"created": "2025-09-12",
+"downloads": 25856,
+"dtypes_b": {
+"BF16": 24.011
+},
+"license": "apache-2.0",
+"repo": "mistralai/Magistral-Small-2509",
+"stored_gb": 96.0,
+"total_b": 24.011
+},
+"mistralai/Ministral-3-14B-Instruct-2512": {
+"created": "2025-10-31",
+"downloads": 124314,
+"dtypes_b": {
+"BF16": 1.782,
+"F8_E4M3": 12.163
+},
+"license": "apache-2.0",
+"repo": "mistralai/Ministral-3-14B-Instruct-2512",
+"stored_gb": 31.5,
+"total_b": 13.945
+},
+"mistralai/Ministral-3-3B-Instruct-2512": {
+"created": "2025-10-31",
+"downloads": 99931,
+"dtypes_b": {
+"BF16": 0.823,
+"F8_E4M3": 3.026
+},
+"license": "apache-2.0",
+"repo": "mistralai/Ministral-3-3B-Instruct-2512",
+"stored_gb": 9.3,
+"total_b": 3.849
+},
+"mistralai/Ministral-3-8B-Instruct-2512": {
+"created": "2025-10-31",
+"downloads": 122347,
+"dtypes_b": {
+"BF16": 1.502,
+"F8_E4M3": 7.416
+},
+"license": "apache-2.0",
+"repo": "mistralai/Ministral-3-8B-Instruct-2512",
+"stored_gb": 20.8,
+"total_b": 8.918
+},
+"mistralai/Mistral-Medium-3.5-128B": {
+"created": "2026-03-31",
+"downloads": 75053,
+"dtypes_b": {
+"BF16": 5.902,
+"F8_E4M3": 121.803
+},
+"license": "other",
+"repo": "mistralai/Mistral-Medium-3.5-128B",
+"stored_gb": 267.2,
+"total_b": 127.704
+},
+"mistralai/Mistral-Small-4-119B-2603": {
+"created": "2026-01-23",
+"downloads": 71198,
+"dtypes_b": {
+"BF16": 1.521,
+"F8_E4M3": 117.88
+},
+"license": "apache-2.0",
+"repo": "mistralai/Mistral-Small-4-119B-2603",
+"stored_gb": 241.9,
+"total_b": 119.401
+},
+"moonshotai/Kimi-K2.7-Code": {
+"created": "2026-06-11",
+"downloads": 107768,
+"dtypes_b": {
+"BF16": 12.193,
+"F32": 0.0,
+"I32": 1014.686
+},
+"license": "other",
+"repo": "moonshotai/Kimi-K2.7-Code",
+"stored_gb": 595.2,
+"total_b": 1026.879
+},
+"moonshotai/Kimi-K3": {
+"created": "2026-06-13",
+"downloads": 998301,
+"dtypes_b": {
+"BF16": 57.18,
+"F32": 0.011,
+"U8": 2722.741
+},
+"license": "other",
+"repo": "moonshotai/Kimi-K3",
+"stored_gb": 1560.9,
+"total_b": 2779.932
+},
+"moonshotai/Kimi-Linear-48B-A3B-Instruct": {
+"created": "2025-10-30",
+"downloads": 168595,
+"dtypes_b": {
+"BF16": 49.123,
+"F32": 0.0
+},
+"license": "mit",
+"repo": "moonshotai/Kimi-Linear-48B-A3B-Instruct",
+"stored_gb": 98.2,
+"total_b": 49.123
+},
+"naver-hyperclovax/HyperCLOVAX-SEED-Think-32B": {
+"created": "2025-12-23",
+"downloads": 13108,
+"dtypes_b": {
+"BF16": 33.313
+},
+"license": "other",
+"repo": "naver-hyperclovax/HyperCLOVAX-SEED-Think-32B",
+"stored_gb": 66.6,
+"total_b": 33.313
+},
+"nex-agi/Nex-N2-Pro": {
+"created": "2026-06-03",
+"downloads": 1027,
+"dtypes_b": {
+"BF16": 396.802
+},
+"license": "apache-2.0",
+"repo": "nex-agi/Nex-N2-Pro",
+"stored_gb": 793.6,
+"total_b": 396.802
+},
+"nvidia/Llama-3_1-Nemotron-Ultra-253B-v1": {
+"created": "2025-04-07",
+"downloads": 1627,
+"dtypes_b": {
+"BF16": 253.401
+},
+"license": "other",
+"repo": "nvidia/Llama-3_1-Nemotron-Ultra-253B-v1",
+"stored_gb": 506.8,
+"total_b": 253.401
+},
+"nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16": {
+"created": "2025-12-04",
+"downloads": 1201209,
+"dtypes_b": {
+"BF16": 31.578,
+"F32": 0.0
+},
+"license": "other",
+"repo": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B-BF16",
+"stored_gb": 63.2,
+"total_b": 31.578
+},
+"nvidia/NVIDIA-Nemotron-3-Nano-4B-BF16": {
+"created": "2026-03-07",
+"downloads": 1713512,
+"dtypes_b": {
+"BF16": 3.974
+},
+"license": "other",
+"repo": "nvidia/NVIDIA-Nemotron-3-Nano-4B-BF16",
+"stored_gb": 7.9,
+"total_b": 3.974
+},
+"nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16": {
+"created": "2026-06-03",
+"downloads": 1008838,
+"dtypes_b": {
+"BF16": 560.525,
+"F32": 0.0
+},
+"license": "other",
+"repo": "nvidia/NVIDIA-Nemotron-3-Ultra-550B-A55B-BF16",
+"stored_gb": 1121.1,
+"total_b": 560.525
+},
+"nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-BF16": {
+"created": "2026-10-09",
+"downloads": 2767,
+"dtypes_b": {
+"BF16": 74.885,
+"F32": 0.0,
+"I64": 0.0
+},
+"license": "other",
+"repo": "nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-BF16",
+"stored_gb": 149.8,
+"total_b": 74.885
+},
+"nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16": {
+"created": "2026-08-01",
+"downloads": 695209,
+"dtypes_b": {
+"BF16": 32.913,
+"F32": 0.0
+},
+"license": "other",
+"repo": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+"stored_gb": 65.8,
+"total_b": 31.578
+},
+"nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16": {
+"created": "2026-10-12",
+"downloads": 18759,
+"dtypes_b": {
+"BF16": 124.453,
+"F32": 0.0,
+"I64": 0.0
+},
+"license": "other",
+"repo": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
+"stored_gb": 248.9,
+"total_b": 124.453
+},
+"nvidia/NVIDIA-Nemotron-Nano-12B-v2-VL-BF16": {
+"created": "2025-10-21",
+"downloads": 17323,
+"dtypes_b": {
+"BF16": 13.182,
+"F32": 0.0
+},
+"license": "other",
+"repo": "nvidia/NVIDIA-Nemotron-Nano-12B-v2-VL-BF16",
+"stored_gb": 26.4,
+"total_b": 13.182
+},
+"nvidia/NVIDIA-Nemotron-Nano-9B-v2": {
+"created": "2025-08-12",
+"downloads": 244723,
+"dtypes_b": {
+"BF16": 8.888
+},
+"license": "other",
+"repo": "nvidia/NVIDIA-Nemotron-Nano-9B-v2",
+"stored_gb": 17.8,
+"total_b": 8.888
+},
+"nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-BF16": {
+"created": "2026-04-20",
+"downloads": 249267,
+"dtypes_b": {
+"BF16": 33.016,
+"F32": 0.0
+},
+"license": "other",
+"repo": "nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-BF16",
+"stored_gb": 66.0,
+"total_b": 33.016
+},
+"nvidia/Nemotron-Cascade-2-30B-A3B": {
+"created": "2026-03-18",
+"downloads": 8465,
+"dtypes_b": {
+"BF16": 31.578,
+"F32": 0.0
+},
+"license": "other",
+"repo": "nvidia/Nemotron-Cascade-2-30B-A3B",
+"stored_gb": 63.2,
+"total_b": 31.578
+},
+"openai/gpt-oss-120b": {
+"created": "2025-08-04",
+"downloads": 3141375,
+"dtypes_b": {
+"BF16": 2.167,
+"U8": 114.662
+},
+"license": "apache-2.0",
+"repo": "openai/gpt-oss-120b",
+"stored_gb": 130.5,
+"total_b": 116.829
+},
+"openai/gpt-oss-20b": {
+"created": "2025-08-04",
+"downloads": 5933604,
+"dtypes_b": {
+"BF16": 1.804,
+"U8": 19.11
+},
+"license": "apache-2.0",
+"repo": "openai/gpt-oss-20b",
+"stored_gb": 27.5,
+"total_b": 20.915
+},
+"openbmb/MiniCPM-V-4.6": {
+"created": "2026-04-13",
+"downloads": 190512,
+"dtypes_b": {
+"BF16": 1.3
+},
+"license": "apache-2.0",
+"repo": "openbmb/MiniCPM-V-4.6",
+"stored_gb": 2.6,
+"total_b": 1.3
+},
+"openbmb/MiniCPM5-1B": {
+"created": "2026-05-21",
+"downloads": 355475,
+"dtypes_b": {
+"BF16": 1.081
+},
+"license": "apache-2.0",
+"repo": "openbmb/MiniCPM5-1B",
+"stored_gb": 2.2,
+"total_b": 1.081
+},
+"openbmb/MiniCPM5-2B": {
+"created": "2026-09-06",
+"downloads": 1328986,
+"dtypes_b": {
+"BF16": 2.517
+},
+"license": "apache-2.0",
+"repo": "openbmb/MiniCPM5-2B",
+"stored_gb": 5.0,
+"total_b": 2.517
+},
+"perplexity-ai/r1-1776": {},
+"reflection/Beam-1.0-501B-A23B": {
+"created": "2026-10-07",
+"downloads": 2930,
+"dtypes_b": {
+"BF16": 501.203,
+"F32": 0.064
+},
+"license": "apache-2.0",
+"repo": "reflection/Beam-1.0-501B-A23B",
+"stored_gb": 1002.7,
+"total_b": 501.268
+},
+"sarvamai/sarvam-105b": {
+"created": "2026-03-03",
+"downloads": 10776,
+"dtypes_b": {
+"F32": 106.032
+},
+"license": "apache-2.0",
+"repo": "sarvamai/sarvam-105b",
+"stored_gb": 424.1,
+"total_b": 106.032
+},
+"sarvamai/sarvam-30b": {
+"created": "2026-03-03",
+"downloads": 8762,
+"dtypes_b": {
+"F32": 32.153
+},
+"license": "apache-2.0",
+"repo": "sarvamai/sarvam-30b",
+"stored_gb": 128.6,
+"total_b": 32.153
+},
+"skt/A.X-K2": {
+"created": "2026-07-28",
+"downloads": 14625,
+"dtypes_b": {
+"BF16": 2.516,
+"F32": 0.0,
+"F8_E4M3": 689.175
+},
+"license": "apache-2.0",
+"repo": "skt/A.X-K2",
+"stored_gb": 694.4,
+"total_b": 691.69
+},
+"stepfun-ai/Step-5-Preview": {
+"created": "2026-09-20",
+"downloads": 1766,
+"dtypes_b": {
+"BF16": 39.616,
+"F32": 0.002,
+"F8_E4M3": 564.721
+},
+"license": "other",
+"repo": "stepfun-ai/Step-5-Preview",
+"stored_gb": 650.3,
+"total_b": 604.34
+},
+"stepfun-ai/Step3-VL-10B": {
+"created": "2026-01-13",
+"downloads": 13785,
+"dtypes_b": {
+"BF16": 10.172
+},
+"license": "apache-2.0",
+"repo": "stepfun-ai/Step3-VL-10B",
+"stored_gb": 20.3,
+"total_b": 10.172
+},
+"swiss-ai/Apertus-70B-Instruct-2509": {
+"created": "2025-09-01",
+"downloads": 19006,
+"dtypes_b": {
+"BF16": 70.6
+},
+"license": "apache-2.0",
+"repo": "swiss-ai/Apertus-70B-Instruct-2509",
+"stored_gb": 141.2,
+"total_b": 70.6
+},
+"swiss-ai/Apertus-8B-Instruct-2509": {
+"created": "2025-08-13",
+"downloads": 432443,
+"dtypes_b": {
+"BF16": 8.053
+},
+"license": "apache-2.0",
+"repo": "swiss-ai/Apertus-8B-Instruct-2509",
+"stored_gb": 16.1,
+"total_b": 8.053
+},
+"tencent/Hy3": {
+"created": "2026-07-02",
+"downloads": 734232,
+"dtypes_b": {
+"BF16": 298.786,
+"F32": 0.0
+},
+"license": "apache-2.0",
+"repo": "tencent/Hy3",
+"stored_gb": 597.6,
+"total_b": 298.786
+},
+"thinkingmachines/Inkling": {
+"created": "2026-07-14",
+"downloads": 1321879,
+"dtypes_b": {
+"BF16": 952.378,
+"F32": 0.0
+},
+"license": "apache-2.0",
+"repo": "thinkingmachines/Inkling",
+"stored_gb": 1904.8,
+"total_b": 952.378
+},
+"thinkingmachines/Inkling-Small": {
+"created": "2026-07-27",
+"downloads": 786170,
+"dtypes_b": {
+"BF16": 265.956,
+"F32": 0.0
+},
+"license": "apache-2.0",
+"repo": "thinkingmachines/Inkling-Small",
+"stored_gb": 531.9,
+"total_b": 265.956
+},
+"tiiuae/Falcon-H1R-7B": {
+"created": "2025-10-29",
+"downloads": 1725,
+"dtypes_b": {
+"BF16": 7.586
+},
+"license": "other",
+"repo": "tiiuae/Falcon-H1R-7B",
+"stored_gb": 15.2,
+"total_b": 7.586
+},
+"trillionlabs/Tri-21B-Think": {
+"created": "2026-02-18",
+"downloads": 439,
+"dtypes_b": {
+"F32": 20.726
+},
+"license": "apache-2.0",
+"repo": "trillionlabs/Tri-21B-Think",
+"stored_gb": 82.9,
+"total_b": 20.726
+},
+"upstage/Solar-Open-100B": {
+"created": "2025-12-10",
+"downloads": 8790,
+"dtypes_b": {
+"BF16": 102.652,
+"F32": 0.0
+},
+"license": "other",
+"repo": "upstage/Solar-Open-100B",
+"stored_gb": 205.3,
+"total_b": 102.652
+},
+"upstage/Solar-Open2-250B": {
+"created": "2026-07-22",
+"downloads": 6687,
+"dtypes_b": {
+"BF16": 250.288,
+"F32": 0.0
+},
+"license": "other",
+"repo": "upstage/Solar-Open2-250B",
+"stored_gb": 500.6,
+"total_b": 250.288
+},
+"zai-org/GLM-5.3": {
+"created": "2026-08-25",
+"downloads": 1873260,
+"dtypes_b": {
+"BF16": 2.104,
+"F32": 0.0,
+"F8_E4M3": 751.226
+},
+"license": "other",
+"repo": "zai-org/GLM-5.3",
+"stored_gb": 755.6,
+"total_b": 753.33
+},
+"zai-org/GLM-5.3-Flash": {
+"created": "2026-08-25",
+"downloads": 6548525,
+"dtypes_b": {
+"BF16": 6.926,
+"F32": 0.0,
+"F8_E4M3": 314.397
+},
+"license": "mit",
+"repo": "zai-org/GLM-5.3-Flash",
+"stored_gb": 328.3,
+"total_b": 321.323
+}
+}

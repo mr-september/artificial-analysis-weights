@@ -1,0 +1,58 @@
+<!doctype html><meta charset="utf-8"><title>ui tests</title>
+<pre id="out">running…</pre>
+<iframe id="f" src="../index.html?state=%7B%22set%22:%7B%22mode%22:%22all%22%7D%7D" style="width:1300px;height:2400px;border:0"></iframe>
+<script>
+const out = []; let fail = 0;
+const ok = (n, c, x = '') => { out.push((c ? 'PASS ' : 'FAIL ') + n + (c ? '' : '  ' + x)); if (!c) fail++; };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+(async () => {
+  const f = document.getElementById('f');
+  await new Promise(r => f.addEventListener('load', r)); await sleep(800);
+  const d = f.contentDocument, w = f.contentWindow;
+  ok('no model-load error', !d.querySelector('.empty') || !/Could not load/.test(d.body.innerHTML));
+  ok('main chart drew points', d.querySelectorAll('#main .pt').length > 50, d.querySelectorAll('#main .pt').length);
+  ok('quadrant drew', d.querySelectorAll('#quad .pt').length > 0, d.querySelectorAll('#quad .pt').length);
+  ok('picks rendered', d.querySelectorAll('#picks .pick').length > 0);
+  ok('table rows', d.querySelectorAll('#table tbody tr').length > 50);
+
+  // hover first point of main chart
+  const svg = d.querySelector('#main svg'), pt = svg.querySelector('.pt circle:last-child');
+  const r = pt.getBoundingClientRect();
+  const ev = (type, x, y) => svg.dispatchEvent(new w.MouseEvent(type, { clientX: x, clientY: y, bubbles: true }));
+  ev('mousemove', r.x + r.width / 2, r.y + r.height / 2);
+  const tip = d.querySelector('#main .tip');
+  ok('tooltip shows on hover', !tip.hidden && /Intelligence/.test(tip.innerHTML) && /Hugging Face/.test(tip.innerHTML), tip.innerHTML.slice(0, 120));
+  ev('click', r.x + r.width / 2, r.y + r.height / 2);
+  ok('click pins tooltip', tip.classList.contains('pinned'));
+  ev('click', 2, 2); ev('mousemove', 2, 2);
+  ok('click empty unpins', !tip.classList.contains('pinned'));
+
+  // change hardware via quick pick => readout changes
+  const before = d.querySelector('.readout').textContent;
+  d.querySelector('.chip[data-q="9"]').click(); await sleep(200);
+  const after = d.querySelector('.readout').textContent;
+  ok('quick pick updates readout', before !== after && /Strix|usable/.test(d.querySelector('#hwpanel').textContent), before + ' -> ' + after);
+
+  // model set switch
+  const countBefore = d.querySelector('#setcount').textContent;
+  d.querySelector('#setmode button[data-v="featured"]').click(); await sleep(200);
+  const countAfter = d.querySelector('#setcount').textContent;
+  ok('featured set = 12 models', /^12 of/.test(countAfter), countBefore + ' -> ' + countAfter);
+
+  // x axis toggle, y source toggle
+  d.querySelector('#xmode button[data-v="active"]').click(); await sleep(100);
+  ok('x title follows toggle', /Active parameters/.test(d.querySelector('#main').textContent));
+  d.querySelector('#yaxis button[data-v="est"]').click(); await sleep(100);
+  ok('quad y-axis label follows toggle', /estimated speed/.test(d.querySelector('#quad').textContent));
+
+  // theme toggle
+  const t0 = d.documentElement.dataset.theme; d.querySelector('#theme').click(); await sleep(100);
+  ok('theme toggles', d.documentElement.dataset.theme && d.documentElement.dataset.theme !== t0);
+
+  // table sort
+  d.querySelector('#table th[data-k="total"]').click(); await sleep(50);
+  const firstTotals = [...d.querySelectorAll('#table tbody tr td:nth-child(4)')].slice(0, 2).map(x => x.textContent);
+  ok('table sorts by total', d.querySelector('#table th[data-k="total"]').getAttribute('aria-sort') === 'descending', firstTotals.join());
+  document.getElementById('out').textContent = (fail ? 'FAILED ' + fail : 'ALL PASSED') + '\n' + out.join('\n');
+})().catch(e => { document.getElementById('out').textContent = 'ERROR ' + e.stack; });
+</script>
