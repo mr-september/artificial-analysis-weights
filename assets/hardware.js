@@ -1,5 +1,5 @@
 /* Hardware model. Deliberately coarse: the user states total VRAM (any mix of cards), system RAM and a GPU family (only
-   RTX 50 / Blackwell, with native FP4, changes anything), or a unified-memory size and speed class. Bandwidths are representative values recalled from
+   RTX 50 / Blackwell, with native FP4, changes anything), or a unified-memory size and speed class. Bandwidths are representative values from
    spec sheets (approximate); the speed estimates built on them are order-of-magnitude. */
 const Hardware = (() => {
   const VRAM_SIZES = [4, 6, 8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256];  // the last means "256 or more"

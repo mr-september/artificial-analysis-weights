@@ -1,7 +1,7 @@
 /* Pure model logic: memory footprint, tiered placement, decode-speed roofline, filters, quadrant axes.
    No DOM access, so it can be unit-tested in any JS runtime (see tests/core.test.html). */
 const Core = (() => {
-  // Effective bits per weight of common GGUF-style quants (approximate, recalled from llama.cpp tables).
+  // Effective bits per weight of common GGUF-style quants (approximate; cf. the llama.cpp quantize tables).
   const QUANTS = [
     { id: 'native', label: 'As released', bpw: null },
     { id: 'bf16', label: 'BF16', bpw: 16 },
