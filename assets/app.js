@@ -5,7 +5,7 @@
 
   // ---------------------------------------------------------------- state
   const DEFAULT = {
-    set: { mode: 'recent', months: 6 }, pick: null, x: 'total', xscale: 'log', prec: 'q4', yaxis: 'aa', minspeed: 3, reserve: 4, filter: '', showProp: false,
+    set: { mode: 'recent', months: 6 }, pick: null, x: 'total', xscale: 'log', prec: 'q4', yaxis: 'aa', minspeed: 3, reserve: 4, filter: '',
     hw: { mode: 'offload', series: 'rtx4000', vram: 24, n: 1, ram: 64, uGB: 64, uClass: 'fast', ssd: false },
   };
   const merge = (a, b) => ({ ...a, ...b, set: { ...a.set, ...b.set }, hw: { ...a.hw, ...b.hw } });
@@ -54,14 +54,6 @@
     if (state.pick) { const P = new Set(state.pick); return models.filter(m => P.has(m.id)); }
     return Core.modelSet(models, state.set);
   };
-  const bestProp = () => data.proprietary[0] || null;
-  /** Frontier proprietary models: best per lab within the recent window, top 8. */
-  function propSet() {
-    const months = state.set.mode === 'recent' ? state.set.months : 12, cut = Date.now() - months * 30.44 * 864e5, byLab = {};
-    for (const p of data.proprietary) if (p.released && Date.parse(p.released) >= cut && (!byLab[p.creator] || p.best > byLab[p.creator].best)) byLab[p.creator] = p;
-    return Object.values(byLab).sort((a, b) => b.best - a.best).slice(0, 8);
-  }
-
   // ---------------------------------------------------------------- generic scatter
   function scatter(el, c) {
     const W = Math.max(320, el.clientWidth), H = c.height(W);
@@ -135,7 +127,6 @@
 
   const aaLink = m => `<a href="https://artificialanalysis.ai/models/${m.slug}" target="_blank" rel="noopener">Artificial Analysis ↗</a>`;
   function tipHTML(m, withHw = true) {
-    if (m.prop) return `<h4>${esc(m.name)}</h4><div class="by">${esc(m.creator)}${m.released ? ' · ' + m.released : ''} · proprietary</div><dl><dt>Intelligence</dt><dd>${m.best.toFixed(1)}</dd><dt>Parameters</dt><dd>not published</dd></dl><div class="links">${aaLink(m)}</div>`;
     const e = m.ev, q = quantNow(), gb = m.total * Core.gbPerB(m, q);
     const idx = m.best.toFixed(1) + (m.variants[0].estimated ? ' (AA est.)' : '');
     const params = `${fmtB(m.total)} total · ${fmtB(m.active)} active` + (m.lookup ? ` · ${fmtB(m.lookup)} lookup` : '');
@@ -159,32 +150,19 @@
     $('#chartSub').textContent = `${state.x === 'active' ? 'Active' : 'Total'} parameters against the Intelligence Index (best reasoning setting per model). Dashed line: frontier.`;
     if (!pts.length) { $('#main').innerHTML = '<p class="empty">No models match this view. Widen the model set above.</p>'; return; }
     const xmax = Math.max(...pts.map(p => p.x)), xmin = Math.min(...pts.map(p => p.x));
-    const top = bestProp();
-    let x0 = log ? xmin / 1.5 : 0, x1 = xmax * (log ? 1.6 : 1.06), uX = null;
-    if (state.showProp) {
-      uX = xmax * (log ? 2.6 : 1.14); x1 = uX * (log ? 1.45 : 1.05);
-      for (const p of propSet()) pts.push({ x: uX, y: p.best, m: { ...p, prop: true }, color: css('--axis'), hollow: false, hl: false, r: 5.5 });
-    }
+    const x0 = log ? xmin / 1.5 : 0, x1 = xmax * (log ? 1.6 : 1.06);
     const rankIdx = Core.ranks(pts.map(p => p.y));
     const fr = new Set(Core.frontier(pts).map(p => p.m.id));
-    pts.forEach((p, i) => { p.name = p.m.name; p.label = (fr.has(p.m.id) ? 2 : 0) + rankIdx[i] + (p.m.prop ? 1 : 0); p.faded = !!f && !p.m.prop && !(p.m.name + ' ' + p.m.creator).toLowerCase().includes(f); });
-    const ys = pts.map(p => p.y).concat(!state.showProp && top ? [top.best] : []);
+    pts.forEach((p, i) => { p.name = p.m.name; p.label = (fr.has(p.m.id) ? 2 : 0) + rankIdx[i]; p.faded = !!f && !(p.m.name + ' ' + p.m.creator).toLowerCase().includes(f); });
+    const ys = pts.map(p => p.y);
     const y0 = Math.max(0, Math.floor((Math.min(...ys) - 3) / 5) * 5), y1 = Math.ceil((Math.max(...ys) + 3) / 5) * 5;
-    const xt = (log ? logTicks(x0, x1) : linTicks(x0, x1)).filter(t => uX == null || t <= xmax * 1.25);
+    const xt = log ? logTicks(x0, x1) : linTicks(x0, x1);
     scatter($('#main'), {
       pts, xlog: log, x0, x1, y0, y1, xTicks: xt, yTicks: linTicks(y0, y1, 6), xFmt: fmtB,
       xTitle: `${state.x === 'active' ? 'Active' : 'Total'} parameters (billions, ${log ? 'log' : 'linear'} scale)`, yTitle: 'Artificial Analysis Intelligence Index',
       height: W => Math.round(Math.min(560, Math.max(360, W * 0.56))), frontier: true, tip: m => tipHTML(m, false), aria: 'Scatter plot of intelligence index versus parameter count',
-      under: ctx => {
-        if (state.showProp) {
-          const mid = log ? Math.sqrt(xmax * 1.25 * uX / 1.3) : (xmax + uX) / 2, L = ctx.sx(mid);
-          return `<rect class="undisc" x="${L}" y="${ctx.M.t}" width="${ctx.M.l + ctx.iw - L}" height="${ctx.ih}" rx="6"/><text class="undisc-l" x="${(L + ctx.M.l + ctx.iw) / 2}" y="${ctx.M.t + ctx.ih + 16}" text-anchor="middle">size undisclosed</text>`;
-        }
-        if (top) { const y = ctx.sy(top.best); return `<line class="front" x1="${ctx.M.l}" x2="${ctx.M.l + ctx.iw}" y1="${y}" y2="${y}"/><text class="undisc-l" x="${ctx.M.l + ctx.iw}" y="${y - 6}" text-anchor="end">best proprietary: ${esc(top.name)} · ${top.best.toFixed(1)}</text>`; }
-        return '';
-      },
     });
-    $('#mainLegend').innerHTML = `<span><i class="dot" style="background:var(--dense)"></i>Dense</span><span><i class="dot" style="background:var(--moe)"></i>Mixture of experts</span><span><i class="dot" style="background:var(--lookup)"></i>Has lookup tables</span><span><i class="dot hollow" style="color:var(--muted)"></i>Score estimated by AA</span>` + (state.showProp ? `<span><i class="dot" style="background:var(--axis)"></i>Proprietary</span>` : '');
+    $('#mainLegend').innerHTML = `<span><i class="dot" style="background:var(--dense)"></i>Dense</span><span><i class="dot" style="background:var(--moe)"></i>Mixture of experts</span><span><i class="dot" style="background:var(--lookup)"></i>Has lookup tables</span><span><i class="dot hollow" style="color:var(--muted)"></i>Score estimated by AA</span>`;
   }
 
   // ---------------------------------------------------------------- quadrant
@@ -336,8 +314,6 @@
     $('#monthsWrap').style.display = !state.pick && state.set.mode === 'recent' ? '' : 'none';
     $('#minspeed').value = String(state.minspeed);
     $('#minspeed').onchange = e => { state.minspeed = +e.target.value; changed(); };
-    $('#showProp').checked = state.showProp;
-    $('#showProp').onchange = e => { state.showProp = e.target.checked; changed(); };
     $('#q').oninput = e => { state.filter = e.target.value; drawMain(); drawTable(); };
     $('#q').value = state.filter;
   }

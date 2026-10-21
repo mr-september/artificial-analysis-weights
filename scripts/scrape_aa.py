@@ -8,7 +8,6 @@ from pathlib import Path
 
 URL = "https://artificialanalysis.ai/leaderboards/models"
 OUT = Path(__file__).resolve().parent.parent / "data" / "aa_open.json"
-OUT_CLOSED = OUT.with_name("aa_closed.json")  # proprietary models: no parameter counts, used only for the frontier column
 VARIANT = re.compile(r"-(non-reasoning|reasoning|low|medium|high|xhigh|minimal|adaptive|max)$")
 
 
@@ -47,12 +46,12 @@ def main():
             dates[o["slug"]] = o["releaseDate"]
     if len(rows) < 50:
         sys.exit(f"parse looks wrong: only {len(rows)} model rows")
-    out, closed = [], []
+    out = []
     for slug, o in rows.items():
-        if o.get("deprecated"):
+        if not o.get("isOpenWeights") or o.get("deprecated"):
             continue
         fam = family_of(slug)
-        (out if o.get("isOpenWeights") else closed).append({
+        out.append({
             "slug": slug,
             "family": fam,
             "name": o["name"],
@@ -67,10 +66,8 @@ def main():
             "tps": None if o.get("medianOutputTokensPerSecond") is None else round(o["medianOutputTokensPerSecond"], 1),
         })
     out.sort(key=lambda r: r["slug"])
-    closed.sort(key=lambda r: r["slug"])
     OUT.parent.mkdir(exist_ok=True)
     OUT.write_text(json.dumps(out, indent=1, ensure_ascii=False) + "\n", encoding="utf8")
-    OUT_CLOSED.write_text(json.dumps(closed, indent=1, ensure_ascii=False) + "\n", encoding="utf8")
     miss = [r["slug"] for r in out if not r["released"]]
     print(f"{len(out)} open-weights rows ({len(rows)} total); no release date: {miss}")
 

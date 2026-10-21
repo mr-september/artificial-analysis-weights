@@ -15,7 +15,6 @@ Unofficial. Not affiliated with or endorsed by Artificial Analysis or Hugging Fa
 | Lookup params (n-gram / per-layer embeddings) | `data/overrides.json`, curated from model cards | Take memory, almost no bandwidth, so they are placed last and cost no decode time |
 | Native size | Hugging Face repo AA links to | Quantized sizes are computed from effective bits per weight |
 | Hardware | `assets/hardware.js` | Coarse series/VRAM/RAM buckets with representative bandwidths, approximate |
-| Proprietary models | AA leaderboard (`data/aa_closed.json`) | No published sizes, so they appear only as a separate "size undisclosed" frontier column (toggle) |
 | Speed on your hardware | `assets/core.js` | Bandwidth roofline: tiered placement VRAM → RAM → SSD, 55% of peak bandwidth, MoE reads only active experts |
 
 Limits worth knowing: the speed model is single-stream decode only; the quadrant's horizontal axis is coding/agentic percentile minus knowledge/instruction-following percentile because AA has no creative-writing or roleplay eval; quantized local copies score below AA's hosted numbers.

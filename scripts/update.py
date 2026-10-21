@@ -128,22 +128,14 @@ def main():
         })
 
     models.sort(key=lambda m: -m["best"])
-    prop = {}
-    for r in json.loads((DATA / "aa_closed.json").read_text(encoding="utf8")):
-        if r["index"] is None:
-            continue
-        cur = prop.get(r["family"])
-        if cur is None or r["index"] > cur["best"]:
-            prop[r["family"]] = {"id": r["family"], "name": clean_name(r["name"]), "creator": r["creator"], "released": r["released"], "best": r["index"], "slug": r["slug"], "estimated": r["estimated"]}
-    proprietary = sorted(prop.values(), key=lambda m: -m["best"])
     old = load(DATA / "models.json", {})
     if old.get("count") and len(models) < 0.8 * old["count"]:
         sys.exit(f"refusing to overwrite: {len(models)} models vs {old['count']} before (scrape probably broke)")
-    if old.get("models") == models and old.get("skipped") == skipped and old.get("proprietary") == proprietary:
+    out = {"generated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "count": len(models), "skipped": skipped, "models": models}
+    if {k: v for k, v in old.items() if k != "generated"} == {k: v for k, v in out.items() if k != "generated"}:
         print("no data changes")
         HF_CACHE.write_text(json.dumps(cache, indent=0, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf8")
         return
-    out = {"generated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "count": len(models), "skipped": skipped, "models": models, "proprietary": proprietary}
     (DATA / "models.json").write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False) + "\n", encoding="utf8")
     HF_CACHE.write_text(json.dumps(cache, indent=0, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf8")
     print(f"{len(models)} models, skipped {skipped}")

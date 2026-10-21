@@ -57,13 +57,6 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   panel.querySelector('#pkReset').click(); await sleep(150);
   ok('reset returns to the view', /^12 of/.test(d.querySelector('#setcount').textContent) && panel.hidden);
 
-  // proprietary toggle
-  const nBefore = d.querySelectorAll('#main .pt').length;
-  d.querySelector('#showProp').click(); await sleep(200);
-  ok('proprietary toggle adds a column of points', d.querySelectorAll('#main .pt').length > nBefore && /size undisclosed/.test(d.querySelector('#main').textContent), nBefore + ' -> ' + d.querySelectorAll('#main .pt').length);
-  d.querySelector('#showProp').click(); await sleep(200);
-  ok('proprietary off shows ceiling line label', /best proprietary/.test(d.querySelector('#main').textContent));
-
   // x axis toggle, y source toggle
   d.querySelector('#xmode button[data-v="active"]').click(); await sleep(100);
   ok('x title follows toggle', /Active parameters/.test(d.querySelector('#main').textContent));

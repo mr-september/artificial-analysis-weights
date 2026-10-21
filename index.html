@@ -48,7 +48,6 @@
       <div class="tools">
         <div class="seg" id="xmode" role="group" aria-label="X axis"></div>
         <div class="seg" id="xscale" role="group" aria-label="X scale"></div>
-        <label class="tog" title="Proprietary models have no published size, so the frontier ones sit in a separate column on the right"><input type="checkbox" id="showProp"> Show proprietary frontier</label>
         <a class="chip" href="#run" style="text-decoration:none">What should I run? ↓</a>
       </div>
     </header>
@@ -92,8 +91,6 @@
     <p>Weights are placed in VRAM first, then system RAM, then (if allowed) SSD. For a MoE, <code>30%</code> of active parameters are assumed to be always-read (attention, shared experts) and are placed first; routed experts fill what is left, and their reads are spread evenly across wherever they live. Decode speed is <code>55%</code> of peak bandwidth divided by bytes read per token, summed over tiers. This is a roofline ceiling for single-stream decoding: it ignores prompt processing, KV-cache growth, multi-GPU communication and kernel quality, and real numbers are usually lower. Use it to separate comfortable from painful, not as a benchmark. GPU bandwidths are representative values for the cards in each series and VRAM slot, system RAM is assumed ~80 GB/s (desktop) or ~200 GB/s (192 GB and up), and unified-memory classes are ~120 / 270 / 600 GB/s. All are approximate and live in <code>assets/hardware.js</code>.</p>
     <h3>Quantization and NVFP4</h3>
     <p>Footprints use effective bits per weight: 8-bit 8.5, 4-bit 4.85 (GGUF Q4_K_M) or 4.5 (NVFP4: 4-bit floats with an 8-bit scale per 16 weights), 3-bit 3.9. RTX 5000 and Blackwell workstation cards have native FP4 tensor cores, so "4-bit" resolves to NVFP4 there; older cards use GGUF-style 4-bit. A model already released at a lower precision is never inflated. Decode is bandwidth-bound, so the main benefit of NVFP4 hardware is quality per bit and faster prompt processing, not much faster decoding. The Intelligence Index was measured on providers' hosted (typically near-native) endpoints; quantized local copies will score somewhat lower, especially below 4 bits on small models.</p>
-    <h3>Proprietary models</h3>
-    <p>Closed models do not publish a parameter count, so they cannot sit on a size axis. With "Show proprietary frontier" on, the best recent model per lab appears in a separate column on the right, and the frontier line is extended up to the best of them.</p>
     <h3>The quadrant</h3>
     <p>Horizontal: relative percentile on coding and agentic evaluations (Terminal-Bench, τ²-bench, SciCode, APEX-Agents, …) minus percentile on knowledge and instruction-following evaluations (Omniscience, IFBench, AA-LCR, GPQA, HLE). Artificial Analysis publishes no creative-writing or roleplay evaluation, so the left end means "knowledge and chat strength relative to coding", not measured creativity. Vertical: the Intelligence Index against speed, using AA's measured hosted output speed (available for about half of the models) or the estimate for your hardware.</p>
     <h3>Data</h3>
