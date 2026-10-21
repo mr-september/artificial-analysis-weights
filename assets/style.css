@@ -188,3 +188,5 @@ details.adv .row { margin-bottom: 8px; }
 .propbox.on { flex: 1 1 320px; }
 
 .chart .axlab { fill: var(--fg); font-size: 14px; font-weight: 600; letter-spacing: -.005em; paint-order: stroke; stroke: var(--card); stroke-width: 4px; stroke-linejoin: round; }
+.prose ul { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 6px; }
+.prose li { font-size: 14px; }

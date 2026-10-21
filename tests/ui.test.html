@@ -54,6 +54,8 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   const countAfter = d.querySelector('#setcount').textContent;
   ok('featured set = 12 models', /^12 of/.test(countAfter), countBefore + ' -> ' + countAfter);
 
+  ok('frontier models are added to preset views', /on the frontier/.test(d.querySelector('#setcount').textContent), d.querySelector('#setcount').textContent);
+
   // granular picker
   d.querySelector('#pickBtn').click(); await sleep(150);
   const panel = d.querySelector('#pickPanel');
@@ -64,6 +66,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ok('picker pins flagship labs first', [...panel.querySelectorAll('.lab span')].slice(0, 4).map(x => x.textContent).join() === 'Alibaba,Xiaomi,DeepSeek,Z AI', [...panel.querySelectorAll('.lab span')].slice(0, 4).map(x => x.textContent).join());
   panel.querySelector('#pkQ').value = 'qwen'; panel.querySelector('#pkQ').dispatchEvent(new w.Event('input'));
   ok('picker search hides others', [...panel.querySelectorAll('label.it')].filter(l => l.style.display !== 'none').length < 30);
+  ok('custom selection does not get extra frontier points', !/frontier/.test(d.querySelector('#setcount').textContent), d.querySelector('#setcount').textContent);
   panel.querySelector('#pkReset').click(); await sleep(150);
   ok('reset returns to the view', /^12 of/.test(d.querySelector('#setcount').textContent) && panel.hidden);
 

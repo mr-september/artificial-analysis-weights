@@ -139,6 +139,7 @@
     const params = `${fmtB(m.total)} total · ${fmtB(m.active)} active` + (m.lookup ? ` · ${fmtB(m.lookup)} lookup` : '');
     const rows = [['Intelligence', idx], ['Parameters', params]];
     if (m.lookup) rows.push(['Without lookup tables', fmtB(m.total - m.lookup)]);
+    if (m.lookup && withHw && e && e.cls !== 'none') rows.push(['Lookup tables', e.lookupSsd > 0.5 ? 'on SSD' : 'in RAM / VRAM']);
     rows.push([`Weights @ ${q.label}`, fmtGB(gb)]);
     if (withHw) rows.push(['On your hardware', e ? `<span class="badge ${e.cls}">${CLS_SHORT[e.cls]}</span>` : '—']);
     if (withHw && m.lean != null) rows.push(['Lean', (m.lean > 0.12 ? 'coding / agents' : m.lean < -0.12 ? 'knowledge / chat' : 'balanced') + ` (${m.lean > 0 ? '+' : ''}${m.lean.toFixed(2)})`]);
@@ -172,14 +173,21 @@
   }
 
   // ---------------------------------------------------------------- main chart
+  /** Models on the overall frontier (all open models, current x metric, lookup tables ignored) that the view would otherwise hide. */
+  function frontierExtras(base) {
+    if (state.pick) return [];
+    const ids = new Set(base.map(m => m.id));
+    const xOf = m => (state.x === 'active' ? m.active : m.total - m.lookup);
+    return Core.frontier(models.map(m => ({ x: xOf(m), y: m.best, m }))).map(p => p.m).filter(m => !ids.has(m.id));
+  }
+
   function drawMain() {
-    const set = inSet(); evalAll(set);
+    const base = inSet(), extra = frontierExtras(base), set = base.concat(extra); evalAll(set);
     const f = state.filter.trim().toLowerCase();
     const xv = m => (state.x === 'active' ? m.active : m.total);
     const pts = set.map(m => ({ x: xv(m), y: m.best, m, color: colorOf(m), hollow: m.variants[0].estimated, hl: state.hl === m.id }));
     const log = state.xscale === 'log';
-    $('#setcount').textContent = state.pick ? `${set.length} chosen` : `${set.length} of ${models.length} open models`;
-    $('#chartSub').textContent = `${state.x === 'active' ? 'Active' : 'Total'} parameters against the Intelligence Index (best reasoning setting per model). Dashed line: frontier.`;
+    $('#setcount').textContent = state.pick ? `${base.length} chosen` : `${base.length} of ${models.length} open models` + (extra.length ? ` + ${extra.length} on the frontier` : '');
     if (!pts.length) { $('#main').innerHTML = '<p class="empty">No models match this view. Widen the model set above.</p>'; return; }
     const lk = state.x === 'total' ? set.filter(m => m.lookup > 0) : [];  // lookup tables: also plot the size without them
     const xmax = Math.max(...pts.map(p => p.x)), xmin = Math.min(...pts.map(p => p.x), ...lk.map(m => m.total - m.lookup));

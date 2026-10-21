@@ -57,6 +57,9 @@ const Core = (() => {
     };
     const H = take(hot, ['v', 'r', 's']);
     const C = take(cold, ['v', 'r', 's']);
+    // Lookup tables are sparse random-row reads (a few KB per token), so they page from SSD at negligible cost even when
+    // SSD paging of weights is off; they are placed last so they never displace weights that are read every token.
+    if (!hw.ssd) pool.s = o.ssdGB;
     const L = take(lookup, ['r', 'v', 's']);
     const total = (m.total) * b;
     if (H.left > 1e-6 || C.left > 1e-6 || L.left > 1e-6) return { cls: 'none', total, tps: 0 };
@@ -70,7 +73,7 @@ const Core = (() => {
     return {
       cls, tps, total,
       v: H.got.v + C.got.v + L.got.v, r: H.got.r + C.got.r + L.got.r, s: H.got.s + C.got.s + L.got.s,
-      lookupOff: L.got.r + L.got.s,
+      lookupOff: L.got.r + L.got.s, lookupSsd: L.got.s,
     };
   }
 

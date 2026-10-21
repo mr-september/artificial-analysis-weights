@@ -18,7 +18,7 @@
   <nav>
     <a class="hide-s" href="#chart">Chart</a>
     <a class="hide-s" href="#models">Table</a>
-    <a class="hide-s" href="#method">Method</a>
+    <a class="hide-s" href="#notes">Notes</a>
     <button id="theme" aria-label="Toggle dark mode" title="Toggle dark mode">◐</button>
     <a class="cta" href="#run">What should I run? ↓</a>
   </nav>
@@ -27,7 +27,7 @@
 <main class="wrap" id="top">
   <section class="hero">
     <h1>Intelligence vs weights</h1>
-    <p>Artificial Analysis Intelligence Index against model size, and what you can run at home. Unofficial.</p>
+    <p>Open-weights models by Artificial Analysis Intelligence Index. Unofficial.</p>
   </section>
 
   <div class="setbar" id="setbar" role="group" aria-label="Which models to show">
@@ -43,7 +43,6 @@
     <header>
       <div>
         <h2>Intelligence vs parameters</h2>
-        <p class="sub" id="chartSub"></p>
       </div>
       <div class="tools">
         <div class="seg" id="xmode" role="group" aria-label="X axis"></div>
@@ -59,7 +58,6 @@
     <header>
       <div>
         <h2>What should I run?</h2>
-        <p class="sub">Tell us your hardware; we show what fits and where each model sits.</p>
       </div>
     </header>
     <div class="hwbox" id="hwbox"></div>
@@ -71,28 +69,22 @@
 
   <section class="card" id="models">
     <header>
-      <div><h2>All models in this view</h2><p class="sub">Click a column to sort. Footprint and speed follow the hardware and quantization selected above.</p></div>
+      <div><h2>All models in this view</h2></div>
       <div class="tools"><input type="search" id="q" placeholder="Filter by name or lab" style="min-width:220px"></div>
     </header>
     <div class="tablewrap"><table id="table"></table></div>
   </section>
 
-  <section class="card prose" id="method">
-    <h2>How this works</h2>
-    <h3>Three kinds of "size"</h3>
-    <p><b>Total</b> parameters set the memory you need to hold the weights. <b>Active</b> parameters (mixture-of-experts) set how much is read per token, so they set decode speed. <b>Lookup</b> parameters (n-gram and per-layer embedding tables, as in Qwen3.8-Flash-Next, LongCat and Gemma 4 E-series) are table lookups: they take memory but almost no bandwidth, so they can sit in system RAM or on SSD. The main chart lets you switch between total and active; the guide below uses all three.</p>
-    <h3>Fit estimate</h3>
-    <p>Weights are placed in VRAM first, then system RAM, then (if allowed) SSD. For a MoE, <code>30%</code> of active parameters are assumed to be always-read (attention, shared experts) and are placed first; routed experts fill what is left. A model counts as runnable if it fits and a bandwidth roofline (55% of peak bandwidth divided by bytes read per token, summed over tiers) gives it at least a few tokens per second; anything slower is treated as not usable. That is a single-stream decoding ceiling that ignores prompt processing, KV-cache growth and multi-GPU communication, so real speeds are lower. You enter total VRAM (any mix of cards); GPU bandwidth is a representative figure for that much VRAM (about 360 GB/s at 8 GB, 950 at 24 GB, 1500 at 32 GB), system RAM is assumed ~80 GB/s (desktop) or ~200 GB/s (192 GB and up), and unified-memory classes are ~120 / 270 / 600 GB/s. All are approximate and live in <code>assets/hardware.js</code>.</p>
-    <h3>Quantization and NVFP4</h3>
-    <p>Footprints use effective bits per weight: 8-bit 8.5, 4-bit 4.85 (GGUF Q4_K_M) or 4.5 (NVFP4: 4-bit floats with an 8-bit scale per 16 weights), 3-bit 3.9. RTX 50-series and Blackwell cards have native FP4 tensor cores, so "4-bit" resolves to NVFP4 there; every other GPU family uses GGUF-style 4-bit (older families differ in kernels and attention compression, which this page does not model). A model already released at a lower precision is never inflated. The Intelligence Index was measured on providers' hosted (typically near-native) endpoints; quantized local copies will score somewhat lower, especially below 4 bits on small models.</p>
-    <h3>Lookup-table models</h3>
-    <p>Models with n-gram or per-layer-embedding tables appear as two linked points in total-parameter mode: the ring is the size without the tables, the filled dot the full size, and the shaded pill between them is the lookup tables. Many people count only the ring when sizing hardware; both are real memory, but the tables cost almost no bandwidth.</p>
-    <h3>The quadrant</h3>
-    <p>Horizontal: relative percentile on coding and agentic evaluations (Terminal-Bench, τ²-bench, SciCode, APEX-Agents, …) minus percentile on knowledge and instruction-following evaluations (Omniscience, IFBench, AA-LCR, GPQA, HLE). Artificial Analysis publishes no creative-writing or roleplay evaluation, so the left end means "knowledge and chat strength relative to coding", not measured creativity. Vertical: Intelligence Index rank minus speed rank, where speed is approximated by fewer active parameters (a MoE with few active parameters decodes quickly on any hardware). Dot size is the Intelligence Index itself.</p>
-    <h3>Proprietary frontier</h3>
-    <p>Closed models publish no parameter counts, so they cannot be points on a size axis. Switching on "Proprietary frontier" draws the latest model of each product tier (Opus, Sonnet, Astra, Argon, …) at the leading closed labs as a horizontal dashed line at its Intelligence Index, so you can see how far the open models trail. Tiers are inferred from model names and limited to the last ~4 months of releases.</p>
-    <h3>Data</h3>
-    <p>Scores, speed, release dates, parameter counts and the model-picker defaults come from Artificial Analysis pages. Exact totals and stored sizes come from Hugging Face safetensors headers; lookup-table sizes are curated from model cards in <code>data/overrides.json</code>. Where AA and Hugging Face disagree by more than 8% the AA figure is kept and a note appears in the model's tooltip. Missing or wrong? Open an issue or edit the overrides.</p>
+  <section class="card prose" id="notes">
+    <h2>Notes</h2>
+    <ul>
+      <li><b>Sizes.</b> Total parameters set memory, active parameters (MoE) set speed, and lookup parameters (n-gram or per-layer embedding tables) take memory but almost no bandwidth, so they can sit on SSD. The frontier ignores lookup tables, and frontier models are always shown.</li>
+      <li><b>Fit.</b> Weights fill VRAM, then RAM, then SSD if allowed. A model counts as runnable if a bandwidth roofline gives it a few tokens per second. Hardware figures are rough (<code>assets/hardware.js</code>).</li>
+      <li><b>Precision.</b> 4-bit means NVFP4 on RTX 5000 / Blackwell and Q4_K_M elsewhere. AA scored hosted endpoints, so quantized local copies will score lower.</li>
+      <li><b>Quadrant.</b> Horizontal: coding and agentic percentile minus knowledge and instruction-following percentile (AA has no creative-writing eval). Vertical: intelligence rank minus speed rank, with fewer active parameters as the speed proxy. Dot size is the Intelligence Index.</li>
+      <li><b>Proprietary lines.</b> Closed models publish no sizes, so they appear only as score lines.</li>
+      <li><b>Data.</b> Scores, dates and parameter counts come from Artificial Analysis; exact sizes from Hugging Face. Lookup sizes and the Featured list are hand-curated in <code>data/</code>.</li>
+    </ul>
   </section>
 
   <footer>

@@ -43,6 +43,13 @@ const a = Core.evaluate(lk, gpu(100, 100), { ...O, q: q4 }), b = Core.evaluate(n
 ok('lookup model: same speed as without lookup tables', near(a.tps, b.tps, 1e-9), a.tps + ' vs ' + b.tps);
 ok('lookup model: lookup bytes placed in RAM first', near(a.lookupOff, 40 * 4.85 / 8, 1e-6), a.lookupOff);
 
+// Flash-Next-like: lookup tables spill to SSD without enabling weight paging; weights that do not fit still fail
+const fn = { total: 180, active: 6, lookup: 51, arch: 'moe-lookup', native_gb: 360 };
+e = Core.evaluate(fn, { ...gpu(32, 64), bwV: 1500, bwR: 80 }, { reserve: 4, osReserve: 6, q: Core.quant('nvfp4') });
+ok('lookup model runs on 32+64 with tables on SSD', e.cls === 'offload' && e.lookupSsd > 10 && e.tps > 3, JSON.stringify(e));
+e = Core.evaluate(fn, { ...gpu(16, 32), bwV: 600, bwR: 80 }, { reserve: 4, osReserve: 6, q: Core.quant('nvfp4') });
+ok('lookup model still fails when resident weights do not fit', e.cls === 'none', JSON.stringify(e));
+
 // unified memory
 const uni = { vram: 96, ram: 0, bwV: 546, bwR: 546, unified: true, ssd: false };
 e = Core.evaluate(dense, uni, { ...O, q: q4 }); ok('unified: dense fits in pool', e.cls === 'fit');
