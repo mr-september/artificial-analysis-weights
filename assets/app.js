@@ -207,15 +207,14 @@
     const P = state.prop, sel = propSel(), box = $('#propbox');
     box.classList.toggle('on', P.on);
     box.innerHTML = `<button class="switch" id="propOn" role="switch" aria-checked="${P.on}" aria-label="Show closed models as score lines"><i></i></button><span class="swlabel" title="Best closed-model scores as dashed lines (closed models publish no sizes)">Closed models</span>` +
-      (P.on ? `<button class="chip" id="propMenuBtn" aria-expanded="${propOpen}" aria-controls="propMenu">${sel.size} tier${sel.size === 1 ? '' : 's'} ▾</button>` : '') +
+      `<button class="chip" id="propMenuBtn" aria-expanded="${propOpen}" aria-controls="propMenu"${P.on ? '' : ' disabled'}>${sel.size} model${sel.size === 1 ? '' : 's'} ▾</button>` +
       `<div class="popover tierpanel" id="propMenu"${P.on && propOpen ? '' : ' hidden'}>
         <div class="tiers">${data.frontier.map(t => `<button class="tier" data-id="${t.id}" aria-pressed="${sel.has(t.id)}" style="--pc:${propColor(t)}"><i></i>${esc(t.tier)}<span class="ix">${t.best.toFixed(1)}</span></button>`).join('')}</div>
         <div class="foot"><button class="chip" id="propDefaults">Defaults</button><button class="chip" id="propNone">None</button></div>
       </div>`;
     if (P.on && propOpen) { const m = $('#propMenu'); m.classList.toggle('left', box.getBoundingClientRect().right - m.offsetWidth < 8); }  // align to the side with room
     $('#propOn').addEventListener('click', () => { P.on = !P.on; if (!P.on) propOpen = false; changed(); });
-    const menuBtn = $('#propMenuBtn');
-    if (menuBtn) menuBtn.addEventListener('click', e => { e.stopPropagation(); propOpen = !propOpen; drawProp(); });
+    $('#propMenuBtn').addEventListener('click', e => { e.stopPropagation(); propOpen = !propOpen; drawProp(); });
     box.querySelectorAll('.tier').forEach(b => b.addEventListener('click', () => {
       const cur = propSel(); cur.has(b.dataset.id) ? cur.delete(b.dataset.id) : cur.add(b.dataset.id); P.sel = [...cur]; changed();
     }));

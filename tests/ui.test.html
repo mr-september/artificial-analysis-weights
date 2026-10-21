@@ -103,15 +103,20 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ok('x title follows toggle', /Active parameters/.test(d.querySelector('#main').textContent));
   // closed models: switch + popover menu + horizontal lines
   const lineCount = () => d.querySelectorAll('#main svg line[stroke-dasharray="7 5"]').length;
-  ok('proprietary starts off with no lines or menu button', lineCount() === 0 && !d.querySelector('#propMenuBtn') && d.querySelector('#propOn').getAttribute('aria-checked') === 'false');
+  ok('closed models start off: no lines, menu button present but disabled', lineCount() === 0 && d.querySelector('#propMenuBtn').disabled && d.querySelector('#propOn').getAttribute('aria-checked') === 'false');
+  const geom = () => ['#chart h2', '#xmode', '#xscale', '#propbox', '#propOn', '#propMenuBtn', '#main'].map(q => { const r = d.querySelector(q).getBoundingClientRect(); return [q, r.left, r.top, r.width, r.height]; });
+  const before = geom();
   d.querySelector('#propOn').click(); await sleep(200);
-  ok('switch turns on and draws the default 5 tiers', d.querySelector('#propOn').getAttribute('aria-checked') === 'true' && lineCount() === 5 && /5 tiers/.test(d.querySelector('#propMenuBtn').textContent), lineCount() + ' lines');
+  const after = geom();
+  const moved = before.map((b, i) => [b[0], ...[1, 2, 3, 4].map(k => Math.abs(b[k] - after[i][k]))]).filter(x => x.slice(1).some(v => v > 0.5) && x[0] !== '#main');
+  ok('toggling closed models moves or resizes nothing else', moved.length === 0, JSON.stringify(moved));
+  ok('switch turns on and draws the default 5 tiers', d.querySelector('#propOn').getAttribute('aria-checked') === 'true' && lineCount() === 5 && /5 models/.test(d.querySelector('#propMenuBtn').textContent), lineCount() + ' lines');
   ok('tier menu starts closed', d.querySelector('#propMenu').hidden);
   d.querySelector('#propMenuBtn').click(); await sleep(150);
   const tiers = d.querySelectorAll('#propMenu .tier');
   ok('menu lists every tier and marks the 5 defaults', !d.querySelector('#propMenu').hidden && tiers.length >= 10 && [...tiers].filter(x => x.getAttribute('aria-pressed') === 'true').length === 5, tiers.length + ' tiers');
   const off = [...tiers].find(x => x.getAttribute('aria-pressed') === 'false'); off.click(); await sleep(150);
-  ok('picking a tier adds its line and keeps the menu open', lineCount() === 6 && !d.querySelector('#propMenu').hidden && /6 tiers/.test(d.querySelector('#propMenuBtn').textContent), lineCount() + ' lines, hidden=' + d.querySelector('#propMenu').hidden + ', btn=' + d.querySelector('#propMenuBtn').textContent);
+  ok('picking a tier adds its line and keeps the menu open', lineCount() === 6 && !d.querySelector('#propMenu').hidden && /6 models/.test(d.querySelector('#propMenuBtn').textContent), lineCount() + ' lines, hidden=' + d.querySelector('#propMenu').hidden + ', btn=' + d.querySelector('#propMenuBtn').textContent);
   d.querySelector('#propDefaults').click(); await sleep(150);
   ok('Defaults restores the 5 flagship tiers', lineCount() === 5);
   d.querySelector('#propNone').click(); await sleep(150);
@@ -119,7 +124,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   d.body.click(); await sleep(100);
   ok('clicking elsewhere closes the menu', d.querySelector('#propMenu').hidden);
   d.querySelector('#propOn').click(); await sleep(150);
-  ok('switch off hides the menu button', !d.querySelector('#propMenuBtn') && d.querySelector('#propOn').getAttribute('aria-checked') === 'false');
+  ok('switch off disables the menu button and keeps its size', d.querySelector('#propMenuBtn').disabled && d.querySelector('#propOn').getAttribute('aria-checked') === 'false');
   ok('no tok/s anywhere in tables or picks', !/tok\/s/.test(d.querySelector('#table').textContent + d.querySelector('#picks').textContent));
 
   // theme toggle
