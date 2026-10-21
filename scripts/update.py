@@ -50,6 +50,42 @@ def clean_name(name):
     return name[:m.start()] if m and EFFORT.search(m.group(1)) else name
 
 
+TIER_VERSION = re.compile(r"-?\d[\d.]*$")
+
+
+def tier_of(name):
+    """'Claude Opus 5.5' -> 'Claude Opus', 'GPT-6.1 Sol' -> 'GPT Sol': a product tier with version numbers removed."""
+    toks = [TIER_VERSION.sub("", t) for t in re.sub(r"\(.*?\)", "", clean_name(name)).split()]
+    return " ".join(t for t in toks if t)
+
+
+def proprietary_frontier(window_days=120, lab_floor=45.0, tier_floor=35.0):
+    """Latest model of each product tier at the leading proprietary labs: horizontal reference lines for the chart.
+    Proprietary models publish no parameter counts, so they can only be a score, never a point on the size axis."""
+    rows = [r for r in json.loads((DATA / "aa_closed.json").read_text(encoding="utf8")) if r["index"] and r["released"]]
+    if not rows:
+        return []
+    newest = max(r["released"] for r in rows)
+    cut = (dt.date.fromisoformat(newest) - dt.timedelta(days=window_days)).isoformat()
+    lab_best = {}
+    for r in rows:
+        lab_best[r["creator"]] = max(lab_best.get(r["creator"], 0), r["index"])
+    tiers = {}
+    for r in rows:
+        if lab_best[r["creator"]] < lab_floor or r["index"] < tier_floor or r["released"] < cut:
+            continue
+        key = (r["creator"], tier_of(r["name"]))
+        cur = tiers.get(key)
+        if cur is None or (r["released"], r["index"]) > (cur["released"], cur["best"]):
+            tiers[key] = {"id": r["family"], "tier": key[1], "name": clean_name(r["name"]), "creator": r["creator"], "released": r["released"], "best": r["index"], "slug": r["slug"]}
+    out = sorted(tiers.values(), key=lambda t: -t["best"])
+    seen = set()
+    for t in out:  # the highest-scoring tier of each lab is pre-selected in the UI
+        t["top"] = t["creator"] not in seen
+        seen.add(t["creator"])
+    return out
+
+
 def main():
     scrape_aa.main()
     rows = json.loads((DATA / "aa_open.json").read_text(encoding="utf8"))
@@ -128,13 +164,14 @@ def main():
         })
 
     models.sort(key=lambda m: -m["best"])
+    frontier = proprietary_frontier()
     old = load(DATA / "models.json", {})
     if old.get("count") and len(models) < 0.8 * old["count"]:
         sys.exit(f"refusing to overwrite: {len(models)} models vs {old['count']} before (scrape probably broke)")
-    out = {"generated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "count": len(models), "skipped": skipped, "models": models}
+    out = {"generated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "count": len(models), "skipped": skipped, "models": models, "frontier": frontier}
     if {k: v for k, v in old.items() if k != "generated"} == {k: v for k, v in out.items() if k != "generated"}:
         print("no data changes")
-        HF_CACHE.write_text(json.dumps(cache, indent=0, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf8")
+        HF_CACHE.write_text(json.dumps(cache, indent=0, sort_keys=True, ensure_ascii=False) + chr(10), encoding="utf8")
         return
     (DATA / "models.json").write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False) + "\n", encoding="utf8")
     HF_CACHE.write_text(json.dumps(cache, indent=0, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf8")

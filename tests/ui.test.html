@@ -39,12 +39,13 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   d.querySelector('#pMode .pill[data-v="unified"]').click(); await sleep(150);
   ok('unified mode swaps rows', !!d.querySelector('#pU') && !d.querySelector('#pVram') && readout() !== r0, readout());
   d.querySelector('#pMode .pill[data-v="offload"]').click(); await sleep(150);
-  ok('VRAM pills are plain totals', [...d.querySelectorAll('#pVram .pill')].map(b => b.dataset.v).join() === '6,8,12,16,24,32,48,64,96,128,192,256');
+  ok('VRAM pills are plain totals from 4 GB, last is 256+', [...d.querySelectorAll('#pVram .pill')].map(b => b.dataset.v).join() === '4,6,8,12,16,24,32,48,64,96,128,192,256' && /256\+ GB/.test(d.querySelector('#pVram').textContent));
+  ok('GPU families', [...d.querySelectorAll('#pGpu .pill')].map(b => b.textContent).join('|') === 'RTX 5000 / Blackwell|RTX 2000–4000|GTX|AMD / Intel');
   d.querySelector('#pVram .pill[data-v="96"]').click(); await sleep(150);
   ok('96 GB VRAM shows in summary', /96 GB VRAM/.test(readout()), readout());
-  d.querySelector('#pFp4 .pill[data-v="1"]').click(); await sleep(150);
+  d.querySelector('#pGpu .pill[data-v="rtx50"]').click(); await sleep(150);
   ok('FP4 hardware resolves 4-bit to NVFP4', /NVFP4/.test(d.querySelector('#pPrec').textContent), d.querySelector('#pPrec').textContent);
-  d.querySelector('#pFp4 .pill[data-v="0"]').click(); await sleep(150);
+  d.querySelector('#pGpu .pill[data-v="gtx"]').click(); await sleep(150);
   ok('other GPUs fall back to GGUF', /Q4_K_M/.test(d.querySelector('#pPrec').textContent));
 
   // model set switch
@@ -69,8 +70,17 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   // x axis toggle, y source toggle
   d.querySelector('#xmode button[data-v="active"]').click(); await sleep(100);
   ok('x title follows toggle', /Active parameters/.test(d.querySelector('#main').textContent));
-  d.querySelector('#yaxis button[data-v="est"]').click(); await sleep(100);
-  ok('quad y-axis label follows toggle', /estimated speed/.test(d.querySelector('#quad').textContent) || /Nothing fits/.test(d.querySelector('#quad').textContent));
+  // proprietary frontier: nested toggle + per-tier pills + horizontal lines
+  const linesBefore = d.querySelectorAll('#main svg line[stroke-dasharray="7 5"]').length;
+  d.querySelector('#propOn').click(); await sleep(200);
+  const pills = d.querySelectorAll('#propbox .pill'), lines = d.querySelectorAll('#main svg line[stroke-dasharray="7 5"]').length;
+  ok('proprietary toggle reveals tier pills', pills.length >= 10 && linesBefore === 0, pills.length + ' pills, ' + linesBefore + ' lines before');
+  ok('flagship tiers pre-selected as lines', lines >= 4 && lines === [...pills].filter(p => p.getAttribute('aria-pressed') === 'true').length, lines);
+  const off = [...pills].find(p => p.getAttribute('aria-pressed') === 'false'); off.click(); await sleep(150);
+  ok('clicking a tier pill adds its line', d.querySelectorAll('#main svg line[stroke-dasharray="7 5"]').length === lines + 1);
+  d.querySelector('#propOn').click(); await sleep(150);
+  ok('toggle off removes lines and pills', d.querySelectorAll('#main svg line[stroke-dasharray="7 5"]').length === 0 && d.querySelectorAll('#propbox .pill').length === 0);
+  ok('no tok/s anywhere in tables or picks', !/tok\/s/.test(d.querySelector('#table').textContent + d.querySelector('#picks').textContent));
 
   // theme toggle
   const t0 = d.documentElement.dataset.theme; d.querySelector('#theme').click(); await sleep(100);

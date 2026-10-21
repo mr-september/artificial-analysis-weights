@@ -175,3 +175,13 @@ details.adv .row { margin-bottom: 8px; }
 .pickpanel .sep { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--brand); margin: 12px 0 0; padding-bottom: 2px; border-bottom: 1px solid var(--border); }
 .pickpanel .list > .sep:first-child { margin-top: 4px; }
 .legend svg { vertical-align: middle; margin-right: 4px; }
+
+/* proprietary frontier toggle container */
+.propbox { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; border: 1px solid var(--border); border-radius: 18px; padding: 4px 12px 4px 10px; background: var(--soft); max-width: 100%; }
+.pills.sm { gap: 4px; }
+.pill.sm { font-size: 12px; padding: 3px 10px; color: var(--pc); border-color: color-mix(in srgb, var(--pc) 55%, var(--border)); background: var(--card); }
+.pill.sm:hover { border-color: var(--pc); }
+.pill.sm[aria-pressed="true"] { background: var(--pc); border-color: var(--pc); color: #fff; font-weight: 500; }
+
+.card > header .tools:has(.propbox) { flex: 1 1 640px; }
+.propbox { flex: 1 1 320px; }

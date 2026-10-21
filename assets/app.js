@@ -5,10 +5,10 @@
 
   // ---------------------------------------------------------------- state
   const DEFAULT = {
-    set: { mode: 'recent', months: 6 }, pick: null, x: 'total', xscale: 'log', prec: 'q4', yaxis: 'aa', minspeed: 3, reserve: 4, filter: '',
-    hw: { mode: 'offload', vram: 24, fp4: false, ram: 64, uGB: 64, uClass: 'fast', ssd: false },
+    set: { mode: 'recent', months: 6 }, pick: null, x: 'total', xscale: 'log', prec: 'q4', prop: { on: false, sel: null }, reserve: 4, filter: '',
+    hw: { mode: 'offload', vram: 24, gpu: 'rtx20-40', ram: 64, uGB: 64, uClass: 'fast', ssd: false },
   };
-  const merge = (a, b) => ({ ...a, ...b, set: { ...a.set, ...b.set }, hw: { ...a.hw, ...b.hw } });
+  const merge = (a, b) => ({ ...a, ...b, set: { ...a.set, ...b.set }, hw: { ...a.hw, ...b.hw }, prop: { ...a.prop, ...b.prop } });
   let state = JSON.parse(JSON.stringify(DEFAULT));
   try { const s = JSON.parse(localStorage.getItem('aaw-state-v2') || 'null'); if (s) state = merge(state, s); } catch (e) { /* private mode */ }
   try { const u = new URLSearchParams(location.search).get('state'); if (u) state = merge(state, JSON.parse(u)); } catch (e) { /* bad share link */ }
@@ -21,7 +21,6 @@
   Core.addLean(models);
   for (const m of models) {
     m.cls = m.lookup ? 'lookup' : m.arch.startsWith('moe') ? 'moe' : 'dense';
-    m.tpsAA = (m.variants.find(v => v.tps) || {}).tps ?? null;
     m.slug = m.variants[0].slug;
   }
   $('#updated').textContent = `Data refreshed ${data.generated.slice(0, 10)}.`;
@@ -31,8 +30,9 @@
   const colorOf = m => css('--' + m.cls);
   const fmtB = v => (v >= 1000 ? (v / 1000).toFixed(v >= 10000 ? 0 : 1).replace(/\.0$/, '') + 'T' : v >= 100 ? Math.round(v) + 'B' : v >= 10 ? +v.toFixed(1) + 'B' : +v.toFixed(2) + 'B');
   const fmtGB = v => (v >= 1000 ? (v / 1000).toFixed(1) + ' TB' : v >= 100 ? Math.round(v) + ' GB' : +v.toFixed(1) + ' GB');
-  const fmtT = v => (v >= 100 ? Math.round(v) : v >= 10 ? v.toFixed(0) : v.toFixed(1));
   const PINNED_LABS = ['Alibaba', 'Xiaomi', 'DeepSeek', 'Z AI', 'Kimi', 'Meta', 'MiniMax', 'OpenAI', 'Google', 'NVIDIA', 'Mistral'];
+  const PROP_COLORS = ['#e5484d', '#2f6fed', '#2a9d5c', '#d19200', '#c13ccf', '#0891b2', '#7c8b00', '#e0558a', '#5b6472', '#b4541a', '#3f8f8f', '#8a5cf6', '#c2410c', '#0e7490', '#4d7c0f'];
+  const USABLE_TPS = 3;  // silent usability floor applied to the roofline estimate; speeds themselves are not shown
   const CLS_SHORT = { fit: 'fits', offload: 'RAM offload', ssd: 'SSD paging', none: 'no fit' };
 
   function logTicks(a, b) {
@@ -73,7 +73,7 @@
     }
     if (c.under) g += c.under({ sx, sy, M, iw, ih, W, H });
     if (c.frontier) {
-      const f = Core.frontier(pts.filter(p => !p.ring).map(p => ({ x: p.x, y: p.y, px: p.px, py: p.py })));
+      const f = Core.frontier(pts.filter(p => p.linkX == null).map(p => ({ x: p.x, y: p.y, px: p.px, py: p.py })));
       if (f.length > 1) g += `<path class="front" d="${f.map((p, i) => (i ? 'L' : 'M') + p.px.toFixed(1) + ' ' + p.py.toFixed(1)).join('')}"/>`;
     }
     // tinted pill linking a lookup-table model's two points (without / with lookup tables)
@@ -140,12 +140,34 @@
     const rows = [['Intelligence', idx], ['Parameters', params]];
     if (m.lookup) rows.push(['Without lookup tables', fmtB(m.total - m.lookup)]);
     rows.push([`Weights @ ${q.label}`, fmtGB(gb)]);
-    if (withHw) rows.push(['On your hardware', e ? `<span class="badge ${e.cls}">${CLS_SHORT[e.cls]}</span>${e.cls !== 'none' ? ' ~' + fmtT(e.tps) + ' tok/s' : ''}` : '—']);
-    rows.push(['AA measured speed', m.tpsAA ? fmtT(m.tpsAA) + ' tok/s' : 'n/a']);
+    if (withHw) rows.push(['On your hardware', e ? `<span class="badge ${e.cls}">${CLS_SHORT[e.cls]}</span>` : '—']);
     if (withHw && m.lean != null) rows.push(['Lean', (m.lean > 0.12 ? 'coding / agents' : m.lean < -0.12 ? 'knowledge / chat' : 'balanced') + ` (${m.lean > 0 ? '+' : ''}${m.lean.toFixed(2)})`]);
     const links = `<div class="links">${aaLink(m)}` + (m.repo ? `<a href="https://huggingface.co/${m.repo}" target="_blank" rel="noopener">Hugging Face ↗</a>` : '') + '</div>';
     const note = m.notes.length ? `<div class="note">${esc(m.notes[0])}</div>` : '';
     return `<h4>${esc(m.name)}</h4><div class="by">${esc(m.creator)}${m.released ? ' · ' + m.released : ''}${m.license ? ' · ' + esc(m.license) : ''}</div><dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>${note}${links}`;
+  }
+
+  // ---------------------------------------------------------------- proprietary frontier (horizontal reference lines)
+  const propColor = t => PROP_COLORS[data.frontier.indexOf(t) % PROP_COLORS.length];
+  const propSel = () => new Set(state.prop.sel || data.frontier.filter(t => t.top).map(t => t.id));
+  const propLines = () => (state.prop.on ? data.frontier.filter(t => propSel().has(t.id)) : []);
+  function propLinesSvg(lines, { sy, M, iw }) {
+    let g = '', lastY = -99;
+    for (const t of [...lines].sort((a, b) => b.best - a.best)) {
+      const y = sy(t.best), c = propColor(t), ly = Math.max(y - 5, lastY + 12);  // nudge labels apart when scores are close
+      lastY = ly;
+      g += `<line x1="${M.l}" x2="${M.l + iw}" y1="${y}" y2="${y}" stroke="${c}" stroke-width="1.6" stroke-dasharray="7 5" stroke-opacity=".9"/><text class="plabel" x="${M.l + 8}" y="${ly}" text-anchor="start" style="fill:${c};font-weight:600">${esc(t.name)} · ${t.best.toFixed(1)}</text>`;
+    }
+    return g;
+  }
+  function drawProp() {
+    const P = state.prop, sel = propSel();
+    $('#propbox').innerHTML = `<label class="tog"><input type="checkbox" id="propOn"${P.on ? ' checked' : ''}> Proprietary frontier</label>` +
+      (P.on ? `<div class="pills sm">${data.frontier.map(t => `<button class="pill sm" data-id="${t.id}" aria-pressed="${sel.has(t.id)}" style="--pc:${propColor(t)}" title="${esc(t.name)} · ${t.best.toFixed(1)}">${esc(t.tier)}</button>`).join('')}</div>` : '');
+    $('#propOn').addEventListener('change', e => { P.on = e.target.checked; changed(); });
+    $('#propbox').querySelectorAll('.pill').forEach(b => b.addEventListener('click', () => {
+      const cur = propSel(); cur.has(b.dataset.id) ? cur.delete(b.dataset.id) : cur.add(b.dataset.id); P.sel = [...cur]; changed();
+    }));
   }
 
   // ---------------------------------------------------------------- main chart
@@ -162,42 +184,40 @@
     const xmax = Math.max(...pts.map(p => p.x)), xmin = Math.min(...pts.map(p => p.x), ...lk.map(m => m.total - m.lookup));
     const x0 = log ? xmin / 1.5 : 0, x1 = xmax * (log ? 1.6 : 1.06);
     const rankIdx = Core.ranks(pts.map(p => p.y));
-    const fr = new Set(Core.frontier(pts).map(p => p.m.id));
+    const fx = p => (state.x === 'total' && p.m.lookup ? p.m.total - p.m.lookup : p.x);  // frontier uses the size without lookup tables
+    const fr = new Set(Core.frontier(pts.map(p => ({ x: fx(p), y: p.y, m: p.m }))).map(p => p.m.id));
     pts.forEach((p, i) => { p.name = p.m.name; p.label = (fr.has(p.m.id) ? 2 : 0) + rankIdx[i]; p.faded = !!f && !(p.m.name + ' ' + p.m.creator).toLowerCase().includes(f); });
     for (const m of lk) {
       const par = pts.find(p => p.m === m); par.linkX = m.total - m.lookup;
       pts.push({ x: par.linkX, y: m.best, m, color: par.color, ring: true, faded: par.faded, hl: par.hl, r: 4.5 });
     }
-    const ys = pts.map(p => p.y);
+    const lines = propLines();
+    const ys = pts.map(p => p.y).concat(lines.map(l => l.best));
     const y0 = Math.max(0, Math.floor((Math.min(...ys) - 3) / 5) * 5), y1 = Math.ceil((Math.max(...ys) + 3) / 5) * 5;
     const xt = log ? logTicks(x0, x1) : linTicks(x0, x1);
     scatter($('#main'), {
       pts, xlog: log, x0, x1, y0, y1, xTicks: xt, yTicks: linTicks(y0, y1, 6), xFmt: fmtB,
       xTitle: `${state.x === 'active' ? 'Active' : 'Total'} parameters (billions, ${log ? 'log' : 'linear'} scale)`, yTitle: 'Artificial Analysis Intelligence Index',
       height: W => Math.round(Math.min(560, Math.max(360, W * 0.56))), frontier: true, tip: m => tipHTML(m, false), aria: 'Scatter plot of intelligence index versus parameter count',
+      under: ctx => propLinesSvg(lines, ctx),
     });
     $('#mainLegend').innerHTML = `<span><i class="dot" style="background:var(--dense)"></i>Dense</span><span><i class="dot" style="background:var(--moe)"></i>Mixture of experts</span><span><i class="dot" style="background:var(--lookup)"></i>Has lookup tables (ring = size without them, shaded span = the tables)</span><span><i class="dot hollow" style="color:var(--muted)"></i>Score estimated by AA</span>`;
   }
 
   // ---------------------------------------------------------------- quadrant
-  function quadPoints() {
-    const set = inSet(); evalAll(set);
-    const fits = set.filter(m => m.ev.cls !== 'none' && m.ev.tps >= state.minspeed && m.lean != null);
-    const useAA = state.yaxis === 'aa';
-    const speed = m => (useAA ? m.tpsAA : m.ev.tps);
-    const rows = fits.filter(m => speed(m));
-    const ri = Core.ranks(rows.map(m => m.best)), rs = Core.ranks(rows.map(m => Math.log(speed(m))));
-    return { rows, y: rows.map((m, i) => ri[i] - rs[i]), noAA: fits.length - rows.length };
-  }
+  const usable = m => m.ev.cls !== 'none' && m.ev.tps >= USABLE_TPS;
 
   function drawQuad() {
-    const el = $('#quad'), Q = quadPoints();
-    $('#quadLegend').innerHTML = `<span><i class="dot" style="background:var(--dense)"></i>Dense</span><span><i class="dot" style="background:var(--moe)"></i>MoE</span><span><i class="dot" style="background:var(--lookup)"></i>Lookup tables</span><span>${Q.rows.length} models shown` + (state.yaxis === 'aa' && Q.noAA ? `; ${Q.noAA} more fit but have no AA speed (try "Estimated")` : '') + `</span>`;
-    if (!Q.rows.length) { el.innerHTML = `<p class="empty">Nothing fits with these settings. Try 3-bit, more memory, SSD paging (under Advanced), a lower minimum speed, or a wider model set.</p>`; return; }
-    const lo = Math.min(...Q.rows.map(m => m.best)), hi = Math.max(...Q.rows.map(m => m.best));
-    const rOf = m => 4 + 8 * Math.sqrt(hi > lo ? (m.best - lo) / (hi - lo) : 0.5);  // dot area tracks Intelligence Index
-    const pts = Q.rows.map((m, i) => ({ x: m.lean, y: Q.y[i], m, color: colorOf(m), hollow: m.variants[0].estimated, hl: state.hl === m.id, name: m.name, r: rOf(m), label: m.best }));
-    $('#quadLegend').insertAdjacentHTML('beforeend', `<span><svg width="44" height="18" aria-hidden="true"><circle cx="6" cy="9" r="4" fill="var(--muted)" fill-opacity=".5"/><circle cx="30" cy="9" r="8" fill="var(--muted)" fill-opacity=".5"/></svg>bigger dot = higher Intelligence Index (${lo.toFixed(0)}–${hi.toFixed(0)})</span>`);
+    const el = $('#quad'), set = inSet(); evalAll(set);
+    const ok = set.filter(usable), rows = ok.filter(m => m.lean != null);
+    $('#quadLegend').innerHTML = `<span><i class="dot" style="background:var(--dense)"></i>Dense</span><span><i class="dot" style="background:var(--moe)"></i>MoE</span><span><i class="dot" style="background:var(--lookup)"></i>Lookup tables</span><span>${rows.length} models shown` + (ok.length > rows.length ? `; ${ok.length - rows.length} more fit but lack enough benchmarks to place` : '') + `</span>`;
+    if (!rows.length) { el.innerHTML = `<p class="empty">Nothing fits with these settings. Try 3-bit, more memory, SSD paging (under Advanced), or a wider model set.</p>`; return; }
+    // y: intelligence rank minus speed rank; speed is approximated by fewer active parameters
+    const ri = Core.ranks(rows.map(m => m.best)), rs = Core.ranks(rows.map(m => -Math.log(m.active)));
+    const lo = Math.min(...rows.map(m => m.best)), hi = Math.max(...rows.map(m => m.best));
+    const rOf = m => 3 + 14 * (hi > lo ? (m.best - lo) / (hi - lo) : 0.5);  // higher score, visibly bigger dot
+    const pts = rows.map((m, i) => ({ x: m.lean, y: ri[i] - rs[i], m, color: colorOf(m), hollow: m.variants[0].estimated, hl: state.hl === m.id, name: m.name, r: rOf(m), label: m.best }));
+    $('#quadLegend').insertAdjacentHTML('beforeend', `<span><svg width="52" height="22" aria-hidden="true"><circle cx="6" cy="11" r="3.5" fill="var(--muted)" fill-opacity=".5"/><circle cx="34" cy="11" r="10" fill="var(--muted)" fill-opacity=".5"/></svg>bigger dot = higher Intelligence Index (${lo.toFixed(0)}–${hi.toFixed(0)})</span>`);
     scatter(el, {
       pts, bare: true, xlog: false, x0: -0.75, x1: 0.75, y0: -1.1, y1: 1.1, tip: m => tipHTML(m, true), aria: 'Quadrant chart of coding-versus-knowledge lean against speed-versus-intelligence', maxLabels: 28,
       height: W => Math.round(Math.min(560, Math.max(380, W * 0.6))),
@@ -209,7 +229,7 @@
           `<text class="quad" x="${l + 10}" y="${b - 10}">Quick chat</text><text class="quad" x="${r - 10}" y="${b - 10}" text-anchor="end">Quick coders</text>` +
           `<text class="axtitle" x="${l}" y="${b + 24}">← knowledge &amp; chat</text><text class="axtitle" x="${r}" y="${b + 24}" text-anchor="end">coding &amp; agents →</text>` +
           `<text class="axtitle" x="${cx}" y="${b + 24}" text-anchor="middle" style="fill:var(--muted);font-weight:400">relative strength</text>` +
-          `<text class="axtitle" transform="translate(${l - 3} ${cy}) rotate(-90)" text-anchor="middle" style="fill:var(--muted);font-weight:400">${state.yaxis === 'aa' ? 'smarter ↑ · faster ↓ (AA measured speed)' : 'smarter ↑ · faster ↓ (estimated speed)'}</text>`;
+          `<text class="axtitle" transform="translate(${l - 3} ${cy}) rotate(-90)" text-anchor="middle" style="fill:var(--muted);font-weight:400">smarter ↑ · faster ↓</text>`;
       },
     });
   }
@@ -217,7 +237,7 @@
   // ---------------------------------------------------------------- picks
   function drawPicks() {
     const set = inSet(); evalAll(set);
-    const ok = set.filter(m => m.ev.cls !== 'none' && m.ev.tps >= state.minspeed);
+    const ok = set.filter(usable);
     const by = (list, key) => list.reduce((a, m) => (a == null || key(m) > key(a) ? m : a), null);
     const picks = [];
     const smart = by(ok, m => m.best);
@@ -228,10 +248,10 @@
     if (coder) picks.push(['Best for coding & agents', coder]);
     const chat = by(ok.filter(m => m.lean != null && m.lean <= -0.05), m => m.best);
     if (chat) picks.push(['Best for knowledge & chat', chat]);
-    if (smart) { const fast = by(ok.filter(m => m.best >= 0.6 * smart.best), m => m.ev.tps); if (fast && fast !== smart) picks.push(['Fastest that is still capable', fast]); }
+    if (smart) { const fast = by(ok.filter(m => m.best >= 0.6 * smart.best), m => -m.active); if (fast && fast !== smart) picks.push(['Lightest that is still capable', fast]); }
     $('#picks').innerHTML = picks.length ? picks.map(([t, m]) =>
-      `<button class="pick" data-id="${m.id}"><small>${t}</small><b>${esc(m.name)}</b><div class="meta">Index ${m.best.toFixed(1)} · <span class="badge ${m.ev.cls}">${CLS_SHORT[m.ev.cls]}</span> · ~${fmtT(m.ev.tps)} tok/s<br>${fmtB(m.total)} total · ${fmtB(m.active)} active · ${fmtGB(m.ev.total)}</div></button>`).join('')
-      : '<p class="empty" style="grid-column:1/-1">No model meets the speed floor on this hardware in the current model set.</p>';
+      `<button class="pick" data-id="${m.id}"><small>${t}</small><b>${esc(m.name)}</b><div class="meta">Index ${m.best.toFixed(1)} · <span class="badge ${m.ev.cls}">${CLS_SHORT[m.ev.cls]}</span><br>${fmtB(m.total)} total · ${fmtB(m.active)} active · ${fmtGB(m.ev.total)}</div></button>`).join('')
+      : '<p class="empty" style="grid-column:1/-1">No model in the current set runs usably on this hardware.</p>';
     $('#picks').querySelectorAll('.pick').forEach(b => b.addEventListener('click', () => { state.hl = b.dataset.id; drawQuad(); drawMain(); $('#quad').scrollIntoView({ block: 'center', behavior: 'smooth' }); }));
   }
 
@@ -241,22 +261,23 @@
     const h = state.hw, hw = hwNow(), q = quantNow();
     let rows = `<div class="hwrow"><span class="k">Hardware</span><div class="pills" id="pMode">${Hardware.MODES.map(([k, l]) => pill('data-v', k, l, h.mode === k)).join('')}</div></div>`;
     if (h.mode !== 'unified') {
-      rows += `<div class="hwrow"><span class="k">Total VRAM</span><div class="pills" id="pVram">${Hardware.VRAM_SIZES.map(n => pill('data-v', n, n + ' GB', h.vram === n)).join('')}</div></div>`;
-      rows += `<div class="hwrow"><span class="k">Native FP4</span><div class="pills" id="pFp4">${pill('data-v', '1', 'RTX 50 / Blackwell', !!h.fp4, 'fp4')}${pill('data-v', '0', 'Other GPUs', !h.fp4)}</div></div>`;
+      const last = Hardware.VRAM_SIZES[Hardware.VRAM_SIZES.length - 1];
+      rows += `<div class="hwrow"><span class="k">Total VRAM</span><div class="pills" id="pVram">${Hardware.VRAM_SIZES.map(n => pill('data-v', n, n === last ? n + '+ GB' : n + ' GB', h.vram === n)).join('')}</div></div>`;
+      rows += `<div class="hwrow"><span class="k">GPU family</span><div class="pills" id="pGpu">${Hardware.GPU_FAMILIES.map(([k, l]) => pill('data-v', k, l, h.gpu === k, k === 'rtx50' ? 'fp4' : '')).join('')}</div></div>`;
       if (h.mode === 'offload') rows += `<div class="hwrow"><span class="k">System RAM</span><div class="pills" id="pRam">${Hardware.RAM_SIZES.map(n => pill('data-v', n, n + ' GB', h.ram === n)).join('')}</div></div>`;
     } else {
       rows += `<div class="hwrow"><span class="k">Memory</span><div class="pills" id="pU">${Hardware.U_SIZES.map(n => pill('data-v', n, n + ' GB', h.uGB === n)).join('')}</div></div>`;
       rows += `<div class="hwrow"><span class="k">Memory speed</span><div class="pills" id="pUC">${Hardware.U_CLASSES.map(u => pill('data-v', u.id, u.label, h.uClass === u.id).replace('<button', `<button title="${esc(u.hint)} (~${u.bw} GB/s)"`)).join('')}</div></div>`;
     }
-    const precNote = state.prec === 'q4' ? (hw.fp4 ? 'NVFP4: native 4-bit floats on this GPU' : 'GGUF Q4_K_M (this GPU has no native FP4)') : q.label;
+    const precNote = state.prec === 'q4' ? (hw.fp4 ? 'NVFP4: native 4-bit floats on this GPU' : 'GGUF Q4_K_M (no native FP4 on this GPU)') : q.label;
     rows += `<div class="hwrow"><span class="k">Precision</span><div class="pills" id="pPrec">${[['native', 'As released'], ['q8', '8-bit'], ['q4', '4-bit'], ['q3', '3-bit']].map(([k, l]) => pill('data-v', k, l, state.prec === k)).join('')}<span class="note" style="align-self:center;margin-left:6px">${esc(precNote)}</span></div></div>`;
-    rows += `<div class="hwsum"><span><b>${esc(hw.label)}</b></span><span>${fmtGB(hw.unified ? hw.usable : hw.vram)} ${hw.unified ? 'usable by GPU' : 'VRAM'}</span><span>~${Math.round(hw.bwV)} GB/s</span></div>`;
+    rows += `<div class="hwsum"><span><b>${esc(hw.label)}</b></span><span>${fmtGB(hw.unified ? hw.usable : hw.vram)} ${hw.unified ? 'usable by GPU' : 'VRAM'}</span></div>`;
     rows += `<details class="adv"><summary>Advanced</summary><div class="row"><label class="tog">Headroom for context &amp; runtime <input type="range" id="hRes" min="1" max="32" value="${state.reserve}"> <b id="hResOut">${state.reserve} GB</b></label></div><div class="row"><label class="tog"><input type="checkbox" id="hSsd"${h.ssd ? ' checked' : ''}> Allow paging weights from an NVMe SSD (~6 GB/s, slow)</label></div></details>`;
     $('#hwbox').innerHTML = rows;
     const B = $('#hwbox'), on = (sel, fn) => B.querySelectorAll(sel).forEach(b => b.addEventListener('click', () => fn(b)));
     on('#pMode .pill', b => { h.mode = b.dataset.v; changed(true); });
     on('#pVram .pill', b => { h.vram = +b.dataset.v; changed(true); });
-    on('#pFp4 .pill', b => { h.fp4 = b.dataset.v === '1'; changed(true); });
+    on('#pGpu .pill', b => { h.gpu = b.dataset.v; changed(true); });
     on('#pRam .pill', b => { h.ram = +b.dataset.v; changed(true); });
     on('#pU .pill', b => { h.uGB = +b.dataset.v; changed(true); });
     on('#pUC .pill', b => { h.uClass = b.dataset.v; changed(true); });
@@ -309,7 +330,6 @@
       ['best', 'Index', m => m.best, m => m.best.toFixed(1)], ['total', 'Total', m => m.total, m => fmtB(m.total)], ['active', 'Active', m => m.active, m => fmtB(m.active)],
       ['lookup', 'Lookup', m => m.lookup, m => (m.lookup ? fmtB(m.lookup) : '—')], ['gb', 'Weights @ ' + q.label, m => m.ev.total, m => fmtGB(m.ev.total)],
       ['fit', 'On your hardware', m => ({ fit: 3, offload: 2, ssd: 1, none: 0 }[m.ev.cls]), m => `<span class="badge ${m.ev.cls}">${CLS_SHORT[m.ev.cls]}</span>`],
-      ['tps', 'Est. tok/s', m => m.ev.tps || 0, m => (m.ev.cls === 'none' ? '—' : fmtT(m.ev.tps))], ['aa', 'AA tok/s', m => m.tpsAA || 0, m => (m.tpsAA ? fmtT(m.tpsAA) : '—')],
     ];
     const col = cols.find(c => c[0] === sort.k) || cols[2];
     const rows = set.filter(m => !f || (m.name + ' ' + m.creator).toLowerCase().includes(f)).sort((a, b) => { const x = col[2](a), y = col[2](b); return (x < y ? -1 : x > y ? 1 : 0) * sort.dir; });
@@ -328,12 +348,10 @@
     seg($('#setmode'), modes, () => (state.pick ? 'custom' : state.set.mode), v => { if (v !== 'custom') { state.pick = null; state.set.mode = v; } });
     seg($('#xmode'), [['total', 'Total params'], ['active', 'Active params']], () => state.x, v => { state.x = v; });
     seg($('#xscale'), [['log', 'Log'], ['linear', 'Linear']], () => state.xscale, v => { state.xscale = v; });
-    seg($('#yaxis'), [['aa', 'AA measured speed'], ['est', 'Estimated on my hardware']], () => state.yaxis, v => { state.yaxis = v; });
     const m = $('#months'); m.value = state.set.months; $('#monthsOut').textContent = state.set.months + (state.set.months === 1 ? ' month' : ' months');
     m.oninput = () => { state.set.months = +m.value; $('#monthsOut').textContent = m.value + (m.value === '1' ? ' month' : ' months'); changed(false, true); };
     $('#monthsWrap').style.display = !state.pick && state.set.mode === 'recent' ? '' : 'none';
-    $('#minspeed').value = String(state.minspeed);
-    $('#minspeed').onchange = e => { state.minspeed = +e.target.value; changed(); };
+    drawProp();
     $('#q').oninput = e => { state.filter = e.target.value; drawMain(); drawTable(); };
     $('#q').value = state.filter;
   }
