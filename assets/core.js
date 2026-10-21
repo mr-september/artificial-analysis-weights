@@ -30,6 +30,17 @@ const Core = (() => {
   }
 
   /**
+   * Q4 size split into base weights and lookup tables, in GB. Uses the measured GGUF sizes in m.q4 where we have them;
+   * otherwise a linear estimate: base at the Q4_K_M rate, tables at ~4.5 bpw (Q4_K / IQ4_NL tables in the measured GGUFs).
+   */
+  const LOOKUP_Q4_BPW = 4.5;
+  function q4Split(m) {
+    if (m.q4) return { gb: m.q4.gb, lookup: m.q4.lookup_gb, src: m.q4.src || 'Unsloth UD-Q4_K_XL', est: false };
+    const lookup = (m.lookup * LOOKUP_Q4_BPW) / 8;
+    return { gb: ((m.total - m.lookup) * quant('q4').bpw) / 8 + lookup, lookup, src: 'Q4 estimate', est: true };
+  }
+
+  /**
    * Place a model's weights into VRAM -> system RAM -> SSD and estimate decode speed.
    * hw: {vram, ram, bwV, bwR, unified, ssd}   (GB, GB/s)
    * Reads per token: always-read ("hot") weights, plus the active share of routed experts spread
@@ -138,6 +149,6 @@ const Core = (() => {
     return out;
   }
 
-  return { QUANTS, quant, DEFAULTS, gbPerB, evaluate, frontier, modelSet, addLean, ranks };
+  return { QUANTS, quant, DEFAULTS, gbPerB, q4Split, evaluate, frontier, modelSet, addLean, ranks };
 })();
 if (typeof module !== 'undefined') module.exports = Core;

@@ -1,9 +1,9 @@
 {
-  "_doc": "Curated corrections, keyed by AA family id. Fields: total_b, active_b, lookup_b (sparse-lookup params such as n-gram / per-layer embedding tables that can live in slow memory), note, source. Everything else is derived automatically.",
-  "qwen3-8-flash-next": {"lookup_b": 51, "source": "HF model card: '125B with 6B activated, plus 51B n-gram embedding and 4B MTP'"},
+  "_doc": "Curated corrections, keyed by AA family id. Fields: total_b, active_b, lookup_b (sparse-lookup params such as n-gram / per-layer embedding tables that can live in slow memory), q4_gb / q4_lookup_gb / q4_src (measured size of a Q4 GGUF in GB, and of its lookup-table tensors; default source unsloth/*-GGUF UD-Q4_K_XL; models without one get a formula estimate, see Core.q4Split), note, source. Everything else is derived automatically.",
+  "qwen3-8-flash-next": {"q4_gb": 111.3, "q4_lookup_gb": 28.8, "lookup_b": 51, "source": "HF model card: '125B with 6B activated, plus 51B n-gram embedding and 4B MTP'"},
   "longcat-2-0": {"lookup_b": 135, "source": "HF model card: '135B N-gram Embedding parameters are included in the model'"},
-  "longcat-flash-lite": {"lookup_b": 30, "source": "HF model card: 'allocating over 30B parameters to embeddings' (lower bound)"},
-  "gemma-4-e2b": {"lookup_b": 2.8, "source": "HF model card: 2.3B effective, 5.1B with embeddings (per-layer embeddings)"},
-  "gemma-4-e4b": {"lookup_b": 3.5, "source": "HF model card: 4.5B effective, 8B with embeddings (per-layer embeddings)"},
-  "deepseek-v4-1-flash-1017": {"total_b": 763.205, "lookup_b": 196.614, "source": "HF safetensors headers: layers.1.engram.embed.weight F8_E4M3 [384006168, 256] and layers.14.engram.embed.weight [384016682, 256], 196.614B lookup params (weights only, excludes E8M0 scales); total = full stored count 763.205B"}
+  "longcat-flash-lite": {"q4_gb": 40.23, "q4_lookup_gb": 17.66, "q4_src": "GGUF Q4_K_M (InquiringMinds-AI)", "lookup_b": 30, "source": "HF model card: 'allocating over 30B parameters to embeddings' (lower bound)"},
+  "gemma-4-e2b": {"q4_gb": 3.18, "q4_lookup_gb": 1.62, "lookup_b": 2.8, "source": "HF model card: 2.3B effective, 5.1B with embeddings (per-layer embeddings)"},
+  "gemma-4-e4b": {"q4_gb": 5.13, "q4_lookup_gb": 1.94, "lookup_b": 3.5, "source": "HF model card: 4.5B effective, 8B with embeddings (per-layer embeddings)"},
+  "deepseek-v4-1-flash-1017": {"q4_gb": 500.7, "q4_lookup_gb": 202.8, "total_b": 763.205, "lookup_b": 196.614, "source": "HF safetensors headers: layers.1.engram.embed.weight F8_E4M3 [384006168, 256] and layers.14.engram.embed.weight [384016682, 256], 196.614B lookup params (weights only, excludes E8M0 scales); total = full stored count 763.205B"}
 }

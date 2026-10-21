@@ -162,6 +162,8 @@ def main():
             "bench": {k: round(aa[best["slug"]][k], 4) for k in BENCH if isinstance(aa.get(best["slug"], {}).get(k), (int, float))},
             "variants": [{k: v[k] for k in ("slug", "name", "index", "estimated", "reasoning", "tps", "price_in", "price_out", "context")} for v in vs if v["index"] is not None],
         })
+        if "q4_gb" in ov:
+            models[-1]["q4"] = {"gb": ov["q4_gb"], "lookup_gb": ov["q4_lookup_gb"], **({"src": ov["q4_src"]} if "q4_src" in ov else {})}
 
     models.sort(key=lambda m: -m["best"])
     curated = load(DATA / "curated.json", {}).get("groups", [])

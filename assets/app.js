@@ -182,6 +182,10 @@
     if (m.lookup) rows.push(['Without lookup tables', fmtB(m.total - m.lookup)]);
     if (m.lookup && withHw && e && e.cls !== 'none') rows.push(['Lookup tables', e.lookupSsd > 0.5 ? 'on SSD' : 'in RAM / VRAM']);
     rows.push([`Weights @ ${q.label}`, fmtGB(gb)]);
+    if (m.lookup) {
+      const s = Core.q4Split(m);
+      rows.push(['Q4 GGUF', `${fmtGB(s.gb - s.lookup)} + ${fmtGB(s.lookup)} tables = ${fmtGB(s.gb)}`]);
+    }
     if (withHw) rows.push(['On your hardware', e ? `<span class="badge ${e.cls}">${CLS_SHORT[e.cls]}</span>` : '—']);
     if (withHw && m.lean != null) rows.push(['Lean', (m.lean > 0.12 ? 'coding / agents' : m.lean < -0.12 ? 'knowledge / chat' : 'balanced') + ` (${m.lean > 0 ? '+' : ''}${m.lean.toFixed(2)})`]);
     const links = `<div class="links">${aaLink(m)}` + (m.repo ? `<a href="https://huggingface.co/${m.repo}" target="_blank" rel="noopener">Hugging Face ↗</a>` : '') + '</div>';
