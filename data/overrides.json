@@ -4,5 +4,6 @@
   "longcat-2-0": {"lookup_b": 135, "source": "HF model card: '135B N-gram Embedding parameters are included in the model'"},
   "longcat-flash-lite": {"lookup_b": 30, "source": "HF model card: 'allocating over 30B parameters to embeddings' (lower bound)"},
   "gemma-4-e2b": {"lookup_b": 2.8, "source": "HF model card: 2.3B effective, 5.1B with embeddings (per-layer embeddings)"},
-  "gemma-4-e4b": {"lookup_b": 3.5, "source": "HF model card: 4.5B effective, 8B with embeddings (per-layer embeddings)"}
+  "gemma-4-e4b": {"lookup_b": 3.5, "source": "HF model card: 4.5B effective, 8B with embeddings (per-layer embeddings)"},
+  "deepseek-v4-1-flash-1017": {"total_b": 763.205, "lookup_b": 196.614, "source": "HF safetensors headers: layers.1.engram.embed.weight F8_E4M3 [384006168, 256] and layers.14.engram.embed.weight [384016682, 256], 196.614B lookup params (weights only, excludes E8M0 scales); total = full stored count 763.205B"}
 }

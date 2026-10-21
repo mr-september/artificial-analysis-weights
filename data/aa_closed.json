@@ -39,7 +39,7 @@
   "released": "2026-07-24",
   "price_in": 0.2,
   "price_out": 0.7,
-  "tps": 1521.3
+  "tps": 1496.5
  },
  {
   "slug": "claude-fable-5-1",
@@ -53,7 +53,7 @@
   "released": "2026-09-01",
   "price_in": 10,
   "price_out": 50,
-  "tps": 68.8
+  "tps": 68.6
  },
  {
   "slug": "claude-fable-5-1-high",
@@ -263,7 +263,7 @@
   "released": "2026-09-28",
   "price_in": 2,
   "price_out": 10,
-  "tps": 136.8
+  "tps": 136.5
  },
  {
   "slug": "claude-sonnet-5-5-high",
@@ -333,7 +333,7 @@
   "released": "2026-08-21",
   "price_in": 0.44,
   "price_out": 1.32,
-  "tps": 202.7
+  "tps": 202.0
  },
  {
   "slug": "doubao-seed-code",
@@ -403,7 +403,7 @@
   "released": "2026-09-02",
   "price_in": 0.75,
   "price_out": 3.75,
-  "tps": 143.8
+  "tps": 138.1
  },
  {
   "slug": "gemini-3-8-flash-low",
@@ -459,7 +459,7 @@
   "released": "2026-09-30",
   "price_in": 2,
   "price_out": 10,
-  "tps": 83.2
+  "tps": 83.1
  },
  {
   "slug": "gpt-5-3-codex",
@@ -473,7 +473,7 @@
   "released": "2026-02-05",
   "price_in": 1.75,
   "price_out": 14,
-  "tps": 100.3
+  "tps": 95.7
  },
  {
   "slug": "gpt-5-5-instant-06-26",
@@ -515,7 +515,7 @@
   "released": "2026-07-09",
   "price_in": 2,
   "price_out": 12,
-  "tps": 132.6
+  "tps": 127.8
  },
  {
   "slug": "gpt-5-6-terra-high",
@@ -599,7 +599,7 @@
   "released": "2026-09-29",
   "price_in": 2,
   "price_out": 10,
-  "tps": 55.2
+  "tps": 54.3
  },
  {
   "slug": "gpt-6-1-sol-high",
@@ -613,7 +613,7 @@
   "released": "2026-09-29",
   "price_in": 2,
   "price_out": 10,
-  "tps": 49.0
+  "tps": 47.8
  },
  {
   "slug": "gpt-6-1-sol-low",
@@ -697,7 +697,7 @@
   "released": "2026-09-03",
   "price_in": 10,
   "price_out": 50,
-  "tps": 52.9
+  "tps": 52.6
  },
  {
   "slug": "gpt-6-astra-medium",
@@ -725,7 +725,7 @@
   "released": "2026-09-03",
   "price_in": 10,
   "price_out": 50,
-  "tps": 55.6
+  "tps": 54.4
  },
  {
   "slug": "gpt-6-luna",
@@ -739,7 +739,7 @@
   "released": "2026-09-22",
   "price_in": 0.1,
   "price_out": 0.5,
-  "tps": 122.5
+  "tps": 120.0
  },
  {
   "slug": "gpt-6-luna-high",
@@ -753,7 +753,7 @@
   "released": "2026-09-22",
   "price_in": 0.1,
   "price_out": 0.5,
-  "tps": 116.8
+  "tps": 115.8
  },
  {
   "slug": "gpt-6-luna-low",
@@ -795,7 +795,7 @@
   "released": "2026-09-22",
   "price_in": 0.1,
   "price_out": 0.5,
-  "tps": 126.8
+  "tps": 120.6
  },
  {
   "slug": "gpt-6-luna-xhigh",
@@ -809,7 +809,7 @@
   "released": "2026-09-22",
   "price_in": 0.1,
   "price_out": 0.5,
-  "tps": 118.2
+  "tps": 116.4
  },
  {
   "slug": "gpt-6-sol-daybreak-blue",
@@ -991,7 +991,7 @@
   "released": "2026-10-19",
   "price_in": 0.15,
   "price_out": 0.6,
-  "tps": 104.7
+  "tps": 93.1
  },
  {
   "slug": "mistral-large-4",
@@ -1089,7 +1089,7 @@
   "released": "2025-10-29",
   "price_in": 0.3,
   "price_out": 2.5,
-  "tps": 170.6
+  "tps": 170.3
  },
  {
   "slug": "nova-2-0-lite-reasoning",
@@ -1103,7 +1103,7 @@
   "released": "2025-10-29",
   "price_in": 0.3,
   "price_out": 2.5,
-  "tps": 187.7
+  "tps": 184.8
  },
  {
   "slug": "nova-2-0-lite-reasoning-low",
@@ -1117,7 +1117,7 @@
   "released": "2025-10-29",
   "price_in": 0.3,
   "price_out": 2.5,
-  "tps": 178.6
+  "tps": 175.2
  },
  {
   "slug": "nova-2-0-lite-reasoning-medium",
@@ -1187,7 +1187,7 @@
   "released": null,
   "price_in": 1.25,
   "price_out": 10,
-  "tps": 114.5
+  "tps": 113.3
  },
  {
   "slug": "nova-2-0-pro-reasoning-low",
@@ -1201,7 +1201,7 @@
   "released": null,
   "price_in": 1.25,
   "price_out": 10,
-  "tps": 126.3
+  "tps": 123.6
  },
  {
   "slug": "nova-2-0-pro-reasoning-medium",
@@ -1215,7 +1215,7 @@
   "released": null,
   "price_in": 1.25,
   "price_out": 10,
-  "tps": 123.9
+  "tps": 120.7
  },
  {
   "slug": "nova-micro",
@@ -1257,7 +1257,7 @@
   "released": "2025-04-16",
   "price_in": 2,
   "price_out": 8,
-  "tps": 142.6
+  "tps": 140.3
  },
  {
   "slug": "quasar-438b",
@@ -1299,7 +1299,7 @@
   "released": "2026-03-30",
   "price_in": 0.4,
   "price_out": 4.8,
-  "tps": 92.9
+  "tps": 91.6
  },
  {
   "slug": "qwen3-7-plus",
