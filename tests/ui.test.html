@@ -33,6 +33,32 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   const radii = new Set([...d.querySelectorAll('#quad .pt circle:last-child')].map(c => c.getAttribute('r')));
   ok('quadrant dot size varies with intelligence', radii.size > 3, [...radii].join());
 
+  // table links
+  const firstRow = d.querySelector('#table tbody tr');
+  ok('table rows link to AA and Hugging Face', firstRow.querySelector('td.name a[href^="https://artificialanalysis.ai/models/"]') && [...firstRow.querySelectorAll('td a')].some(x => x.href.startsWith('https://huggingface.co/')), firstRow.innerHTML.slice(0, 160));
+
+  // tooltip survives the pointer moving into it, and hides after leaving
+  {
+    const svg = d.querySelector('#main svg'), pt = svg.querySelector('.pt circle:last-child'), r = pt.getBoundingClientRect(), tip = d.querySelector('#main .tip');
+    const fire = (el, type, x, y) => el.dispatchEvent(new w.MouseEvent(type, { clientX: x, clientY: y, bubbles: true }));
+    fire(svg, 'mousemove', r.x + r.width / 2, r.y + r.height / 2);
+    fire(svg, 'mouseleave', 0, 0);                 // cursor leaves the chart (heading for the tooltip)
+    await sleep(120);
+    ok('tooltip still visible just after leaving the dot', !tip.hidden);
+    fire(tip, 'mouseenter', 0, 0); await sleep(450);
+    ok('tooltip stays while the pointer is over it', !tip.hidden);
+    fire(tip, 'mouseleave', 0, 0); await sleep(450);
+    ok('tooltip hides after the pointer leaves it', tip.hidden);
+  }
+
+  // labels: in the Featured view every dot gets a label, using callouts with leader lines where space is tight
+  d.querySelector('#setmode button[data-v="curated"]').click(); await sleep(250);
+  {
+    const dots = d.querySelectorAll('#main .pt').length - d.querySelectorAll('#main svg rect[fill-opacity="0.16"]').length, labels = d.querySelectorAll('#main .plabel').length;
+    ok('Featured view: every dot is labelled', labels === dots, labels + ' labels for ' + dots + ' dots');
+    ok('Featured view: callouts use leader lines', d.querySelectorAll('#main .leader').length > 0);
+  }
+
   // hardware: mode pills, total VRAM, FP4
   const readout = () => d.querySelector('.hwsum').textContent;
   const r0 = readout();

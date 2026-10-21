@@ -100,33 +100,54 @@
       const p = pts[i], col = p.color, r = p.r || 5.5;
       g += `<g class="pt${p.faded ? ' faded' : ''}" data-i="${i}">` +
         (p.hl ? `<circle cx="${p.px}" cy="${p.py}" r="${r + 5}" fill="none" stroke="var(--brand)" stroke-width="2"/>` : '') +
+        (p.emph ? `<circle cx="${p.px}" cy="${p.py}" r="${r + 3.5}" fill="none" stroke="var(--fg)" stroke-opacity=".7" stroke-width="1.6"/>` : '') +
         `<circle cx="${p.px}" cy="${p.py}" r="${r}" fill="${p.hollow || p.ring ? 'var(--card)' : col}" fill-opacity="${p.hollow || p.ring ? 1 : .86}" stroke="${col}" stroke-width="${p.hollow ? 1.8 : p.ring ? 2 : 1}" ${p.hollow ? 'stroke-dasharray="3 2"' : ''}/></g>`;
     }
-    // labels: greedy, priority-ordered, avoiding earlier labels and every point
-    const placed = [];
+    // Labels, highest priority first. Each tries the four spots around its dot; if all are taken it becomes a callout:
+    // the nearest free spot on widening rings around the dot, joined to it by a thin leader line.
+    const placed = [], leaders = [];
     const hit = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-    const cand = pts.map((p, i) => ({ p, i })).filter(({ p }) => p.label && !p.faded).sort((a, b) => b.p.label - a.p.label);
-    for (const { p } of cand.slice(0, c.maxLabels || 40)) {
+    const inside = b => b.x >= M.l - 4 && b.x + b.w <= W - 2 && b.y >= 0 && b.y + b.h <= H - M.b + 14;
+    const onDot = (b, p) => pts.some(q => q !== p && !q.faded && hit(b, { x: q.px - (q.r || 5.5), y: q.py - (q.r || 5.5), w: 2 * (q.r || 5.5), h: 2 * (q.r || 5.5) }));
+    const free = (b, p) => inside(b) && !boxes.some(o => hit(b, o)) && !onDot(b, p);
+    const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+    const cand = pts.filter(p => p.label && !p.faded).sort((a, b) => b.label - a.label);
+    const ANGLES = [-30, -150, 30, 150, -90, 90, 0, 180, -60, -120, 60, 120, -10, -170, 10, 170].map(d => (d * Math.PI) / 180);
+    for (const p of cand.slice(0, c.maxLabels || 200)) {
       const w = p.name.length * 5.7 + 4, h = 13, r = (p.r || 5.5) + 3;
+      let done = false;
       for (const [dx, dy, anchor] of [[r, 4, 'start'], [-r, 4, 'end'], [0, -r - 2, 'middle'], [0, r + 11, 'middle']]) {
         const x = anchor === 'start' ? p.px + dx : anchor === 'end' ? p.px + dx - w : p.px - w / 2;
-        const b = { x, y: p.py + dy - 10, w, h };
-        if (b.x < M.l - 4 || b.x + w > W - 2 || b.y < 0 || b.y + h > H - M.b + 14) continue;
-        if (boxes.some(o => hit(b, o))) continue;
-        if (pts.some(q => q !== p && !q.faded && hit(b, { x: q.px - 5, y: q.py - 5, w: 10, h: 10 }))) continue;
-        boxes.push(b); placed.push(`<text class="plabel" x="${p.px + dx}" y="${p.py + dy}" text-anchor="${anchor}">${esc(p.name)}</text>`); break;
+        const bx = { x, y: p.py + dy - 10, w, h };
+        if (!free(bx, p)) continue;
+        boxes.push(bx); placed.push(`<text class="plabel" x="${p.px + dx}" y="${p.py + dy}" text-anchor="${anchor}">${esc(p.name)}</text>`); done = true; break;
+      }
+      for (let rad = r + 16; !done && rad <= r + 100; rad += 14) {
+        for (const a of ANGLES) {
+          const cx = p.px + Math.cos(a) * (rad + w / 2 * Math.abs(Math.cos(a))), cy = p.py + Math.sin(a) * rad;
+          const bx = { x: cx - w / 2, y: cy - h / 2 - 1, w, h };
+          if (!free(bx, p)) continue;
+          const tx = clamp(p.px, bx.x, bx.x + bx.w), ty = clamp(p.py, bx.y, bx.y + bx.h), d = Math.hypot(tx - p.px, ty - p.py) || 1;
+          boxes.push(bx);
+          leaders.push(`<line class="leader" x1="${p.px + ((tx - p.px) / d) * (p.r || 5.5)}" y1="${p.py + ((ty - p.py) / d) * (p.r || 5.5)}" x2="${tx}" y2="${ty}"/>`);
+          placed.push(`<text class="plabel" x="${cx}" y="${cy + 4}" text-anchor="middle">${esc(p.name)}</text>`); done = true; break;
+        }
       }
     }
-    g += placed.join('');
+    g += leaders.join('') + placed.join('');
     el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(c.aria)}">${g}</svg><div class="tip" hidden></div>`;
 
-    // hover / pin
+    // hover / pin. The tooltip takes the pointer (so its text can be selected and its links clicked) and hides after a short
+    // grace period, so moving from a dot into the tooltip does not dismiss it.
     const svg = el.querySelector('svg'), tip = el.querySelector('.tip');
-    const show = (p, pinned) => {
-      tip.innerHTML = c.tip(p.m); tip.hidden = false; tip.classList.toggle('pinned', !!pinned);
+    let pinned = null, overTip = false, hideTimer = 0;
+    const hideSoon = () => { clearTimeout(hideTimer); hideTimer = setTimeout(() => { if (!pinned && !overTip) tip.hidden = true; }, 300); };
+    const show = (p, isPinned) => {
+      clearTimeout(hideTimer);
+      tip.innerHTML = c.tip(p.m); tip.hidden = false; tip.classList.toggle('pinned', !!isPinned);
       const tw = tip.offsetWidth, th = tip.offsetHeight;
-      let x = p.px + 14; const y = p.py - th / 2;
-      if (x + tw > W) x = p.px - tw - 14;
+      let x = p.px + 10; const y = p.py - th / 2;
+      if (x + tw > W) x = p.px - tw - 10;
       tip.style.left = Math.max(0, x) + 'px'; tip.style.top = Math.min(Math.max(0, y), H - th) + 'px';
     };
     const nearest = ev => {
@@ -135,16 +156,18 @@
       for (const p of pts) { const d = (p.px - mx) ** 2 + (p.py - my) ** 2; if (d < bd) { bd = d; best = p; } }
       return best;
     };
-    let pinned = null;
-    svg.addEventListener('mousemove', ev => { if (pinned) return; const p = nearest(ev); if (p) show(p); else tip.hidden = true; });
-    svg.addEventListener('mouseleave', () => { if (!pinned) tip.hidden = true; });
+    tip.addEventListener('mouseenter', () => { overTip = true; clearTimeout(hideTimer); });
+    tip.addEventListener('mouseleave', () => { overTip = false; hideSoon(); });
+    svg.addEventListener('mousemove', ev => { if (pinned) return; const p = nearest(ev); if (p) show(p); else hideSoon(); });
+    svg.addEventListener('mouseleave', () => { if (!pinned) hideSoon(); });
     svg.addEventListener('click', ev => {
       const p = nearest(ev);
       if (p && p !== pinned) { pinned = p; show(p, true); hl = p.m.id; } else { pinned = null; tip.hidden = true; tip.classList.remove('pinned'); hl = null; }
     });
   }
 
-  const aaLink = m => `<a href="https://artificialanalysis.ai/models/${m.slug}" target="_blank" rel="noopener">Artificial Analysis ↗</a>`;
+  const aaUrl = m => `https://artificialanalysis.ai/models/${m.slug}`;
+  const aaLink = m => `<a href="${aaUrl(m)}" target="_blank" rel="noopener">Artificial Analysis ↗</a>`;
   function tipHTML(m, withHw = true) {
     const e = m.ev, q = quantNow(), gb = m.total * Core.gbPerB(m, q);
     const idx = m.best.toFixed(1) + (m.variants[0].estimated ? ' (AA est.)' : '');
@@ -234,19 +257,20 @@
     const shown = `${rows.length} models shown` + (ok.length > rows.length ? `; ${ok.length - rows.length} more fit but lack enough benchmarks to place` : '');
     if (!rows.length) {
       $('#quadLegend').innerHTML = ''; el.innerHTML = `<p class="empty">Nothing fits with these settings. Try 3-bit, more memory, SSD paging (under Advanced), or a wider model set.</p>`; return; }
-    // y: intelligence rank minus speed rank; speed is approximated by fewer active parameters
-    const ri = Core.ranks(rows.map(m => m.best)), rs = Core.ranks(rows.map(m => -Math.log(m.active)));
+    // y is speed alone (fewer active parameters = faster, hardware-independent); intelligence is the dot size, and the models
+    // on the speed/intelligence frontier (nothing is both faster and smarter) get a ring, so balanced picks stand out.
     const lo = Math.min(...rows.map(m => m.best)), hi = Math.max(...rows.map(m => m.best));
     const rOf = m => 3 + 14 * (hi > lo ? (m.best - lo) / (hi - lo) : 0.5);  // higher score, visibly bigger dot
-    const pts = rows.map((m, i) => ({ x: m.lean, y: ri[i] - rs[i], m, color: colorOf(m), hollow: m.variants[0].estimated, hl: hl === m.id, name: m.name, r: rOf(m), label: m.best }));
+    const best = new Set(Core.frontier(rows.map(m => ({ x: m.active, y: m.best, m }))).map(p => p.m.id));
+    const pts = rows.map(m => ({ x: m.lean, y: -Math.log(m.active), m, color: colorOf(m), hollow: m.variants[0].estimated, hl: hl === m.id, name: m.name, r: rOf(m), emph: best.has(m.id), label: m.best + (best.has(m.id) ? 100 : 0) }));
     const sizeKey = `<svg width="52" height="22" aria-hidden="true"><circle cx="6" cy="11" r="3.5" fill="var(--muted)" fill-opacity=".5"/><circle cx="34" cy="11" r="10" fill="var(--muted)" fill-opacity=".5"/></svg>`;
-    $('#quadLegend').innerHTML = legend([...ARCH_KEY, [sizeKey, `bigger dot = higher Intelligence Index (${lo.toFixed(0)}–${hi.toFixed(0)})`], ['', shown]]);
+    const ringKey = `<svg width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="5" fill="var(--muted)" fill-opacity=".5"/><circle cx="11" cy="11" r="8.5" fill="none" stroke="var(--fg)" stroke-opacity=".7" stroke-width="1.6"/></svg>`;
+    $('#quadLegend').innerHTML = legend([...ARCH_KEY, [sizeKey, `bigger dot = higher Intelligence Index (${lo.toFixed(0)}–${hi.toFixed(0)})`], [ringKey, 'ring = best speed / intelligence trade-off'], ['', shown]]);
     // Centre the cross on the middle of the plotted range and scale so the points fill ~90% of each axis.
     const span = vals => { const lo = Math.min(...vals), hi = Math.max(...vals), c = (lo + hi) / 2, h = Math.max((hi - lo) / 2, 1e-6) / 0.9; return [c, c - h, c + h]; };
     const [cx0, x0, x1] = span(pts.map(p => p.x)), [cy0, y0, y1] = span(pts.map(p => p.y));
     scatter(el, {
-      pts, bare: true, xlog: false, x0, x1, y0, y1, tip: m => tipHTML(m, true), aria: 'Quadrant chart of coding-versus-knowledge lean against speed-versus-intelligence', maxLabels: 28,
-      height: W => Math.round(Math.min(600, Math.max(400, W * 0.64))),
+      pts, bare: true, xlog: false, x0, x1, y0, y1, tip: m => tipHTML(m, true), aria: 'Quadrant chart of coding-versus-knowledge lean against speed, with dot size showing intelligence',       height: W => Math.round(Math.min(600, Math.max(400, W * 0.64))),
       under: ({ sx, sy, M, iw, ih, W, pts: placed }) => {
         const cx = sx(cx0), cy = sy(cy0), l = M.l, r = M.l + iw, t = M.t, b = M.t + ih;
         const narrow = W < 520, fs = narrow ? 12 : 14, avoid = [];
@@ -263,7 +287,7 @@
           `<line class="axisline" x1="${cx}" x2="${cx}" y1="${t}" y2="${b}" stroke-dasharray="4 4"/><line class="axisline" x1="${l}" x2="${r}" y1="${cy}" y2="${cy}" stroke-dasharray="4 4"/>` +
           lab(narrow ? '← knowledge' : '← knowledge &amp; chat', 'start', [[l + 8, cy - 8], [l + 8, cy + fs + 8]]) +
           lab(narrow ? 'coding →' : 'coding &amp; agents →', 'end', [[r - 8, cy - 8], [r - 8, cy + fs + 8]]) +
-          lab('↑ smarter', 'start', [[cx + 8, t + fs + 6]]) + lab('↓ faster', 'start', [[cx + 8, b - 8]]);
+          lab('↑ faster', 'start', [[cx + 8, t + fs + 6]]) + lab('↓ slower', 'start', [[cx + 8, b - 8]]);
         return { svg, avoid };
       },
     });
@@ -364,15 +388,16 @@
     const set = inSet();
     const f = state.filter.trim().toLowerCase(), q = quantNow();
     const cols = [
-      ['name', 'Model', m => m.name, m => esc(m.name)], ['creator', 'Lab', m => m.creator, m => esc(m.creator)],
+      ['name', 'Model', m => m.name, m => `<a href="${aaUrl(m)}" target="_blank" rel="noopener">${esc(m.name)}</a>`], ['creator', 'Lab', m => m.creator, m => esc(m.creator)],
       ['best', 'Index', m => m.best, m => m.best.toFixed(1)], ['total', 'Total', m => m.total, m => fmtB(m.total)], ['active', 'Active', m => m.active, m => fmtB(m.active)],
       ['lookup', 'Lookup', m => m.lookup, m => (m.lookup ? fmtB(m.lookup) : '—')], ['gb', 'Weights @ ' + q.label, m => m.ev.total, m => fmtGB(m.ev.total)],
       ['fit', 'On your hardware', m => ({ fit: 3, offload: 2, ssd: 1, none: 0 }[m.ev.cls]), m => `<span class="badge ${m.ev.cls}">${CLS_SHORT[m.ev.cls]}</span>`],
+      ['links', 'Links', null, m => `<a href="${aaUrl(m)}" target="_blank" rel="noopener">AA</a>` + (m.repo ? ` · <a href="https://huggingface.co/${m.repo}" target="_blank" rel="noopener">HF</a>` : '')],
     ];
-    const col = cols.find(c => c[0] === sort.k) || cols[2];
+    const col = cols.find(c => c[0] === sort.k && c[2]) || cols[2];
     const rows = set.filter(m => !f || (m.name + ' ' + m.creator).toLowerCase().includes(f)).sort((a, b) => { const x = col[2](a), y = col[2](b); return (x < y ? -1 : x > y ? 1 : 0) * sort.dir; });
-    $('#table').innerHTML = `<thead><tr>${cols.map(c => `<th class="${c[0] === 'name' || c[0] === 'creator' ? 'l' : ''}" data-k="${c[0]}"${sort.k === c[0] ? ` aria-sort="${sort.dir > 0 ? 'ascending' : 'descending'}"` : ''}>${c[1]}${sort.k === c[0] ? (sort.dir > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead><tbody>${rows.map(m => `<tr>${cols.map((c, i) => `<td class="${i === 0 ? 'name l' : i === 1 ? 'l' : ''}">${c[3](m)}</td>`).join('')}</tr>`).join('')}</tbody>`;
-    $('#table').querySelectorAll('th').forEach(th => th.addEventListener('click', () => { const k = th.dataset.k; sort = { k, dir: sort.k === k ? -sort.dir : (k === 'name' || k === 'creator' ? 1 : -1) }; drawTable(); }));
+    $('#table').innerHTML = `<thead><tr>${cols.map(c => `<th class="${c[0] === 'name' || c[0] === 'creator' ? 'l' : ''}" ${c[2] ? `data-k="${c[0]}"` : ''}${sort.k === c[0] ? ` aria-sort="${sort.dir > 0 ? 'ascending' : 'descending'}"` : ''}>${c[1]}${sort.k === c[0] ? (sort.dir > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead><tbody>${rows.map(m => `<tr>${cols.map((c, i) => `<td class="${i === 0 ? 'name l' : i === 1 ? 'l' : ''}">${c[3](m)}</td>`).join('')}</tr>`).join('')}</tbody>`;
+    $('#table').querySelectorAll('th[data-k]').forEach(th => th.addEventListener('click', () => { const k = th.dataset.k; sort = { k, dir: sort.k === k ? -sort.dir : (k === 'name' || k === 'creator' ? 1 : -1) }; drawTable(); }));
   }
 
   // ---------------------------------------------------------------- controls

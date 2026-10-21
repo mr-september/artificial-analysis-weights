@@ -75,7 +75,7 @@
       <li><b>Sizes.</b> Total parameters set memory, active parameters (MoE) set speed, and lookup parameters (n-gram or per-layer embedding tables) take memory but almost no bandwidth, so they can sit on SSD. The frontier ignores lookup tables, and frontier models are always shown.</li>
       <li><b>Fit.</b> Weights fill VRAM, then RAM, then SSD if allowed. A model counts as runnable if a bandwidth roofline gives it a few tokens per second. Hardware figures are rough; see <code>assets/hardware.js</code>.</li>
       <li><b>Precision.</b> 4-bit means NVFP4 on RTX 5000 / Blackwell and Q4_K_M elsewhere. AA scored hosted endpoints, so quantized local copies will score lower.</li>
-      <li><b>Quadrant.</b> Horizontal: coding and agentic percentile minus knowledge and instruction-following percentile (AA has no creative-writing eval). Vertical: intelligence rank minus speed rank, with fewer active parameters as the speed proxy. Dot size is the Intelligence Index.</li>
+      <li><b>Quadrant.</b> Horizontal: coding and agentic percentile minus knowledge and instruction-following percentile (AA has no creative-writing eval). Vertical: speed, approximated by fewer active parameters. Dot size is the Intelligence Index, and a ring marks models that nothing beats on both speed and intelligence.</li>
       <li><b>Proprietary lines.</b> Closed models publish no sizes, so they appear only as score lines.</li>
       <li><b>Data.</b> Scores, dates and parameter counts come from Artificial Analysis; exact sizes from Hugging Face. Lookup sizes and the Featured list are hand-curated in <code>data/</code>.</li>
     </ul>
