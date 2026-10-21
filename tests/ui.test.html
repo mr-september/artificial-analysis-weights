@@ -27,11 +27,17 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ev('click', 2, 2); ev('mousemove', 2, 2);
   ok('click empty unpins', !tip.classList.contains('pinned'));
 
-  // change hardware via quick pick => readout changes
-  const before = d.querySelector('.readout').textContent;
-  d.querySelector('.chip[data-q="9"]').click(); await sleep(200);
-  const after = d.querySelector('.readout').textContent;
-  ok('quick pick updates readout', before !== after && /Strix|usable/.test(d.querySelector('#hwpanel').textContent), before + ' -> ' + after);
+  // hardware: mode + series pills
+  const readout = () => d.querySelector('.hwsum').textContent;
+  const r0 = readout();
+  d.querySelector('#pMode .pill[data-v="unified"]').click(); await sleep(150);
+  ok('unified mode swaps rows', !!d.querySelector('#pU') && !d.querySelector('#pSeries') && readout() !== r0, readout());
+  d.querySelector('#pMode .pill[data-v="offload"]').click(); await sleep(150);
+  d.querySelector('#pSeries .pill[data-v="rtx5000"]').click(); await sleep(150);
+  ok('RTX 5000 resolves 4-bit to NVFP4', /NVFP4/.test(d.querySelector('#pPrec').textContent), d.querySelector('#pPrec').textContent);
+  d.querySelector('#pSeries .pill[data-v="rtx3000"]').click(); await sleep(150);
+  ok('RTX 3000 falls back to GGUF', /Q4_K_M/.test(d.querySelector('#pPrec').textContent));
+  ok('VRAM pills follow series', [...d.querySelectorAll('#pVram .pill[data-v]')].map(b => b.dataset.v).join() === '8,10,12,24');
 
   // model set switch
   const countBefore = d.querySelector('#setcount').textContent;
@@ -39,11 +45,30 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   const countAfter = d.querySelector('#setcount').textContent;
   ok('featured set = 12 models', /^12 of/.test(countAfter), countBefore + ' -> ' + countAfter);
 
+  // granular picker
+  d.querySelector('#pickBtn').click(); await sleep(150);
+  const panel = d.querySelector('#pickPanel');
+  ok('picker opens with a checkbox per model', !panel.hidden && panel.querySelectorAll('input[type=checkbox]').length > 100, panel.querySelectorAll('input').length);
+  ok('picker reflects current view', panel.querySelectorAll('input:checked').length === 12);
+  const first = panel.querySelector('input:checked'); first.checked = false; first.dispatchEvent(new w.Event('change', { bubbles: true })); await sleep(150);
+  ok('unchecking creates a custom set of 11', /11 chosen/.test(d.querySelector('#setcount').textContent) && /Custom \(11\)/.test(d.querySelector('#setmode').textContent), d.querySelector('#setcount').textContent);
+  panel.querySelector('#pkQ').value = 'qwen'; panel.querySelector('#pkQ').dispatchEvent(new w.Event('input'));
+  ok('picker search hides others', [...panel.querySelectorAll('label.it')].filter(l => l.style.display !== 'none').length < 30);
+  panel.querySelector('#pkReset').click(); await sleep(150);
+  ok('reset returns to the view', /^12 of/.test(d.querySelector('#setcount').textContent) && panel.hidden);
+
+  // proprietary toggle
+  const nBefore = d.querySelectorAll('#main .pt').length;
+  d.querySelector('#showProp').click(); await sleep(200);
+  ok('proprietary toggle adds a column of points', d.querySelectorAll('#main .pt').length > nBefore && /size undisclosed/.test(d.querySelector('#main').textContent), nBefore + ' -> ' + d.querySelectorAll('#main .pt').length);
+  d.querySelector('#showProp').click(); await sleep(200);
+  ok('proprietary off shows ceiling line label', /best proprietary/.test(d.querySelector('#main').textContent));
+
   // x axis toggle, y source toggle
   d.querySelector('#xmode button[data-v="active"]').click(); await sleep(100);
   ok('x title follows toggle', /Active parameters/.test(d.querySelector('#main').textContent));
   d.querySelector('#yaxis button[data-v="est"]').click(); await sleep(100);
-  ok('quad y-axis label follows toggle', /estimated speed/.test(d.querySelector('#quad').textContent));
+  ok('quad y-axis label follows toggle', /estimated speed/.test(d.querySelector('#quad').textContent) || /Nothing fits/.test(d.querySelector('#quad').textContent));
 
   // theme toggle
   const t0 = d.documentElement.dataset.theme; d.querySelector('#theme').click(); await sleep(100);

@@ -1,18 +1,18 @@
-/* UI: two charts (intelligence vs weights; fit-and-speed quadrant), hardware picker, picks, table. No build step. */
+/* UI: intelligence-vs-weights chart, model picker, hardware box, fit/speed quadrant, picks, table. No build step. */
 (async function () {
   const $ = s => document.querySelector(s);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const NS = 'http://www.w3.org/2000/svg';
 
   // ---------------------------------------------------------------- state
   const DEFAULT = {
-    set: { mode: 'recent', months: 6 }, x: 'total', xscale: 'log', q: 'q4', yaxis: 'aa', minspeed: 3, reserve: 4, filter: '',
-    hw: { kind: 'gpu', gpu: 'rtx4090', n: 1, ram: 64, ramType: 'ddr5', ssd: false, chip: 'm4max', uGB: 128, vram: 8, bw: 300 },
+    set: { mode: 'recent', months: 6 }, pick: null, x: 'total', xscale: 'log', prec: 'q4', yaxis: 'aa', minspeed: 3, reserve: 4, filter: '', showProp: false,
+    hw: { mode: 'offload', series: 'rtx4000', vram: 24, n: 1, ram: 64, uGB: 64, uClass: 'fast', ssd: false },
   };
+  const merge = (a, b) => ({ ...a, ...b, set: { ...a.set, ...b.set }, hw: { ...a.hw, ...b.hw } });
   let state = JSON.parse(JSON.stringify(DEFAULT));
-  try { const s = JSON.parse(localStorage.getItem('aaw-state') || 'null'); if (s) state = { ...state, ...s, set: { ...state.set, ...s.set }, hw: { ...state.hw, ...s.hw } }; } catch (e) { /* private mode */ }
-  try { const u = new URLSearchParams(location.search).get('state'); if (u) { const s = JSON.parse(u); state = { ...state, ...s, set: { ...state.set, ...s.set }, hw: { ...state.hw, ...s.hw } }; } } catch (e) { /* bad share link */ }
-  const save = () => { try { localStorage.setItem('aaw-state', JSON.stringify(state)); } catch (e) { /* ignore */ } };
+  try { const s = JSON.parse(localStorage.getItem('aaw-state-v2') || 'null'); if (s) state = merge(state, s); } catch (e) { /* private mode */ }
+  try { const u = new URLSearchParams(location.search).get('state'); if (u) state = merge(state, JSON.parse(u)); } catch (e) { /* bad share link */ }
+  const save = () => { try { localStorage.setItem('aaw-state-v2', JSON.stringify(state)); } catch (e) { /* ignore */ } };
 
   let data;
   try { data = await (await fetch('data/models.json')).json(); }
@@ -32,7 +32,6 @@
   const fmtB = v => (v >= 1000 ? (v / 1000).toFixed(v >= 10000 ? 0 : 1).replace(/\.0$/, '') + 'T' : v >= 100 ? Math.round(v) + 'B' : v >= 10 ? +v.toFixed(1) + 'B' : +v.toFixed(2) + 'B');
   const fmtGB = v => (v >= 1000 ? (v / 1000).toFixed(1) + ' TB' : v >= 100 ? Math.round(v) + ' GB' : +v.toFixed(1) + ' GB');
   const fmtT = v => (v >= 100 ? Math.round(v) : v >= 10 ? v.toFixed(0) : v.toFixed(1));
-  const CLS_LABEL = { fit: 'Fits in fast memory', offload: 'Offloads to RAM', ssd: 'Pages from SSD', none: "Doesn't fit" };
   const CLS_SHORT = { fit: 'fits', offload: 'RAM offload', ssd: 'SSD paging', none: 'no fit' };
 
   function logTicks(a, b) {
@@ -48,9 +47,20 @@
   }
 
   const hwNow = () => Hardware.build(state.hw);
-  const evalOpts = () => ({ q: Core.quant(state.q), reserve: state.reserve });
-  const evalAll = list => { const hw = hwNow(), o = evalOpts(); for (const m of list) m.ev = Core.evaluate(m, hw, o); };
-  const inSet = () => Core.modelSet(models, state.set);
+  /** "4-bit" resolves to NVFP4 on FP4-capable hardware, otherwise GGUF-style Q4_K_M. */
+  const quantNow = () => Core.quant(state.prec === 'q4' ? (hwNow().fp4 ? 'nvfp4' : 'q4') : state.prec);
+  const evalAll = list => { const hw = hwNow(), o = { q: quantNow(), reserve: state.reserve }; for (const m of list) m.ev = Core.evaluate(m, hw, o); };
+  const inSet = () => {
+    if (state.pick) { const P = new Set(state.pick); return models.filter(m => P.has(m.id)); }
+    return Core.modelSet(models, state.set);
+  };
+  const bestProp = () => data.proprietary[0] || null;
+  /** Frontier proprietary models: best per lab within the recent window, top 8. */
+  function propSet() {
+    const months = state.set.mode === 'recent' ? state.set.months : 12, cut = Date.now() - months * 30.44 * 864e5, byLab = {};
+    for (const p of data.proprietary) if (p.released && Date.parse(p.released) >= cut && (!byLab[p.creator] || p.best > byLab[p.creator].best)) byLab[p.creator] = p;
+    return Object.values(byLab).sort((a, b) => b.best - a.best).slice(0, 8);
+  }
 
   // ---------------------------------------------------------------- generic scatter
   function scatter(el, c) {
@@ -73,7 +83,7 @@
       const f = Core.frontier(pts.map(p => ({ x: p.x, y: p.y, px: p.px, py: p.py })));
       if (f.length > 1) g += `<path class="front" d="${f.map((p, i) => (i ? 'L' : 'M') + p.px.toFixed(1) + ' ' + p.py.toFixed(1)).join('')}"/>`;
     }
-    // points, faded ones first so live ones stay on top
+    // faded points first so live ones stay on top
     const order = pts.map((p, i) => i).sort((a, b) => (pts[b].faded ? 1 : 0) - (pts[a].faded ? 1 : 0));
     for (const i of order) {
       const p = pts[i], col = p.color, r = p.r || 5.5;
@@ -97,7 +107,6 @@
       }
     }
     g += placed.join('');
-    if (c.over) g += c.over({ sx, sy, M, iw, ih, W, H });
     el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(c.aria)}">${g}</svg><div class="tip" hidden></div>`;
 
     // hover / pin
@@ -105,7 +114,7 @@
     const show = (p, pinned) => {
       tip.innerHTML = c.tip(p.m); tip.hidden = false; tip.classList.toggle('pinned', !!pinned);
       const tw = tip.offsetWidth, th = tip.offsetHeight;
-      let x = p.px + 14, y = p.py - th / 2;
+      let x = p.px + 14; const y = p.py - th / 2;
       if (x + tw > W) x = p.px - tw - 14;
       tip.style.left = Math.max(0, x) + 'px'; tip.style.top = Math.min(Math.max(0, y), H - th) + 'px';
     };
@@ -122,20 +131,19 @@
       const p = nearest(ev);
       if (p && p !== pinned) { pinned = p; show(p, true); state.hl = p.m.id; } else { pinned = null; tip.hidden = true; tip.classList.remove('pinned'); state.hl = null; }
     });
-    return { sx, sy, M, iw, ih };
   }
 
-  function tipHTML(m) {
-    const e = m.ev, q = Core.quant(state.q), gb = m.total * Core.gbPerB(m, q);
+  const aaLink = m => `<a href="https://artificialanalysis.ai/models/${m.slug}" target="_blank" rel="noopener">Artificial Analysis ↗</a>`;
+  function tipHTML(m, withHw = true) {
+    if (m.prop) return `<h4>${esc(m.name)}</h4><div class="by">${esc(m.creator)}${m.released ? ' · ' + m.released : ''} · proprietary</div><dl><dt>Intelligence</dt><dd>${m.best.toFixed(1)}</dd><dt>Parameters</dt><dd>not published</dd></dl><div class="links">${aaLink(m)}</div>`;
+    const e = m.ev, q = quantNow(), gb = m.total * Core.gbPerB(m, q);
     const idx = m.best.toFixed(1) + (m.variants[0].estimated ? ' (AA est.)' : '');
     const params = `${fmtB(m.total)} total · ${fmtB(m.active)} active` + (m.lookup ? ` · ${fmtB(m.lookup)} lookup` : '');
-    const rows = [
-      ['Intelligence', idx], ['Parameters', params], [`Weights @ ${q.label}`, fmtGB(gb)],
-      ['On your hardware', e ? `<span class="badge ${e.cls}">${CLS_SHORT[e.cls]}</span>${e.cls !== 'none' ? ' ~' + fmtT(e.tps) + ' tok/s' : ''}` : '—'],
-      ['AA measured speed', m.tpsAA ? fmtT(m.tpsAA) + ' tok/s' : 'n/a'],
-    ];
-    if (m.lean != null) rows.push(['Lean', (m.lean > 0.12 ? 'coding / agents' : m.lean < -0.12 ? 'knowledge / chat' : 'balanced') + ` (${m.lean > 0 ? '+' : ''}${m.lean.toFixed(2)})`]);
-    const links = `<div class="links"><a href="https://artificialanalysis.ai/models/${m.slug}" target="_blank" rel="noopener">Artificial Analysis ↗</a>` + (m.repo ? `<a href="https://huggingface.co/${m.repo}" target="_blank" rel="noopener">Hugging Face ↗</a>` : '') + '</div>';
+    const rows = [['Intelligence', idx], ['Parameters', params], [`Weights @ ${q.label}`, fmtGB(gb)]];
+    if (withHw) rows.push(['On your hardware', e ? `<span class="badge ${e.cls}">${CLS_SHORT[e.cls]}</span>${e.cls !== 'none' ? ' ~' + fmtT(e.tps) + ' tok/s' : ''}` : '—']);
+    rows.push(['AA measured speed', m.tpsAA ? fmtT(m.tpsAA) + ' tok/s' : 'n/a']);
+    if (withHw && m.lean != null) rows.push(['Lean', (m.lean > 0.12 ? 'coding / agents' : m.lean < -0.12 ? 'knowledge / chat' : 'balanced') + ` (${m.lean > 0 ? '+' : ''}${m.lean.toFixed(2)})`]);
+    const links = `<div class="links">${aaLink(m)}` + (m.repo ? `<a href="https://huggingface.co/${m.repo}" target="_blank" rel="noopener">Hugging Face ↗</a>` : '') + '</div>';
     const note = m.notes.length ? `<div class="note">${esc(m.notes[0])}</div>` : '';
     return `<h4>${esc(m.name)}</h4><div class="by">${esc(m.creator)}${m.released ? ' · ' + m.released : ''}${m.license ? ' · ' + esc(m.license) : ''}</div><dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>${note}${links}`;
   }
@@ -146,56 +154,58 @@
     const f = state.filter.trim().toLowerCase();
     const xv = m => (state.x === 'active' ? m.active : m.total);
     const pts = set.map(m => ({ x: xv(m), y: m.best, m, color: colorOf(m), hollow: m.variants[0].estimated, hl: state.hl === m.id }));
+    const log = state.xscale === 'log';
+    $('#setcount').textContent = state.pick ? `${set.length} chosen` : `${set.length} of ${models.length} open models`;
+    $('#chartSub').textContent = `${state.x === 'active' ? 'Active' : 'Total'} parameters against the Intelligence Index (best reasoning setting per model). Dashed line: frontier.`;
+    if (!pts.length) { $('#main').innerHTML = '<p class="empty">No models match this view. Widen the model set above.</p>'; return; }
+    const xmax = Math.max(...pts.map(p => p.x)), xmin = Math.min(...pts.map(p => p.x));
+    const top = bestProp();
+    let x0 = log ? xmin / 1.5 : 0, x1 = xmax * (log ? 1.6 : 1.06), uX = null;
+    if (state.showProp) {
+      uX = xmax * (log ? 2.6 : 1.14); x1 = uX * (log ? 1.45 : 1.05);
+      for (const p of propSet()) pts.push({ x: uX, y: p.best, m: { ...p, prop: true }, color: css('--axis'), hollow: false, hl: false, r: 5.5 });
+    }
     const rankIdx = Core.ranks(pts.map(p => p.y));
     const fr = new Set(Core.frontier(pts).map(p => p.m.id));
-    pts.forEach((p, i) => { p.name = p.m.name; p.label = (fr.has(p.m.id) ? 2 : 0) + rankIdx[i]; p.faded = f && !(p.m.name + ' ' + p.m.creator).toLowerCase().includes(f); });
-    $('#setcount').textContent = `${set.length} of ${models.length} models`;
-    $('#chartSub').textContent = `${state.x === 'active' ? 'Active' : 'Total'} parameters against Artificial Analysis Intelligence Index, best reasoning setting per model. Dashed line: Pareto frontier.`;
-    if (!pts.length) { $('#main').innerHTML = '<p class="empty">No models match this view. Widen the model set above.</p>'; return; }
-    const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
-    const log = state.xscale === 'log';
-    const x0 = log ? Math.min(...xs) / 1.5 : 0, x1 = Math.max(...xs) * (log ? 1.6 : 1.06);
+    pts.forEach((p, i) => { p.name = p.m.name; p.label = (fr.has(p.m.id) ? 2 : 0) + rankIdx[i] + (p.m.prop ? 1 : 0); p.faded = !!f && !p.m.prop && !(p.m.name + ' ' + p.m.creator).toLowerCase().includes(f); });
+    const ys = pts.map(p => p.y).concat(!state.showProp && top ? [top.best] : []);
     const y0 = Math.max(0, Math.floor((Math.min(...ys) - 3) / 5) * 5), y1 = Math.ceil((Math.max(...ys) + 3) / 5) * 5;
-
-    // where the selected hardware runs out, in this chart's units (total-params mode only)
-    const q = Core.quant(state.q), hw = hwNow();
-    const capLines = [];
-    if (state.x === 'total' && q.bpw) {
-      const toB = gb => (gb * 8) / q.bpw;
-      const v = Math.max(0, hw.vram - state.reserve), all = v + (hw.unified ? 0 : Math.max(0, hw.ram - 6));
-      capLines.push([toB(v), 'fits in ' + (hw.unified ? 'memory' : 'VRAM')]);
-      if (!hw.unified && all > v + 1) capLines.push([toB(all), '+ RAM']);
-    }
+    const xt = (log ? logTicks(x0, x1) : linTicks(x0, x1)).filter(t => uX == null || t <= xmax * 1.25);
     scatter($('#main'), {
-      pts, xlog: log, x0, x1, y0, y1, xTicks: log ? logTicks(x0, x1) : linTicks(x0, x1), yTicks: linTicks(y0, y1, 6), xFmt: fmtB,
+      pts, xlog: log, x0, x1, y0, y1, xTicks: xt, yTicks: linTicks(y0, y1, 6), xFmt: fmtB,
       xTitle: `${state.x === 'active' ? 'Active' : 'Total'} parameters (billions, ${log ? 'log' : 'linear'} scale)`, yTitle: 'Artificial Analysis Intelligence Index',
-      height: W => Math.round(Math.min(560, Math.max(360, W * 0.56))), frontier: true, tip: tipHTML, aria: 'Scatter plot of intelligence index versus parameter count',
-      under: ctx => capLines.filter(([b]) => b > x0 && b < x1).map(([b, t], i) => `<line class="cap" x1="${ctx.sx(b)}" x2="${ctx.sx(b)}" y1="${ctx.M.t}" y2="${ctx.M.t + ctx.ih}"/><text class="captext" x="${ctx.sx(b) - 5}" y="${ctx.M.t + 12 + i * 13}" text-anchor="end">${t} at ${q.label}</text>`).join(''),
+      height: W => Math.round(Math.min(560, Math.max(360, W * 0.56))), frontier: true, tip: m => tipHTML(m, false), aria: 'Scatter plot of intelligence index versus parameter count',
+      under: ctx => {
+        if (state.showProp) {
+          const mid = log ? Math.sqrt(xmax * 1.25 * uX / 1.3) : (xmax + uX) / 2, L = ctx.sx(mid);
+          return `<rect class="undisc" x="${L}" y="${ctx.M.t}" width="${ctx.M.l + ctx.iw - L}" height="${ctx.ih}" rx="6"/><text class="undisc-l" x="${(L + ctx.M.l + ctx.iw) / 2}" y="${ctx.M.t + ctx.ih + 16}" text-anchor="middle">size undisclosed</text>`;
+        }
+        if (top) { const y = ctx.sy(top.best); return `<line class="front" x1="${ctx.M.l}" x2="${ctx.M.l + ctx.iw}" y1="${y}" y2="${y}"/><text class="undisc-l" x="${ctx.M.l + ctx.iw}" y="${y - 6}" text-anchor="end">best proprietary: ${esc(top.name)} · ${top.best.toFixed(1)}</text>`; }
+        return '';
+      },
     });
-    $('#mainLegend').innerHTML = `<span><i class="dot" style="background:var(--dense)"></i>Dense</span><span><i class="dot" style="background:var(--moe)"></i>Mixture of experts</span><span><i class="dot" style="background:var(--lookup)"></i>Has lookup tables (n-gram / per-layer embeddings)</span><span><i class="dot hollow" style="color:var(--muted)"></i>Score estimated by AA</span>` + (capLines.length ? `<span style="color:var(--brand)">┆ capacity of your hardware (set below)</span>` : '');
+    $('#mainLegend').innerHTML = `<span><i class="dot" style="background:var(--dense)"></i>Dense</span><span><i class="dot" style="background:var(--moe)"></i>Mixture of experts</span><span><i class="dot" style="background:var(--lookup)"></i>Has lookup tables</span><span><i class="dot hollow" style="color:var(--muted)"></i>Score estimated by AA</span>` + (state.showProp ? `<span><i class="dot" style="background:var(--axis)"></i>Proprietary</span>` : '');
   }
 
   // ---------------------------------------------------------------- quadrant
   function quadPoints() {
     const set = inSet(); evalAll(set);
-    const minS = state.minspeed;
-    const fits = set.filter(m => m.ev.cls !== 'none' && m.ev.tps >= minS && m.lean != null);
+    const fits = set.filter(m => m.ev.cls !== 'none' && m.ev.tps >= state.minspeed && m.lean != null);
     const useAA = state.yaxis === 'aa';
-    const rows = fits.filter(m => (useAA ? m.tpsAA : m.ev.tps));
     const speed = m => (useAA ? m.tpsAA : m.ev.tps);
+    const rows = fits.filter(m => speed(m));
     const ri = Core.ranks(rows.map(m => m.best)), rs = Core.ranks(rows.map(m => Math.log(speed(m))));
-    return { rows, y: rows.map((m, i) => ri[i] - rs[i]), speed, total: set.length, fitsN: fits.length, noAA: fits.length - rows.length };
+    return { rows, y: rows.map((m, i) => ri[i] - rs[i]), noAA: fits.length - rows.length };
   }
 
   function drawQuad() {
     const el = $('#quad'), Q = quadPoints();
-    const hasAA = Q.rows.length;
-    $('#quadLegend').innerHTML = `<span><i class="dot" style="background:var(--dense)"></i>Dense</span><span><i class="dot" style="background:var(--moe)"></i>MoE</span><span><i class="dot" style="background:var(--lookup)"></i>Lookup tables</span><span>${Q.rows.length} models shown` + (state.yaxis === 'aa' && Q.noAA ? `; ${Q.noAA} fit but have no AA speed (switch to "Estimated")` : '') + `</span>`;
-    if (!hasAA) { el.innerHTML = `<p class="empty">Nothing fits with these settings. Try a smaller quantization, more RAM, allowing SSD paging, a lower minimum speed, or a wider model set.</p>`; return; }
+    $('#quadLegend').innerHTML = `<span><i class="dot" style="background:var(--dense)"></i>Dense</span><span><i class="dot" style="background:var(--moe)"></i>MoE</span><span><i class="dot" style="background:var(--lookup)"></i>Lookup tables</span><span>${Q.rows.length} models shown` + (state.yaxis === 'aa' && Q.noAA ? `; ${Q.noAA} more fit but have no AA speed (try "Estimated")` : '') + `</span>`;
+    if (!Q.rows.length) { el.innerHTML = `<p class="empty">Nothing fits with these settings. Try 3-bit, more memory, SSD paging (under Advanced), a lower minimum speed, or a wider model set.</p>`; return; }
     const pts = Q.rows.map((m, i) => ({ x: m.lean, y: Q.y[i], m, color: colorOf(m), hollow: m.variants[0].estimated, hl: state.hl === m.id, name: m.name, r: 5 + Math.min(4, Math.log10(1 + m.total) * 1.1), label: m.best }));
     scatter(el, {
-      pts, bare: true, xlog: false, x0: -0.75, x1: 0.75, y0: -1.1, y1: 1.1, tip: tipHTML, aria: 'Quadrant chart of coding-versus-knowledge lean against speed-versus-intelligence', maxLabels: 28,
-      height: W => Math.round(Math.min(560, Math.max(380, W * 0.7))),
+      pts, bare: true, xlog: false, x0: -0.75, x1: 0.75, y0: -1.1, y1: 1.1, tip: m => tipHTML(m, true), aria: 'Quadrant chart of coding-versus-knowledge lean against speed-versus-intelligence', maxLabels: 28,
+      height: W => Math.round(Math.min(560, Math.max(380, W * 0.6))),
       under: ({ sx, sy, M, iw, ih }) => {
         const cx = sx(0), cy = sy(0), l = M.l, r = M.l + iw, t = M.t, b = M.t + ih;
         return `<rect x="${l}" y="${t}" width="${iw}" height="${ih}" fill="none" stroke="var(--border)"/>` +
@@ -204,8 +214,7 @@
           `<text class="quad" x="${l + 10}" y="${b - 10}">Quick chat</text><text class="quad" x="${r - 10}" y="${b - 10}" text-anchor="end">Quick coders</text>` +
           `<text class="axtitle" x="${l}" y="${b + 24}">← knowledge &amp; chat</text><text class="axtitle" x="${r}" y="${b + 24}" text-anchor="end">coding &amp; agents →</text>` +
           `<text class="axtitle" x="${cx}" y="${b + 24}" text-anchor="middle" style="fill:var(--muted);font-weight:400">relative strength</text>` +
-          `<text class="axtitle" transform="translate(${l - 3} ${cy}) rotate(-90)" text-anchor="middle" style="fill:var(--muted);font-weight:400">${state.yaxis === 'aa' ? 'AA measured speed vs intelligence' : 'estimated speed vs intelligence'}</text>` +
-          `<text class="axtitle" x="${l + 6}" y="${t - 1}" style="display:none"></text>`;
+          `<text class="axtitle" transform="translate(${l - 3} ${cy}) rotate(-90)" text-anchor="middle" style="fill:var(--muted);font-weight:400">${state.yaxis === 'aa' ? 'smarter ↑ · faster ↓ (AA measured speed)' : 'smarter ↑ · faster ↓ (estimated speed)'}</text>`;
       },
     });
   }
@@ -218,58 +227,85 @@
     const picks = [];
     const smart = by(ok, m => m.best);
     if (smart) picks.push(['Smartest that runs well', smart]);
-    const all = ok.filter(m => m.ev.cls === 'fit');
-    const inMem = by(all, m => m.best);
-    if (inMem && inMem !== smart) picks.push(['Smartest that fits entirely in fast memory', inMem]);
+    const inMem = by(ok.filter(m => m.ev.cls === 'fit'), m => m.best);
+    if (inMem && inMem !== smart) picks.push(['Smartest that fits in fast memory', inMem]);
     const coder = by(ok.filter(m => m.lean != null && m.lean >= 0.1), m => m.best);
     if (coder) picks.push(['Best for coding & agents', coder]);
     const chat = by(ok.filter(m => m.lean != null && m.lean <= -0.05), m => m.best);
     if (chat) picks.push(['Best for knowledge & chat', chat]);
     if (smart) { const fast = by(ok.filter(m => m.best >= 0.6 * smart.best), m => m.ev.tps); if (fast && fast !== smart) picks.push(['Fastest that is still capable', fast]); }
-    const seen = new Set();
-    $('#picks').innerHTML = picks.length ? picks.map(([t, m], i) => {
-      const dup = seen.has(m.id); seen.add(m.id);
-      return `<button class="pick" data-id="${m.id}"><small>${t}</small><b>${esc(m.name)}</b><div class="meta">Index ${m.best.toFixed(1)} · <span class="badge ${m.ev.cls}">${CLS_SHORT[m.ev.cls]}</span> · ~${fmtT(m.ev.tps)} tok/s<br>${fmtB(m.total)} total · ${fmtB(m.active)} active · ${fmtGB(m.ev.total)}</div></button>`;
-    }).join('') : '<p class="empty" style="grid-column:1/-1">No model meets the speed floor on this hardware in the current model set.</p>';
-    $('#picks').querySelectorAll('.pick').forEach(b => b.addEventListener('click', () => { state.hl = b.dataset.id; drawQuad(); drawMain(); document.querySelector('#quad').scrollIntoView({ block: 'center', behavior: 'smooth' }); }));
+    $('#picks').innerHTML = picks.length ? picks.map(([t, m]) =>
+      `<button class="pick" data-id="${m.id}"><small>${t}</small><b>${esc(m.name)}</b><div class="meta">Index ${m.best.toFixed(1)} · <span class="badge ${m.ev.cls}">${CLS_SHORT[m.ev.cls]}</span> · ~${fmtT(m.ev.tps)} tok/s<br>${fmtB(m.total)} total · ${fmtB(m.active)} active · ${fmtGB(m.ev.total)}</div></button>`).join('')
+      : '<p class="empty" style="grid-column:1/-1">No model meets the speed floor on this hardware in the current model set.</p>';
+    $('#picks').querySelectorAll('.pick').forEach(b => b.addEventListener('click', () => { state.hl = b.dataset.id; drawQuad(); drawMain(); $('#quad').scrollIntoView({ block: 'center', behavior: 'smooth' }); }));
   }
 
-  // ---------------------------------------------------------------- hardware panel
-  function opts(list, cur, f = x => x) { return list.map(x => `<option value="${esc(x.id ?? x)}"${(x.id ?? x) == cur ? ' selected' : ''}>${esc(f(x))}</option>`).join(''); }
+  // ---------------------------------------------------------------- hardware box
+  const pill = (attr, val, label, pressed, extra = '') => `<button class="pill ${extra}" ${attr}="${val}" aria-pressed="${pressed}">${label}</button>`;
   function drawHw() {
-    const h = state.hw, hw = hwNow();
-    const kinds = [['gpu', 'Discrete GPU'], ['unified', 'Unified memory'], ['cpu', 'CPU only'], ['custom', 'Custom']];
-    const ramSel = `<div class="field"><label class="k" for="hRam">System RAM</label><div class="row"><select id="hRam">${opts(Hardware.RAM_SIZES, h.ram, x => x + ' GB')}</select><select id="hRamT" aria-label="RAM type">${opts(Hardware.RAM_TYPES, h.ramType, x => x.label)}</select></div></div>`;
-    let body = '';
-    if (h.kind === 'gpu') body = `<div class="field"><label class="k" for="hGpu">GPU</label><div class="row"><select id="hGpu">${opts(Hardware.GPUS, h.gpu, g => `${g.label}`)}</select><select id="hN" aria-label="GPU count">${[1, 2, 3, 4, 6, 8].map(n => `<option${n == h.n ? ' selected' : ''}>${n}</option>`).join('')}</select><span class="note">×</span></div></div>` + ramSel;
-    if (h.kind === 'unified') { const u = Hardware.by(Hardware.UNIFIED, h.chip); const sizes = u.sizes; if (!sizes.includes(h.uGB)) h.uGB = sizes[sizes.length - 1]; body = `<div class="field"><label class="k" for="hChip">Chip</label><div class="row"><select id="hChip">${opts(Hardware.UNIFIED, h.chip, c => c.label)}</select><select id="hU" aria-label="Memory">${opts(sizes, h.uGB, s => s + ' GB')}</select></div></div>`; }
-    if (h.kind === 'cpu') body = ramSel;
-    if (h.kind === 'custom') body = `<div class="field"><label class="k">GPU memory &amp; bandwidth</label><div class="row"><input type="number" id="hV" min="0" max="2048" value="${h.vram}" style="width:80px"> GB <input type="number" id="hB" min="20" max="10000" value="${h.bw}" style="width:90px"> GB/s</div></div>` + ramSel;
-    $('#hwpanel').innerHTML = `
-      <div class="field"><label class="k">Quick picks</label><div class="chips">${Hardware.QUICK.map((p, i) => `<button class="chip" data-q="${i}">${esc(p.label)}</button>`).join('')}</div></div>
-      <div class="field"><label class="k">Hardware</label><div class="seg" id="hKind">${kinds.map(([k, l]) => `<button aria-pressed="${h.kind === k}" data-k="${k}">${l}</button>`).join('')}</div></div>
-      ${body}
-      <div class="field"><label class="k" for="hQ">Quantization</label><div class="row"><select id="hQ">${opts(Core.QUANTS, state.q, q => q.label + (q.bpw ? ` (${q.bpw} bpw)` : ''))}</select></div></div>
-      <div class="field"><label class="k" for="hRes">Context &amp; runtime headroom: <b id="hResOut">${state.reserve} GB</b></label><input type="range" id="hRes" min="1" max="32" value="${state.reserve}" style="width:100%"></div>
-      <label class="tog"><input type="checkbox" id="hSsd"${h.ssd ? ' checked' : ''}> Allow paging weights from NVMe SSD (~6 GB/s, slow)</label>
-      <div class="readout"><div><b>${fmtGB(hw.vram)}</b><span>${hw.unified ? 'usable memory' : hw.vram ? 'VRAM' : 'GPU memory'}</span></div><div><b>${hw.unified ? '—' : fmtGB(hw.ram)}</b><span>system RAM</span></div><div><b>${Math.round(hw.bwV)}${hw.unified || !hw.ram ? '' : ' / ' + Math.round(hw.bwR)}</b><span>GB/s${hw.unified || !hw.ram ? '' : ' (GPU / RAM)'}</span></div></div>
-      <p class="note">Speeds are a bandwidth-roofline estimate for single-user decoding; see Method.</p>`;
-    const P = $('#hwpanel'), on = (sel, ev, fn) => { const e = P.querySelector(sel); if (e) e.addEventListener(ev, fn); };
-    P.querySelectorAll('.chip').forEach(b => b.addEventListener('click', () => { const p = Hardware.QUICK[b.dataset.q]; state.hw = { ...state.hw, ...p }; delete state.hw.label; changed(true); }));
-    P.querySelectorAll('#hKind button').forEach(b => b.addEventListener('click', () => { state.hw.kind = b.dataset.k; changed(true); }));
-    const num = (id, key, parse = Number) => on(id, 'change', e => { state.hw[key] = parse(e.target.value); changed(id === '#hChip'); });
-    num('#hGpu', 'gpu', String); num('#hN', 'n'); num('#hRam', 'ram'); num('#hRamT', 'ramType', String); num('#hChip', 'chip', String); num('#hU', 'uGB'); num('#hV', 'vram'); num('#hB', 'bw');
-    on('#hQ', 'change', e => { state.q = e.target.value; changed(); });
-    on('#hRes', 'input', e => { state.reserve = +e.target.value; $('#hResOut').textContent = state.reserve + ' GB'; changed(false, true); });
-    on('#hSsd', 'change', e => { state.hw.ssd = e.target.checked; changed(); });
+    const h = state.hw, sr = Hardware.series(h.series), hw = hwNow(), q = quantNow();
+    let rows = `<div class="hwrow"><span class="k">Hardware</span><div class="pills" id="pMode">${Hardware.MODES.map(([k, l]) => pill('data-v', k, l, h.mode === k)).join('')}</div></div>`;
+    if (h.mode !== 'unified') {
+      rows += `<div class="hwrow"><span class="k">GPU</span><div class="pills" id="pSeries">${Hardware.SERIES.map(s => pill('data-v', s.id, s.label + (s.fp4 ? '<small>FP4</small>' : ''), h.series === s.id, s.fp4 ? 'fp4' : '')).join('')}</div></div>`;
+      rows += `<div class="hwrow"><span class="k">VRAM</span><div class="pills" id="pVram">${sr.cards.map(k => pill('data-v', k.gb, k.gb + ' GB', k.gb === hw.vram / h.n)).join('')}<span style="width:8px"></span>${Hardware.COUNTS.map(n => pill('data-n', n, '×' + n, h.n === n)).join('')}</div></div>`;
+      if (h.mode === 'offload') rows += `<div class="hwrow"><span class="k">System RAM</span><div class="pills" id="pRam">${Hardware.RAM_SIZES.map(n => pill('data-v', n, n + ' GB', h.ram === n)).join('')}</div></div>`;
+    } else {
+      rows += `<div class="hwrow"><span class="k">Memory</span><div class="pills" id="pU">${Hardware.U_SIZES.map(n => pill('data-v', n, n + ' GB', h.uGB === n)).join('')}</div></div>`;
+      rows += `<div class="hwrow"><span class="k">Memory speed</span><div class="pills" id="pUC">${Hardware.U_CLASSES.map(u => pill('data-v', u.id, u.label, h.uClass === u.id).replace('<button', `<button title="${esc(u.hint)} (~${u.bw} GB/s)"`)).join('')}</div></div>`;
+    }
+    const precNote = state.prec === 'q4' ? (hw.fp4 ? 'NVFP4: native 4-bit floats on this GPU' : 'GGUF Q4_K_M (this GPU has no native FP4)') : q.label;
+    rows += `<div class="hwrow"><span class="k">Precision</span><div class="pills" id="pPrec">${[['native', 'As released'], ['q8', '8-bit'], ['q4', '4-bit'], ['q3', '3-bit']].map(([k, l]) => pill('data-v', k, l, state.prec === k)).join('')}<span class="note" style="align-self:center;margin-left:6px">${esc(precNote)}</span></div></div>`;
+    rows += `<div class="hwsum"><span><b>${esc(hw.label)}</b></span><span>${fmtGB(hw.unified ? hw.usable : hw.vram)} ${hw.unified ? 'usable by GPU' : 'VRAM'}</span><span>~${Math.round(hw.bwV)} GB/s</span></div>`;
+    rows += `<details class="adv"><summary>Advanced</summary><div class="row"><label class="tog">Headroom for context &amp; runtime <input type="range" id="hRes" min="1" max="32" value="${state.reserve}"> <b id="hResOut">${state.reserve} GB</b></label></div><div class="row"><label class="tog"><input type="checkbox" id="hSsd"${h.ssd ? ' checked' : ''}> Allow paging weights from an NVMe SSD (~6 GB/s, slow)</label></div></details>`;
+    $('#hwbox').innerHTML = rows;
+    const B = $('#hwbox'), on = (sel, fn) => B.querySelectorAll(sel).forEach(b => b.addEventListener('click', () => fn(b)));
+    on('#pMode .pill', b => { h.mode = b.dataset.v; changed(true); });
+    on('#pSeries .pill', b => { h.series = b.dataset.v; h.vram = Hardware.nearestCard(Hardware.series(h.series), h.vram).gb; changed(true); });
+    on('#pVram .pill[data-v]', b => { h.vram = +b.dataset.v; changed(true); });
+    on('#pVram .pill[data-n]', b => { h.n = +b.dataset.n; changed(true); });
+    on('#pRam .pill', b => { h.ram = +b.dataset.v; changed(true); });
+    on('#pU .pill', b => { h.uGB = +b.dataset.v; changed(true); });
+    on('#pUC .pill', b => { h.uClass = b.dataset.v; changed(true); });
+    on('#pPrec .pill', b => { state.prec = b.dataset.v; changed(true); });
+    const res = B.querySelector('#hRes'); res.addEventListener('input', () => { state.reserve = +res.value; $('#hResOut').textContent = state.reserve + ' GB'; changed(false, true); });
+    B.querySelector('#hSsd').addEventListener('change', e => { h.ssd = e.target.checked; changed(); });
   }
+
+  // ---------------------------------------------------------------- model picker (AA-style checklist)
+  const pp = () => $('#pickPanel');
+  function openPicker() {
+    const cur = new Set(inSet().map(m => m.id));
+    const labs = {};
+    for (const m of models) (labs[m.creator] = labs[m.creator] || []).push(m);
+    const order = Object.keys(labs).sort((a, b) => a.localeCompare(b));
+    pp().innerHTML = `<div class="head"><input type="search" id="pkQ" placeholder="Search models or labs" aria-label="Search models"><button class="chip" id="pkAll">All shown</button><button class="chip" id="pkNone">None</button><button class="chip" id="pkReset">Reset to view</button><button class="chip" id="pkClose" aria-label="Close">✕</button></div>
+      <div class="list">${order.map(l => `<div class="lab" data-lab="${esc(l)}"><span>${esc(l)}</span></div>` + labs[l].sort((a, b) => b.best - a.best).map(m => `<label class="it" data-t="${esc((m.name + ' ' + m.creator).toLowerCase())}"><input type="checkbox" value="${m.id}"${cur.has(m.id) ? ' checked' : ''}> ${esc(m.name)}<span class="ix">${m.best.toFixed(1)}</span></label>`).join('')).join('')}</div>`;
+    pp().hidden = false; $('#pickBtn').setAttribute('aria-expanded', 'true');
+    const P = pp(), boxes = () => [...P.querySelectorAll('input[type=checkbox]')];
+    const commit = () => { state.pick = boxes().filter(b => b.checked).map(b => b.value); changed(false, true, true); };
+    P.onchange = commit;
+    P.querySelector('#pkQ').addEventListener('input', e => {
+      const q = e.target.value.trim().toLowerCase();
+      P.querySelectorAll('label.it').forEach(l => { l.style.display = !q || l.dataset.t.includes(q) ? '' : 'none'; });
+      P.querySelectorAll('.lab').forEach(l => { let n = l.nextElementSibling, any = false; while (n && n.classList.contains('it')) { if (n.style.display !== 'none') any = true; n = n.nextElementSibling; } l.style.display = any ? '' : 'none'; });
+    });
+    const visible = () => boxes().filter(b => b.closest('label').style.display !== 'none');
+    P.querySelector('#pkAll').addEventListener('click', () => { visible().forEach(b => { b.checked = true; }); commit(); });
+    P.querySelector('#pkNone').addEventListener('click', () => { boxes().forEach(b => { b.checked = false; }); commit(); });
+    P.querySelector('#pkReset').addEventListener('click', () => { state.pick = null; closePicker(); changed(); });
+    P.querySelector('#pkClose').addEventListener('click', closePicker);
+    P.querySelector('#pkQ').focus();
+  }
+  function closePicker() { pp().hidden = true; $('#pickBtn').setAttribute('aria-expanded', 'false'); }
+  $('#pickBtn').addEventListener('click', () => (pp().hidden ? openPicker() : closePicker()));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closePicker(); });
+  document.addEventListener('click', e => { if (!pp().hidden && !e.target.closest('#setbar')) closePicker(); });
 
   // ---------------------------------------------------------------- table
   let sort = { k: 'best', dir: -1 };
   function drawTable() {
     const set = inSet(); evalAll(set);
-    const f = state.filter.trim().toLowerCase();
-    const q = Core.quant(state.q);
+    const f = state.filter.trim().toLowerCase(), q = quantNow();
     const cols = [
       ['name', 'Model', m => m.name, m => esc(m.name)], ['creator', 'Lab', m => m.creator, m => esc(m.creator)],
       ['best', 'Index', m => m.best, m => m.best.toFixed(1)], ['total', 'Total', m => m.total, m => fmtB(m.total)], ['active', 'Active', m => m.active, m => fmtB(m.active)],
@@ -277,36 +313,40 @@
       ['fit', 'On your hardware', m => ({ fit: 3, offload: 2, ssd: 1, none: 0 }[m.ev.cls]), m => `<span class="badge ${m.ev.cls}">${CLS_SHORT[m.ev.cls]}</span>`],
       ['tps', 'Est. tok/s', m => m.ev.tps || 0, m => (m.ev.cls === 'none' ? '—' : fmtT(m.ev.tps))], ['aa', 'AA tok/s', m => m.tpsAA || 0, m => (m.tpsAA ? fmtT(m.tpsAA) : '—')],
     ];
-    const col = cols.find(c => c[0] === sort.k) || cols[3];
+    const col = cols.find(c => c[0] === sort.k) || cols[2];
     const rows = set.filter(m => !f || (m.name + ' ' + m.creator).toLowerCase().includes(f)).sort((a, b) => { const x = col[2](a), y = col[2](b); return (x < y ? -1 : x > y ? 1 : 0) * sort.dir; });
     $('#table').innerHTML = `<thead><tr>${cols.map(c => `<th class="${c[0] === 'name' || c[0] === 'creator' ? 'l' : ''}" data-k="${c[0]}"${sort.k === c[0] ? ` aria-sort="${sort.dir > 0 ? 'ascending' : 'descending'}"` : ''}>${c[1]}${sort.k === c[0] ? (sort.dir > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead><tbody>${rows.map(m => `<tr>${cols.map((c, i) => `<td class="${i === 0 ? 'name l' : i === 1 ? 'l' : ''}">${c[3](m)}</td>`).join('')}</tr>`).join('')}</tbody>`;
     $('#table').querySelectorAll('th').forEach(th => th.addEventListener('click', () => { const k = th.dataset.k; sort = { k, dir: sort.k === k ? -sort.dir : (k === 'name' || k === 'creator' ? 1 : -1) }; drawTable(); }));
   }
 
-  // ---------------------------------------------------------------- controls wiring
+  // ---------------------------------------------------------------- controls
   function seg(el, items, get, set) {
     el.innerHTML = items.map(([v, l]) => `<button aria-pressed="${get() === v}" data-v="${v}">${l}</button>`).join('');
-    el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { set(b.dataset.v); seg(el, items, get, set); changed(); }));
+    el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { set(b.dataset.v); changed(); }));
   }
   function drawControls() {
-    seg($('#setmode'), [['recent', 'Recent'], ['featured', 'AA picks'], ['latest', 'Latest per lab'], ['all', 'All']], () => state.set.mode, v => { state.set.mode = v; });
+    const modes = [['recent', 'Recent'], ['featured', 'AA picks'], ['latest', 'Latest per lab'], ['all', 'All']];
+    if (state.pick) modes.push(['custom', `Custom (${state.pick.length})`]);
+    seg($('#setmode'), modes, () => (state.pick ? 'custom' : state.set.mode), v => { if (v !== 'custom') { state.pick = null; state.set.mode = v; } });
     seg($('#xmode'), [['total', 'Total params'], ['active', 'Active params']], () => state.x, v => { state.x = v; });
     seg($('#xscale'), [['log', 'Log'], ['linear', 'Linear']], () => state.xscale, v => { state.xscale = v; });
     seg($('#yaxis'), [['aa', 'AA measured speed'], ['est', 'Estimated on my hardware']], () => state.yaxis, v => { state.yaxis = v; });
     const m = $('#months'); m.value = state.set.months; $('#monthsOut').textContent = state.set.months + (state.set.months === 1 ? ' month' : ' months');
     m.oninput = () => { state.set.months = +m.value; $('#monthsOut').textContent = m.value + (m.value === '1' ? ' month' : ' months'); changed(false, true); };
-    $('#monthsWrap').style.display = state.set.mode === 'recent' ? '' : 'none';
+    $('#monthsWrap').style.display = !state.pick && state.set.mode === 'recent' ? '' : 'none';
     $('#minspeed').value = String(state.minspeed);
     $('#minspeed').onchange = e => { state.minspeed = +e.target.value; changed(); };
+    $('#showProp').checked = state.showProp;
+    $('#showProp').onchange = e => { state.showProp = e.target.checked; changed(); };
     $('#q').oninput = e => { state.filter = e.target.value; drawMain(); drawTable(); };
     $('#q').value = state.filter;
   }
 
-  function changed(rebuildHw, light) {
+  /** rebuildHw: redraw the hardware box; light: skip the control redraw (sliders); keepPicker: still refresh the set-mode pills */
+  function changed(rebuildHw, light, keepPicker) {
     save();
-    if (!light) drawControls();
+    if (!light || keepPicker) drawControls();
     if (rebuildHw) drawHw();
-    else if (!light) { /* panel keeps focus */ }
     drawAll();
   }
   function drawAll() { drawMain(); drawQuad(); drawPicks(); drawTable(); }

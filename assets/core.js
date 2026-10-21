@@ -9,6 +9,7 @@ const Core = (() => {
     { id: 'q6', label: 'Q6_K', bpw: 6.56 },
     { id: 'q5', label: 'Q5_K_M', bpw: 5.7 },
     { id: 'q4', label: 'Q4_K_M', bpw: 4.85 },
+    { id: 'nvfp4', label: 'NVFP4', bpw: 4.5 },  // 4-bit E2M1 + one FP8 scale per 16 weights
     { id: 'q3', label: 'Q3_K_M', bpw: 3.9 },
     { id: 'q2', label: 'Q2_K', bpw: 2.63 },
   ];
