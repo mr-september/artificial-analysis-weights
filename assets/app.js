@@ -6,7 +6,7 @@
   // ---------------------------------------------------------------- state
   const DEFAULT = {
     set: { mode: 'recent', months: 6 }, pick: null, x: 'total', xscale: 'log', prec: 'q4', yaxis: 'aa', minspeed: 3, reserve: 4, filter: '',
-    hw: { mode: 'offload', series: 'rtx4000', vram: 24, n: 1, ram: 64, uGB: 64, uClass: 'fast', ssd: false },
+    hw: { mode: 'offload', vram: 24, fp4: false, ram: 64, uGB: 64, uClass: 'fast', ssd: false },
   };
   const merge = (a, b) => ({ ...a, ...b, set: { ...a.set, ...b.set }, hw: { ...a.hw, ...b.hw } });
   let state = JSON.parse(JSON.stringify(DEFAULT));
@@ -32,6 +32,7 @@
   const fmtB = v => (v >= 1000 ? (v / 1000).toFixed(v >= 10000 ? 0 : 1).replace(/\.0$/, '') + 'T' : v >= 100 ? Math.round(v) + 'B' : v >= 10 ? +v.toFixed(1) + 'B' : +v.toFixed(2) + 'B');
   const fmtGB = v => (v >= 1000 ? (v / 1000).toFixed(1) + ' TB' : v >= 100 ? Math.round(v) + ' GB' : +v.toFixed(1) + ' GB');
   const fmtT = v => (v >= 100 ? Math.round(v) : v >= 10 ? v.toFixed(0) : v.toFixed(1));
+  const PINNED_LABS = ['Alibaba', 'Xiaomi', 'DeepSeek', 'Z AI', 'Kimi', 'Meta', 'MiniMax', 'OpenAI', 'Google', 'NVIDIA', 'Mistral'];
   const CLS_SHORT = { fit: 'fits', offload: 'RAM offload', ssd: 'SSD paging', none: 'no fit' };
 
   function logTicks(a, b) {
@@ -72,8 +73,14 @@
     }
     if (c.under) g += c.under({ sx, sy, M, iw, ih, W, H });
     if (c.frontier) {
-      const f = Core.frontier(pts.map(p => ({ x: p.x, y: p.y, px: p.px, py: p.py })));
+      const f = Core.frontier(pts.filter(p => !p.ring).map(p => ({ x: p.x, y: p.y, px: p.px, py: p.py })));
       if (f.length > 1) g += `<path class="front" d="${f.map((p, i) => (i ? 'L' : 'M') + p.px.toFixed(1) + ' ' + p.py.toFixed(1)).join('')}"/>`;
+    }
+    // tinted pill linking a lookup-table model's two points (without / with lookup tables)
+    for (const p of pts) {
+      if (p.linkX == null) continue;
+      const x2 = sx(p.linkX), r = (p.r || 5.5) + 4, xa = Math.min(p.px, x2) - r;
+      g += `<rect x="${xa}" y="${p.py - r}" width="${Math.abs(p.px - x2) + 2 * r}" height="${2 * r}" rx="${r}" fill="${p.color}" fill-opacity="${p.faded ? .05 : .16}" stroke="${p.color}" stroke-opacity="${p.faded ? .1 : .4}"/>`;
     }
     // faded points first so live ones stay on top
     const order = pts.map((p, i) => i).sort((a, b) => (pts[b].faded ? 1 : 0) - (pts[a].faded ? 1 : 0));
@@ -81,7 +88,7 @@
       const p = pts[i], col = p.color, r = p.r || 5.5;
       g += `<g class="pt${p.faded ? ' faded' : ''}" data-i="${i}">` +
         (p.hl ? `<circle cx="${p.px}" cy="${p.py}" r="${r + 5}" fill="none" stroke="var(--brand)" stroke-width="2"/>` : '') +
-        `<circle cx="${p.px}" cy="${p.py}" r="${r}" fill="${p.hollow ? 'var(--card)' : col}" fill-opacity="${p.hollow ? 1 : .86}" stroke="${col}" stroke-width="${p.hollow ? 1.8 : 1}" ${p.hollow ? 'stroke-dasharray="3 2"' : ''}/></g>`;
+        `<circle cx="${p.px}" cy="${p.py}" r="${r}" fill="${p.hollow || p.ring ? 'var(--card)' : col}" fill-opacity="${p.hollow || p.ring ? 1 : .86}" stroke="${col}" stroke-width="${p.hollow ? 1.8 : p.ring ? 2 : 1}" ${p.hollow ? 'stroke-dasharray="3 2"' : ''}/></g>`;
     }
     // labels: greedy, priority-ordered, avoiding earlier labels and every point
     const boxes = [], placed = [];
@@ -130,7 +137,9 @@
     const e = m.ev, q = quantNow(), gb = m.total * Core.gbPerB(m, q);
     const idx = m.best.toFixed(1) + (m.variants[0].estimated ? ' (AA est.)' : '');
     const params = `${fmtB(m.total)} total · ${fmtB(m.active)} active` + (m.lookup ? ` · ${fmtB(m.lookup)} lookup` : '');
-    const rows = [['Intelligence', idx], ['Parameters', params], [`Weights @ ${q.label}`, fmtGB(gb)]];
+    const rows = [['Intelligence', idx], ['Parameters', params]];
+    if (m.lookup) rows.push(['Without lookup tables', fmtB(m.total - m.lookup)]);
+    rows.push([`Weights @ ${q.label}`, fmtGB(gb)]);
     if (withHw) rows.push(['On your hardware', e ? `<span class="badge ${e.cls}">${CLS_SHORT[e.cls]}</span>${e.cls !== 'none' ? ' ~' + fmtT(e.tps) + ' tok/s' : ''}` : '—']);
     rows.push(['AA measured speed', m.tpsAA ? fmtT(m.tpsAA) + ' tok/s' : 'n/a']);
     if (withHw && m.lean != null) rows.push(['Lean', (m.lean > 0.12 ? 'coding / agents' : m.lean < -0.12 ? 'knowledge / chat' : 'balanced') + ` (${m.lean > 0 ? '+' : ''}${m.lean.toFixed(2)})`]);
@@ -149,11 +158,16 @@
     $('#setcount').textContent = state.pick ? `${set.length} chosen` : `${set.length} of ${models.length} open models`;
     $('#chartSub').textContent = `${state.x === 'active' ? 'Active' : 'Total'} parameters against the Intelligence Index (best reasoning setting per model). Dashed line: frontier.`;
     if (!pts.length) { $('#main').innerHTML = '<p class="empty">No models match this view. Widen the model set above.</p>'; return; }
-    const xmax = Math.max(...pts.map(p => p.x)), xmin = Math.min(...pts.map(p => p.x));
+    const lk = state.x === 'total' ? set.filter(m => m.lookup > 0) : [];  // lookup tables: also plot the size without them
+    const xmax = Math.max(...pts.map(p => p.x)), xmin = Math.min(...pts.map(p => p.x), ...lk.map(m => m.total - m.lookup));
     const x0 = log ? xmin / 1.5 : 0, x1 = xmax * (log ? 1.6 : 1.06);
     const rankIdx = Core.ranks(pts.map(p => p.y));
     const fr = new Set(Core.frontier(pts).map(p => p.m.id));
     pts.forEach((p, i) => { p.name = p.m.name; p.label = (fr.has(p.m.id) ? 2 : 0) + rankIdx[i]; p.faded = !!f && !(p.m.name + ' ' + p.m.creator).toLowerCase().includes(f); });
+    for (const m of lk) {
+      const par = pts.find(p => p.m === m); par.linkX = m.total - m.lookup;
+      pts.push({ x: par.linkX, y: m.best, m, color: par.color, ring: true, faded: par.faded, hl: par.hl, r: 4.5 });
+    }
     const ys = pts.map(p => p.y);
     const y0 = Math.max(0, Math.floor((Math.min(...ys) - 3) / 5) * 5), y1 = Math.ceil((Math.max(...ys) + 3) / 5) * 5;
     const xt = log ? logTicks(x0, x1) : linTicks(x0, x1);
@@ -162,7 +176,7 @@
       xTitle: `${state.x === 'active' ? 'Active' : 'Total'} parameters (billions, ${log ? 'log' : 'linear'} scale)`, yTitle: 'Artificial Analysis Intelligence Index',
       height: W => Math.round(Math.min(560, Math.max(360, W * 0.56))), frontier: true, tip: m => tipHTML(m, false), aria: 'Scatter plot of intelligence index versus parameter count',
     });
-    $('#mainLegend').innerHTML = `<span><i class="dot" style="background:var(--dense)"></i>Dense</span><span><i class="dot" style="background:var(--moe)"></i>Mixture of experts</span><span><i class="dot" style="background:var(--lookup)"></i>Has lookup tables</span><span><i class="dot hollow" style="color:var(--muted)"></i>Score estimated by AA</span>`;
+    $('#mainLegend').innerHTML = `<span><i class="dot" style="background:var(--dense)"></i>Dense</span><span><i class="dot" style="background:var(--moe)"></i>Mixture of experts</span><span><i class="dot" style="background:var(--lookup)"></i>Has lookup tables (ring = size without them, shaded span = the tables)</span><span><i class="dot hollow" style="color:var(--muted)"></i>Score estimated by AA</span>`;
   }
 
   // ---------------------------------------------------------------- quadrant
@@ -180,7 +194,10 @@
     const el = $('#quad'), Q = quadPoints();
     $('#quadLegend').innerHTML = `<span><i class="dot" style="background:var(--dense)"></i>Dense</span><span><i class="dot" style="background:var(--moe)"></i>MoE</span><span><i class="dot" style="background:var(--lookup)"></i>Lookup tables</span><span>${Q.rows.length} models shown` + (state.yaxis === 'aa' && Q.noAA ? `; ${Q.noAA} more fit but have no AA speed (try "Estimated")` : '') + `</span>`;
     if (!Q.rows.length) { el.innerHTML = `<p class="empty">Nothing fits with these settings. Try 3-bit, more memory, SSD paging (under Advanced), a lower minimum speed, or a wider model set.</p>`; return; }
-    const pts = Q.rows.map((m, i) => ({ x: m.lean, y: Q.y[i], m, color: colorOf(m), hollow: m.variants[0].estimated, hl: state.hl === m.id, name: m.name, r: 5 + Math.min(4, Math.log10(1 + m.total) * 1.1), label: m.best }));
+    const lo = Math.min(...Q.rows.map(m => m.best)), hi = Math.max(...Q.rows.map(m => m.best));
+    const rOf = m => 4 + 8 * Math.sqrt(hi > lo ? (m.best - lo) / (hi - lo) : 0.5);  // dot area tracks Intelligence Index
+    const pts = Q.rows.map((m, i) => ({ x: m.lean, y: Q.y[i], m, color: colorOf(m), hollow: m.variants[0].estimated, hl: state.hl === m.id, name: m.name, r: rOf(m), label: m.best }));
+    $('#quadLegend').insertAdjacentHTML('beforeend', `<span><svg width="44" height="18" aria-hidden="true"><circle cx="6" cy="9" r="4" fill="var(--muted)" fill-opacity=".5"/><circle cx="30" cy="9" r="8" fill="var(--muted)" fill-opacity=".5"/></svg>bigger dot = higher Intelligence Index (${lo.toFixed(0)}–${hi.toFixed(0)})</span>`);
     scatter(el, {
       pts, bare: true, xlog: false, x0: -0.75, x1: 0.75, y0: -1.1, y1: 1.1, tip: m => tipHTML(m, true), aria: 'Quadrant chart of coding-versus-knowledge lean against speed-versus-intelligence', maxLabels: 28,
       height: W => Math.round(Math.min(560, Math.max(380, W * 0.6))),
@@ -221,11 +238,11 @@
   // ---------------------------------------------------------------- hardware box
   const pill = (attr, val, label, pressed, extra = '') => `<button class="pill ${extra}" ${attr}="${val}" aria-pressed="${pressed}">${label}</button>`;
   function drawHw() {
-    const h = state.hw, sr = Hardware.series(h.series), hw = hwNow(), q = quantNow();
+    const h = state.hw, hw = hwNow(), q = quantNow();
     let rows = `<div class="hwrow"><span class="k">Hardware</span><div class="pills" id="pMode">${Hardware.MODES.map(([k, l]) => pill('data-v', k, l, h.mode === k)).join('')}</div></div>`;
     if (h.mode !== 'unified') {
-      rows += `<div class="hwrow"><span class="k">GPU</span><div class="pills" id="pSeries">${Hardware.SERIES.map(s => pill('data-v', s.id, s.label + (s.fp4 ? '<small>FP4</small>' : ''), h.series === s.id, s.fp4 ? 'fp4' : '')).join('')}</div></div>`;
-      rows += `<div class="hwrow"><span class="k">VRAM</span><div class="pills" id="pVram">${sr.cards.map(k => pill('data-v', k.gb, k.gb + ' GB', k.gb === hw.vram / h.n)).join('')}<span style="width:8px"></span>${Hardware.COUNTS.map(n => pill('data-n', n, '×' + n, h.n === n)).join('')}</div></div>`;
+      rows += `<div class="hwrow"><span class="k">Total VRAM</span><div class="pills" id="pVram">${Hardware.VRAM_SIZES.map(n => pill('data-v', n, n + ' GB', h.vram === n)).join('')}</div></div>`;
+      rows += `<div class="hwrow"><span class="k">Native FP4</span><div class="pills" id="pFp4">${pill('data-v', '1', 'RTX 50 / Blackwell', !!h.fp4, 'fp4')}${pill('data-v', '0', 'Other GPUs', !h.fp4)}</div></div>`;
       if (h.mode === 'offload') rows += `<div class="hwrow"><span class="k">System RAM</span><div class="pills" id="pRam">${Hardware.RAM_SIZES.map(n => pill('data-v', n, n + ' GB', h.ram === n)).join('')}</div></div>`;
     } else {
       rows += `<div class="hwrow"><span class="k">Memory</span><div class="pills" id="pU">${Hardware.U_SIZES.map(n => pill('data-v', n, n + ' GB', h.uGB === n)).join('')}</div></div>`;
@@ -238,9 +255,8 @@
     $('#hwbox').innerHTML = rows;
     const B = $('#hwbox'), on = (sel, fn) => B.querySelectorAll(sel).forEach(b => b.addEventListener('click', () => fn(b)));
     on('#pMode .pill', b => { h.mode = b.dataset.v; changed(true); });
-    on('#pSeries .pill', b => { h.series = b.dataset.v; h.vram = Hardware.nearestCard(Hardware.series(h.series), h.vram).gb; changed(true); });
-    on('#pVram .pill[data-v]', b => { h.vram = +b.dataset.v; changed(true); });
-    on('#pVram .pill[data-n]', b => { h.n = +b.dataset.n; changed(true); });
+    on('#pVram .pill', b => { h.vram = +b.dataset.v; changed(true); });
+    on('#pFp4 .pill', b => { h.fp4 = b.dataset.v === '1'; changed(true); });
     on('#pRam .pill', b => { h.ram = +b.dataset.v; changed(true); });
     on('#pU .pill', b => { h.uGB = +b.dataset.v; changed(true); });
     on('#pUC .pill', b => { h.uClass = b.dataset.v; changed(true); });
@@ -255,9 +271,12 @@
     const cur = new Set(inSet().map(m => m.id));
     const labs = {};
     for (const m of models) (labs[m.creator] = labs[m.creator] || []).push(m);
-    const order = Object.keys(labs).sort((a, b) => a.localeCompare(b));
+    // Pinned flagship open labs first (in this order), then every other lab by its most recent release.
+    const latest = l => Math.max(...labs[l].map(m => Date.parse(m.released || 0) || 0));
+    const pinned = PINNED_LABS.filter(l => labs[l]);
+    const order = [...pinned, ...Object.keys(labs).filter(l => !pinned.includes(l)).sort((a, b) => latest(b) - latest(a))];
     pp().innerHTML = `<div class="head"><input type="search" id="pkQ" placeholder="Search models or labs" aria-label="Search models"><button class="chip" id="pkAll">All shown</button><button class="chip" id="pkNone">None</button><button class="chip" id="pkReset">Reset to view</button><button class="chip" id="pkClose" aria-label="Close">✕</button></div>
-      <div class="list">${order.map(l => `<div class="lab" data-lab="${esc(l)}"><span>${esc(l)}</span></div>` + labs[l].sort((a, b) => b.best - a.best).map(m => `<label class="it" data-t="${esc((m.name + ' ' + m.creator).toLowerCase())}"><input type="checkbox" value="${m.id}"${cur.has(m.id) ? ' checked' : ''}> ${esc(m.name)}<span class="ix">${m.best.toFixed(1)}</span></label>`).join('')).join('')}</div>`;
+      <div class="list">${order.map((l, i) => (i === 0 && pinned.length ? '<div class="sep">Top open labs</div>' : i === pinned.length ? '<div class="sep">Other labs · newest release first</div>' : '') + `<div class="lab" data-lab="${esc(l)}"><span>${esc(l)}</span></div>` + labs[l].sort((a, b) => b.best - a.best).map(m => `<label class="it" data-t="${esc((m.name + ' ' + m.creator).toLowerCase())}"><input type="checkbox" value="${m.id}"${cur.has(m.id) ? ' checked' : ''}> ${esc(m.name)}<span class="ix">${m.best.toFixed(1)}</span></label>`).join('')).join('')}</div>`;
     pp().hidden = false; $('#pickBtn').setAttribute('aria-expanded', 'true');
     const P = pp(), boxes = () => [...P.querySelectorAll('input[type=checkbox]')];
     const commit = () => { state.pick = boxes().filter(b => b.checked).map(b => b.value); changed(false, true, true); };
@@ -265,6 +284,7 @@
     P.querySelector('#pkQ').addEventListener('input', e => {
       const q = e.target.value.trim().toLowerCase();
       P.querySelectorAll('label.it').forEach(l => { l.style.display = !q || l.dataset.t.includes(q) ? '' : 'none'; });
+      P.querySelectorAll('.sep').forEach(s => { s.style.display = q ? 'none' : ''; });
       P.querySelectorAll('.lab').forEach(l => { let n = l.nextElementSibling, any = false; while (n && n.classList.contains('it')) { if (n.style.display !== 'none') any = true; n = n.nextElementSibling; } l.style.display = any ? '' : 'none'; });
     });
     const visible = () => boxes().filter(b => b.closest('label').style.display !== 'none');
