@@ -37,18 +37,20 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   const firstRow = d.querySelector('#table tbody tr');
   ok('table rows link to AA and Hugging Face', firstRow.querySelector('td.name a[href^="https://artificialanalysis.ai/models/"]') && [...firstRow.querySelectorAll('td a')].some(x => x.href.startsWith('https://huggingface.co/')), firstRow.innerHTML.slice(0, 160));
 
-  // tooltip survives the pointer moving into it, and hides after leaving
+  // tooltip: stays while the pointer moves from the dot into it, closes the moment the pointer leaves the safe zone
   {
     const svg = d.querySelector('#main svg'), pt = svg.querySelector('.pt circle:last-child'), r = pt.getBoundingClientRect(), tip = d.querySelector('#main .tip');
-    const fire = (el, type, x, y) => el.dispatchEvent(new w.MouseEvent(type, { clientX: x, clientY: y, bubbles: true }));
-    fire(svg, 'mousemove', r.x + r.width / 2, r.y + r.height / 2);
-    fire(svg, 'mouseleave', 0, 0);                 // cursor leaves the chart (heading for the tooltip)
-    await sleep(120);
-    ok('tooltip still visible just after leaving the dot', !tip.hidden);
-    fire(tip, 'mouseenter', 0, 0); await sleep(450);
+    const ev = (el, type, x, y) => el.dispatchEvent(new w.MouseEvent(type, { clientX: x, clientY: y, bubbles: true }));
+    const dx = r.x + r.width / 2, dy = r.y + r.height / 2;
+    ev(svg, 'mousemove', dx, dy);
+    ok('tooltip opens on hover', !tip.hidden);
+    const tr = tip.getBoundingClientRect();
+    ev(d, 'mousemove', (dx + (tr.left + tr.right) / 2) / 2, dy);   // in the corridor between dot and tooltip
+    ok('tooltip stays in the corridor between dot and tooltip', !tip.hidden);
+    ev(d, 'mousemove', (tr.left + tr.right) / 2, (tr.top + tr.bottom) / 2);   // over the tooltip itself
     ok('tooltip stays while the pointer is over it', !tip.hidden);
-    fire(tip, 'mouseleave', 0, 0); await sleep(450);
-    ok('tooltip hides after the pointer leaves it', tip.hidden);
+    ev(d, 'mousemove', Math.max(tr.right, dx) + 200, dy);           // well away
+    ok('tooltip closes immediately when the pointer moves away', tip.hidden);
   }
 
   // labels: in the Featured view every dot gets a label, using callouts with leader lines where space is tight

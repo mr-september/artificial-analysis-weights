@@ -137,18 +137,20 @@
     g += leaders.join('') + placed.join('');
     el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(c.aria)}">${g}</svg><div class="tip" hidden></div>`;
 
-    // hover / pin. The tooltip takes the pointer (so its text can be selected and its links clicked) and hides after a short
-    // grace period, so moving from a dot into the tooltip does not dismiss it.
+    // hover / pin. The tooltip takes the pointer (so its text can be selected and its links clicked). While it is open the
+    // pointer may roam a "safe zone" (dot + tooltip + the corridor between them, plus a margin); leaving it closes the tooltip at once.
     const svg = el.querySelector('svg'), tip = el.querySelector('.tip');
-    let pinned = null, overTip = false, hideTimer = 0;
-    const hideSoon = () => { clearTimeout(hideTimer); hideTimer = setTimeout(() => { if (!pinned && !overTip) tip.hidden = true; }, 300); };
+    let pinned = null, safe = null, shown = null;  // shown: model currently in the tooltip (avoids re-rendering it, which would drop a text selection)
+    const hide = () => { tip.hidden = true; tip.classList.remove('pinned'); safe = null; shown = null; };
     const show = (p, isPinned) => {
-      clearTimeout(hideTimer);
-      tip.innerHTML = c.tip(p.m); tip.hidden = false; tip.classList.toggle('pinned', !!isPinned);
+      shown = p.m; tip.innerHTML = c.tip(p.m); tip.hidden = false; tip.classList.toggle('pinned', !!isPinned);
       const tw = tip.offsetWidth, th = tip.offsetHeight;
       let x = p.px + 10; const y = p.py - th / 2;
       if (x + tw > W) x = p.px - tw - 10;
       tip.style.left = Math.max(0, x) + 'px'; tip.style.top = Math.min(Math.max(0, y), H - th) + 'px';
+      const t = tip.getBoundingClientRect(), sv = svg.getBoundingClientRect(), k = sv.width / W, reach = ((p.r || 5.5) + 10) * k;
+      const dx = sv.left + p.px * k, dy = sv.top + p.py * (sv.height / H), M = 12;
+      safe = { l: Math.min(t.left, dx - reach) - M, r: Math.max(t.right, dx + reach) + M, t: Math.min(t.top, dy - reach) - M, b: Math.max(t.bottom, dy + reach) + M };
     };
     const nearest = ev => {
       const r = svg.getBoundingClientRect(), mx = (ev.clientX - r.left) * (W / r.width), my = (ev.clientY - r.top) * (H / r.height);
@@ -156,14 +158,18 @@
       for (const p of pts) { const d = (p.px - mx) ** 2 + (p.py - my) ** 2; if (d < bd) { bd = d; best = p; } }
       return best;
     };
-    tip.addEventListener('mouseenter', () => { overTip = true; clearTimeout(hideTimer); });
-    tip.addEventListener('mouseleave', () => { overTip = false; hideSoon(); });
-    svg.addEventListener('mousemove', ev => { if (pinned) return; const p = nearest(ev); if (p) show(p); else hideSoon(); });
-    svg.addEventListener('mouseleave', () => { if (!pinned) hideSoon(); });
+    svg.addEventListener('mousemove', ev => { if (!pinned) { const p = nearest(ev); if (p && p.m !== shown) show(p); } });
     svg.addEventListener('click', ev => {
       const p = nearest(ev);
-      if (p && p !== pinned) { pinned = p; show(p, true); hl = p.m.id; } else { pinned = null; tip.hidden = true; tip.classList.remove('pinned'); hl = null; }
+      if (p && p !== pinned) { pinned = p; show(p, true); hl = p.m.id; } else { pinned = null; hide(); hl = null; }
     });
+    // one document-level listener per chart (replaced on every redraw, so they do not accumulate)
+    document.removeEventListener('mousemove', el._away);
+    document.documentElement.removeEventListener('mouseleave', el._gone);
+    el._away = ev => { if (safe && !pinned && (ev.clientX < safe.l || ev.clientX > safe.r || ev.clientY < safe.t || ev.clientY > safe.b)) hide(); };
+    el._gone = () => { if (!pinned) hide(); };
+    document.addEventListener('mousemove', el._away);
+    document.documentElement.addEventListener('mouseleave', el._gone);
   }
 
   const aaUrl = m => `https://artificialanalysis.ai/models/${m.slug}`;
