@@ -12,12 +12,14 @@
     {"lab": "NVIDIA", "ids": ["nemotron-3-5-super-vl", "nemotron-3-5-bolt-74b-a9b", "nemotron-3-5-lightning"]},
     {"lab": "MiniMax", "ids": ["minimax-m3"]},
     {"lab": "Mistral", "ids": ["mistral-medium-3-5", "mistral-small-4"]},
-    {"lab": "InclusionAI", "ids": ["ling-3-1-flash"]},
+    {"lab": "InclusionAI", "ids": ["ling-3-1-flash", "ring-2-6-1t"]},
     {"lab": "StepFun", "ids": ["step-5"]},
     {"lab": "Thinking Machines", "ids": ["inkling", "inkling-small"]},
     {"lab": "Reflection", "ids": ["reflection-beam"]},
     {"lab": "Institute of Foundation Models", "ids": ["k2-horizon-375b-a23b"]},
     {"lab": "Motif Technologies", "ids": ["motif-3"]},
-    {"lab": "LongCat", "ids": ["longcat-2-0"]}
+    {"lab": "LongCat", "ids": ["longcat-2-0"]},
+    {"lab": "Liquid AI", "ids": ["lfm2-5-8b-a1b", "lfm2-5-2-6b"]},
+    {"lab": "AI9Stars", "ids": ["g9v3-39a5b", "g9v3-3b"]}
   ]
 }
