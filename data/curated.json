@@ -1,0 +1,23 @@
+{
+  "_doc": "Hand-curated 'Featured' set: the default view and the top of the model picker. Groups appear in this order; ids are AA family ids (see data/models.json). Keep to each lab's latest generation plus a few size-class representatives for smaller hardware. update.py logs recent open models that are not listed here so this file can be revisited.",
+  "groups": [
+    {"lab": "Alibaba", "ids": ["qwen3-8-2-4t-a95b", "qwen3-8-flash-next", "qwen3-8-27b", "qwen3-6-35b-a3b", "qwen3-5-9b", "qwen3-5-4b"]},
+    {"lab": "Xiaomi", "ids": ["mimo-v2-6-pro", "mimo-v2-6-flash"]},
+    {"lab": "DeepSeek", "ids": ["deepseek-v4-1-flash-1017", "deepseek-v4-pro"]},
+    {"lab": "Z AI", "ids": ["glm-5-3", "glm-5-3-flash"]},
+    {"lab": "Kimi", "ids": ["kimi-k3"]},
+    {"lab": "Meta", "ids": ["muse-spark-open", "muse-glimmer"]},
+    {"lab": "Google", "ids": ["gemma-4-31b", "gemma-4-26b-a4b", "gemma-4-12b", "gemma-4-e4b"]},
+    {"lab": "OpenAI", "ids": ["gpt-oss-120b", "gpt-oss-20b"]},
+    {"lab": "NVIDIA", "ids": ["nemotron-3-5-super-vl", "nemotron-3-5-bolt-74b-a9b", "nemotron-3-5-lightning"]},
+    {"lab": "MiniMax", "ids": ["minimax-m3"]},
+    {"lab": "Mistral", "ids": ["mistral-medium-3-5", "mistral-small-4"]},
+    {"lab": "InclusionAI", "ids": ["ling-3-1-flash"]},
+    {"lab": "StepFun", "ids": ["step-5"]},
+    {"lab": "Thinking Machines", "ids": ["inkling", "inkling-small"]},
+    {"lab": "Reflection", "ids": ["reflection-beam"]},
+    {"lab": "Institute of Foundation Models", "ids": ["k2-horizon-375b-a23b"]},
+    {"lab": "Motif Technologies", "ids": ["motif-3"]},
+    {"lab": "LongCat", "ids": ["longcat-2-0"]}
+  ]
+}

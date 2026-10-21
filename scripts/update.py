@@ -164,11 +164,27 @@ def main():
         })
 
     models.sort(key=lambda m: -m["best"])
+    curated = load(DATA / "curated.json", {}).get("groups", [])
+    known = {m["id"] for m in models}
+    for g in curated:
+        missing = [i for i in g["ids"] if i not in known]
+        if missing:
+            print(f"  ? curated.json: unknown ids in {g['lab']}: {missing}", file=sys.stderr)
+        g["ids"] = [i for i in g["ids"] if i in known]
+    pinned = {i for g in curated for i in g["ids"]}
+    for m in models:
+        m["curated"] = m["id"] in pinned
+    newest = max((m["released"] for m in models if m["released"]), default=None)
+    if newest:
+        cut = (dt.date.fromisoformat(newest) - dt.timedelta(days=45)).isoformat()
+        fresh = [m["id"] for m in models if m["released"] and m["released"] >= cut and not m["curated"] and m["best"] >= 20]
+        if fresh:
+            print("  + recent open models not in data/curated.json (consider featuring):", ", ".join(fresh))
     frontier = proprietary_frontier()
     old = load(DATA / "models.json", {})
     if old.get("count") and len(models) < 0.8 * old["count"]:
         sys.exit(f"refusing to overwrite: {len(models)} models vs {old['count']} before (scrape probably broke)")
-    out = {"generated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "count": len(models), "skipped": skipped, "models": models, "frontier": frontier}
+    out = {"generated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "count": len(models), "skipped": skipped, "models": models, "curated": curated, "frontier": frontier}
     if {k: v for k, v in old.items() if k != "generated"} == {k: v for k, v in out.items() if k != "generated"}:
         print("no data changes")
         HF_CACHE.write_text(json.dumps(cache, indent=0, sort_keys=True, ensure_ascii=False) + chr(10), encoding="utf8")

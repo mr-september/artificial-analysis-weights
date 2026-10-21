@@ -15,6 +15,7 @@ Unofficial. Not affiliated with or endorsed by Artificial Analysis or Hugging Fa
 | Lookup params (n-gram / per-layer embeddings) | `data/overrides.json`, curated from model cards | Take memory, almost no bandwidth, so they are placed last and cost no decode time |
 | Native size | Hugging Face repo AA links to | Quantized sizes are computed from effective bits per weight |
 | Proprietary frontier | AA leaderboard (`data/aa_closed.json`) | Closed models have no sizes, so only their scores appear: the latest model of each product tier at the leading closed labs as horizontal reference lines (optional toggle) |
+| Featured set | `data/curated.json` | Hand-curated default view and top of the model picker; the refresh log lists recent open models missing from it |
 | Hardware | `assets/hardware.js` | Total VRAM / RAM / unified-memory buckets with representative bandwidths, approximate |
 | Speed on your hardware | `assets/core.js` | Bandwidth roofline: tiered placement VRAM → RAM → SSD, 55% of peak bandwidth, MoE reads only active experts |
 

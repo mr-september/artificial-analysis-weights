@@ -87,6 +87,7 @@ const Core = (() => {
   // ---- model-set filters (shared by both charts) -------------------------------------------------
   const DAY = 864e5;
   function modelSet(models, f, now = Date.now()) {
+    if (f.mode === 'curated') return models.filter(m => m.curated);
     if (f.mode === 'featured') return models.filter(m => m.featured);
     if (f.mode === 'recent') {
       const cut = now - f.months * 30.44 * DAY;

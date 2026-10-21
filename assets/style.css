@@ -183,5 +183,8 @@ details.adv .row { margin-bottom: 8px; }
 .pill.sm:hover { border-color: var(--pc); }
 .pill.sm[aria-pressed="true"] { background: var(--pc); border-color: var(--pc); color: #fff; font-weight: 500; }
 
-.card > header .tools:has(.propbox) { flex: 1 1 640px; }
-.propbox { flex: 1 1 320px; }
+.card > header .tools:has(.propbox.on) { flex: 1 1 640px; }
+.propbox { flex: 0 1 auto; }
+.propbox.on { flex: 1 1 320px; }
+
+.chart .axlab { fill: var(--fg); font-size: 14px; font-weight: 600; letter-spacing: -.005em; paint-order: stroke; stroke: var(--card); stroke-width: 4px; stroke-linejoin: round; }

@@ -5,7 +5,7 @@
 
   // ---------------------------------------------------------------- state
   const DEFAULT = {
-    set: { mode: 'recent', months: 6 }, pick: null, x: 'total', xscale: 'log', prec: 'q4', prop: { on: false, sel: null }, reserve: 4, filter: '',
+    set: { mode: 'curated', months: 6 }, pick: null, x: 'total', xscale: 'log', prec: 'q4', prop: { on: false, sel: null }, reserve: 4, filter: '',
     hw: { mode: 'offload', vram: 24, gpu: 'rtx20-40', ram: 64, uGB: 64, uClass: 'fast', ssd: false },
   };
   const merge = (a, b) => ({ ...a, ...b, set: { ...a.set, ...b.set }, hw: { ...a.hw, ...b.hw }, prop: { ...a.prop, ...b.prop } });
@@ -30,7 +30,7 @@
   const colorOf = m => css('--' + m.cls);
   const fmtB = v => (v >= 1000 ? (v / 1000).toFixed(v >= 10000 ? 0 : 1).replace(/\.0$/, '') + 'T' : v >= 100 ? Math.round(v) + 'B' : v >= 10 ? +v.toFixed(1) + 'B' : +v.toFixed(2) + 'B');
   const fmtGB = v => (v >= 1000 ? (v / 1000).toFixed(1) + ' TB' : v >= 100 ? Math.round(v) + ' GB' : +v.toFixed(1) + ' GB');
-  const PINNED_LABS = ['Alibaba', 'Xiaomi', 'DeepSeek', 'Z AI', 'Kimi', 'Meta', 'MiniMax', 'OpenAI', 'Google', 'NVIDIA', 'Mistral'];
+  const DEFAULT_PROP_TIERS = ['Claude Opus', 'Claude Sonnet', 'GPT Astra', 'Claude Haiku', 'GPT Luna'];
   const PROP_COLORS = ['#e5484d', '#2f6fed', '#2a9d5c', '#d19200', '#c13ccf', '#0891b2', '#7c8b00', '#e0558a', '#5b6472', '#b4541a', '#3f8f8f', '#8a5cf6', '#c2410c', '#0e7490', '#4d7c0f'];
   const USABLE_TPS = 3;  // silent usability floor applied to the roofline estimate; speeds themselves are not shown
   const CLS_SHORT = { fit: 'fits', offload: 'RAM offload', ssd: 'SSD paging', none: 'no fit' };
@@ -58,7 +58,7 @@
   // ---------------------------------------------------------------- generic scatter
   function scatter(el, c) {
     const W = Math.max(320, el.clientWidth), H = c.height(W);
-    const M = { l: c.bare ? 14 : 48, r: 16, t: 12, b: c.bare ? 34 : 44 };
+    const M = { l: c.bare ? 14 : 48, r: 16, t: 12, b: c.bare ? 12 : 44 };
     const iw = W - M.l - M.r, ih = H - M.t - M.b;
     const sx = c.xlog ? v => M.l + (Math.log(v / c.x0) / Math.log(c.x1 / c.x0)) * iw : v => M.l + ((v - c.x0) / (c.x1 - c.x0)) * iw;
     const sy = v => M.t + ih - ((v - c.y0) / (c.y1 - c.y0)) * ih;
@@ -149,7 +149,7 @@
 
   // ---------------------------------------------------------------- proprietary frontier (horizontal reference lines)
   const propColor = t => PROP_COLORS[data.frontier.indexOf(t) % PROP_COLORS.length];
-  const propSel = () => new Set(state.prop.sel || data.frontier.filter(t => t.top).map(t => t.id));
+  const propSel = () => new Set(state.prop.sel || data.frontier.filter(t => DEFAULT_PROP_TIERS.includes(t.tier)).map(t => t.id));
   const propLines = () => (state.prop.on ? data.frontier.filter(t => propSel().has(t.id)) : []);
   function propLinesSvg(lines, { sy, M, iw }) {
     let g = '', lastY = -99;
@@ -162,6 +162,7 @@
   }
   function drawProp() {
     const P = state.prop, sel = propSel();
+    $('#propbox').classList.toggle('on', P.on);
     $('#propbox').innerHTML = `<label class="tog"><input type="checkbox" id="propOn"${P.on ? ' checked' : ''}> Proprietary frontier</label>` +
       (P.on ? `<div class="pills sm">${data.frontier.map(t => `<button class="pill sm" data-id="${t.id}" aria-pressed="${sel.has(t.id)}" style="--pc:${propColor(t)}" title="${esc(t.name)} · ${t.best.toFixed(1)}">${esc(t.tier)}</button>`).join('')}</div>` : '');
     $('#propOn').addEventListener('change', e => { P.on = e.target.checked; changed(); });
@@ -218,18 +219,19 @@
     const rOf = m => 3 + 14 * (hi > lo ? (m.best - lo) / (hi - lo) : 0.5);  // higher score, visibly bigger dot
     const pts = rows.map((m, i) => ({ x: m.lean, y: ri[i] - rs[i], m, color: colorOf(m), hollow: m.variants[0].estimated, hl: state.hl === m.id, name: m.name, r: rOf(m), label: m.best }));
     $('#quadLegend').insertAdjacentHTML('beforeend', `<span><svg width="52" height="22" aria-hidden="true"><circle cx="6" cy="11" r="3.5" fill="var(--muted)" fill-opacity=".5"/><circle cx="34" cy="11" r="10" fill="var(--muted)" fill-opacity=".5"/></svg>bigger dot = higher Intelligence Index (${lo.toFixed(0)}–${hi.toFixed(0)})</span>`);
+    // Centre the cross on the middle of the plotted range and scale so the points fill ~90% of each axis.
+    const span = vals => { const lo = Math.min(...vals), hi = Math.max(...vals), c = (lo + hi) / 2, h = Math.max((hi - lo) / 2, 1e-6) / 0.9; return [c, c - h, c + h]; };
+    const [cx0, x0, x1] = span(pts.map(p => p.x)), [cy0, y0, y1] = span(pts.map(p => p.y));
     scatter(el, {
-      pts, bare: true, xlog: false, x0: -0.75, x1: 0.75, y0: -1.1, y1: 1.1, tip: m => tipHTML(m, true), aria: 'Quadrant chart of coding-versus-knowledge lean against speed-versus-intelligence', maxLabels: 28,
-      height: W => Math.round(Math.min(560, Math.max(380, W * 0.6))),
+      pts, bare: true, xlog: false, x0, x1, y0, y1, tip: m => tipHTML(m, true), aria: 'Quadrant chart of coding-versus-knowledge lean against speed-versus-intelligence', maxLabels: 28,
+      height: W => Math.round(Math.min(600, Math.max(400, W * 0.64))),
       under: ({ sx, sy, M, iw, ih }) => {
-        const cx = sx(0), cy = sy(0), l = M.l, r = M.l + iw, t = M.t, b = M.t + ih;
+        const cx = sx(cx0), cy = sy(cy0), l = M.l, r = M.l + iw, t = M.t, b = M.t + ih;
+        const lab = (x, y, anchor, text) => `<text class="axlab" x="${x}" y="${y}" text-anchor="${anchor}">${text}</text>`;
         return `<rect x="${l}" y="${t}" width="${iw}" height="${ih}" fill="none" stroke="var(--border)"/>` +
           `<line class="axisline" x1="${cx}" x2="${cx}" y1="${t}" y2="${b}" stroke-dasharray="4 4"/><line class="axisline" x1="${l}" x2="${r}" y1="${cy}" y2="${cy}" stroke-dasharray="4 4"/>` +
-          `<text class="quad" x="${l + 10}" y="${t + 18}">Brainy generalists</text><text class="quad" x="${r - 10}" y="${t + 18}" text-anchor="end">Smart coders &amp; agents</text>` +
-          `<text class="quad" x="${l + 10}" y="${b - 10}">Quick chat</text><text class="quad" x="${r - 10}" y="${b - 10}" text-anchor="end">Quick coders</text>` +
-          `<text class="axtitle" x="${l}" y="${b + 24}">← knowledge &amp; chat</text><text class="axtitle" x="${r}" y="${b + 24}" text-anchor="end">coding &amp; agents →</text>` +
-          `<text class="axtitle" x="${cx}" y="${b + 24}" text-anchor="middle" style="fill:var(--muted);font-weight:400">relative strength</text>` +
-          `<text class="axtitle" transform="translate(${l - 3} ${cy}) rotate(-90)" text-anchor="middle" style="fill:var(--muted);font-weight:400">smarter ↑ · faster ↓</text>`;
+          lab(l + 10, cy - 9, 'start', '← knowledge &amp; chat') + lab(r - 10, cy - 9, 'end', 'coding &amp; agents →') +
+          lab(cx + 10, t + 20, 'start', '↑ smarter') + lab(cx + 10, b - 10, 'start', '↓ faster');
       },
     });
   }
@@ -270,7 +272,7 @@
       rows += `<div class="hwrow"><span class="k">Memory speed</span><div class="pills" id="pUC">${Hardware.U_CLASSES.map(u => pill('data-v', u.id, u.label, h.uClass === u.id).replace('<button', `<button title="${esc(u.hint)} (~${u.bw} GB/s)"`)).join('')}</div></div>`;
     }
     const precNote = state.prec === 'q4' ? (hw.fp4 ? 'NVFP4: native 4-bit floats on this GPU' : 'GGUF Q4_K_M (no native FP4 on this GPU)') : q.label;
-    rows += `<div class="hwrow"><span class="k">Precision</span><div class="pills" id="pPrec">${[['native', 'As released'], ['q8', '8-bit'], ['q4', '4-bit'], ['q3', '3-bit']].map(([k, l]) => pill('data-v', k, l, state.prec === k)).join('')}<span class="note" style="align-self:center;margin-left:6px">${esc(precNote)}</span></div></div>`;
+    rows += `<div class="hwrow"><span class="k">Precision</span><div class="pills" id="pPrec">${[['native', 'Unquantized'], ['q8', '8-bit'], ['q4', '4-bit'], ['q3', '3-bit']].map(([k, l]) => pill('data-v', k, l, state.prec === k)).join('')}<span class="note" style="align-self:center;margin-left:6px">${esc(precNote)}</span></div></div>`;
     rows += `<div class="hwsum"><span><b>${esc(hw.label)}</b></span><span>${fmtGB(hw.unified ? hw.usable : hw.vram)} ${hw.unified ? 'usable by GPU' : 'VRAM'}</span></div>`;
     rows += `<details class="adv"><summary>Advanced</summary><div class="row"><label class="tog">Headroom for context &amp; runtime <input type="range" id="hRes" min="1" max="32" value="${state.reserve}"> <b id="hResOut">${state.reserve} GB</b></label></div><div class="row"><label class="tog"><input type="checkbox" id="hSsd"${h.ssd ? ' checked' : ''}> Allow paging weights from an NVMe SSD (~6 GB/s, slow)</label></div></details>`;
     $('#hwbox').innerHTML = rows;
@@ -290,14 +292,17 @@
   const pp = () => $('#pickPanel');
   function openPicker() {
     const cur = new Set(inSet().map(m => m.id));
-    const labs = {};
-    for (const m of models) (labs[m.creator] = labs[m.creator] || []).push(m);
-    // Pinned flagship open labs first (in this order), then every other lab by its most recent release.
-    const latest = l => Math.max(...labs[l].map(m => Date.parse(m.released || 0) || 0));
-    const pinned = PINNED_LABS.filter(l => labs[l]);
-    const order = [...pinned, ...Object.keys(labs).filter(l => !pinned.includes(l)).sort((a, b) => latest(b) - latest(a))];
+    // Featured (hand-curated, data/curated.json) first, in curated order; then everything else by lab, newest release first.
+    const byId = Object.fromEntries(models.map(m => [m.id, m]));
+    const featured = data.curated.map(g => ({ lab: g.lab, items: g.ids.map(i => byId[i]) }));
+    const done = new Set(data.curated.flatMap(g => g.ids));
+    const rest = {};
+    for (const m of models) if (!done.has(m.id)) (rest[m.creator] = rest[m.creator] || []).push(m);
+    const latest = l => Math.max(...rest[l].map(m => Date.parse(m.released || 0) || 0));
+    const others = Object.keys(rest).sort((x, y) => latest(y) - latest(x)).map(l => ({ lab: l, items: rest[l].sort((x, y) => y.best - x.best) }));
+    const section = (title, groups) => `<div class="sep">${title}</div>` + groups.map(g => `<div class="lab" data-lab="${esc(g.lab)}"><span>${esc(g.lab)}</span></div>` + g.items.map(m => `<label class="it" data-t="${esc((m.name + ' ' + m.creator).toLowerCase())}"><input type="checkbox" value="${m.id}"${cur.has(m.id) ? ' checked' : ''}> ${esc(m.name)}<span class="ix">${m.best.toFixed(1)}</span></label>`).join('')).join('');
     pp().innerHTML = `<div class="head"><input type="search" id="pkQ" placeholder="Search models or labs" aria-label="Search models"><button class="chip" id="pkAll">All shown</button><button class="chip" id="pkNone">None</button><button class="chip" id="pkReset">Reset to view</button><button class="chip" id="pkClose" aria-label="Close">✕</button></div>
-      <div class="list">${order.map((l, i) => (i === 0 && pinned.length ? '<div class="sep">Top open labs</div>' : i === pinned.length ? '<div class="sep">Other labs · newest release first</div>' : '') + `<div class="lab" data-lab="${esc(l)}"><span>${esc(l)}</span></div>` + labs[l].sort((a, b) => b.best - a.best).map(m => `<label class="it" data-t="${esc((m.name + ' ' + m.creator).toLowerCase())}"><input type="checkbox" value="${m.id}"${cur.has(m.id) ? ' checked' : ''}> ${esc(m.name)}<span class="ix">${m.best.toFixed(1)}</span></label>`).join('')).join('')}</div>`;
+      <div class="list">${section('Featured', featured)}${section('All other models · labs by newest release', others)}</div>`;
     pp().hidden = false; $('#pickBtn').setAttribute('aria-expanded', 'true');
     const P = pp(), boxes = () => [...P.querySelectorAll('input[type=checkbox]')];
     const commit = () => { state.pick = boxes().filter(b => b.checked).map(b => b.value); changed(false, true, true); };
@@ -343,7 +348,7 @@
     el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { set(b.dataset.v); changed(); }));
   }
   function drawControls() {
-    const modes = [['recent', 'Recent'], ['featured', 'AA picks'], ['latest', 'Latest per lab'], ['all', 'All']];
+    const modes = [['curated', 'Featured'], ['recent', 'Recent'], ['featured', 'AA picks'], ['all', 'All']];
     if (state.pick) modes.push(['custom', `Custom (${state.pick.length})`]);
     seg($('#setmode'), modes, () => (state.pick ? 'custom' : state.set.mode), v => { if (v !== 'custom') { state.pick = null; state.set.mode = v; } });
     seg($('#xmode'), [['total', 'Total params'], ['active', 'Active params']], () => state.x, v => { state.x = v; });
