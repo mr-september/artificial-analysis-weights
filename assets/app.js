@@ -401,6 +401,13 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closePicker(); });
   document.addEventListener('click', e => { if (!pp().hidden && !e.composedPath().includes($('#setbar'))) closePicker(); });
 
+  // ---------------------------------------------------------------- support menu (top bar)
+  const supportMenu = $('#supportMenu'), supportBtn = $('#supportBtn');
+  const setSupport = open => { supportMenu.hidden = !open; supportBtn.setAttribute('aria-expanded', String(open)); };
+  supportBtn.addEventListener('click', () => setSupport(supportMenu.hidden));
+  document.addEventListener('click', e => { if (!supportMenu.hidden && !e.composedPath().includes($('.support'))) setSupport(false); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') setSupport(false); });
+
   // ---------------------------------------------------------------- table
   let sort = { k: 'best', dir: -1 };
   function drawTable() {

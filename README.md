@@ -57,6 +57,10 @@ scripts/                     scrape_aa.py, hf.py, update.py
 .github/workflows/pages.yml  refresh and deploy
 ```
 
+## Support
+
+Free and open source. If it saved you time, you can support its upkeep: [Ko-fi](https://ko-fi.com/Q5Q11I49GI) · [Liberapay](https://liberapay.com/mr-september/donate) · [PayPal](https://www.paypal.com/donate/?hosted_button_id=WFXL2T42BBCRN) · [Crypto](https://nowpayments.io/donation?api_key=5b5fabd5-2c33-4525-99a3-bf27f587780c). Stars, bug reports and corrections to the curated data help just as much.
+
 ## Credits and license
 
 Benchmark data belongs to [Artificial Analysis](https://artificialanalysis.ai/); sizes and model metadata come from [Hugging Face](https://huggingface.co/). Please credit them if you reuse it, and follow their terms. The code and hand-curated files in this repository are MIT licensed (see `LICENSE`).

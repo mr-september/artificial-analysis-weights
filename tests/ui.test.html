@@ -127,6 +127,17 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ok('switch off disables the menu button and keeps its size', d.querySelector('#propMenuBtn').disabled && d.querySelector('#propOn').getAttribute('aria-checked') === 'false');
   ok('no tok/s anywhere in tables or picks', !/tok\/s/.test(d.querySelector('#table').textContent + d.querySelector('#picks').textContent));
 
+  // support menu: closed by default, four outbound links, closes on outside click
+  {
+    const btn = d.querySelector('#supportBtn'), menu = d.querySelector('#supportMenu');
+    ok('support menu starts closed', menu.hidden && btn.getAttribute('aria-expanded') === 'false');
+    btn.click(); await sleep(100);
+    ok('support menu opens with four safe links', !menu.hidden && [...menu.querySelectorAll('a')].length === 4 && [...menu.querySelectorAll('a')].every(x => x.target === '_blank' && /noopener/.test(x.rel)));
+    d.body.click(); await sleep(100);
+    ok('support menu closes on outside click', menu.hidden);
+    ok('footer carries the same four links', d.querySelectorAll('footer a[href*="ko-fi.com"], footer a[href*="liberapay.com"], footer a[href*="paypal.com"], footer a[href*="nowpayments.io"]').length === 4);
+  }
+
   // theme toggle
   const t0 = d.documentElement.dataset.theme; d.querySelector('#theme').click(); await sleep(100);
   ok('theme toggles', d.documentElement.dataset.theme && d.documentElement.dataset.theme !== t0);

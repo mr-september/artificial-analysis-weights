@@ -191,3 +191,19 @@ td.name a { color: inherit; }
 .propbox .chip { min-width: 86px; padding-block: 4px; text-align: center; }
 .propbox .chip:disabled { opacity: .45; cursor: default; border-color: var(--border); }
 .seg { box-sizing: border-box; }
+
+/* support: a quiet heart in the top bar, plus a footer line */
+.support { position: relative; }
+.bar nav .heart { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 32px; padding: 0; }
+.heart svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; transition: fill .15s; }
+.bar nav .heart:hover, .bar nav .heart[aria-expanded="true"] { color: hsl(340 75% 55%); }
+.heart:hover svg, .heart[aria-expanded="true"] svg { fill: currentColor; fill-opacity: .18; }
+.supportmenu { right: 0; width: 200px; padding: 6px; }
+.supportmenu .t { padding: 6px 10px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.supportmenu a { display: block; padding: 7px 10px; border-radius: 7px; font-size: 13.5px; text-decoration: none; }
+.supportmenu a:hover { background: var(--soft); }
+footer p { margin: 0 0 4px; }
+footer p:last-child { margin: 0; }
+.heart:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+/* anchored to the top-right under the bar (not to the 34px heart), so it can never clip on narrow screens */
+.supportmenu { position: fixed; top: 60px; right: max(12px, calc((100vw - 1240px) / 2 + 16px)); z-index: 25; }
