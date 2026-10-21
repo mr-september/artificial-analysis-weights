@@ -195,11 +195,13 @@ td.name a { color: inherit; }
 
 .bar nav .gh { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 32px; padding: 0; }
 .gh svg { width: 17px; height: 17px; fill: currentColor; }
+.bar nav #theme { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 32px; padding: 0; }
+#theme svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; }
 .gh:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 /* support: a quiet heart in the top bar, plus a footer line */
 .support { position: relative; }
 .bar nav .heart { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 32px; padding: 0; }
-.heart svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; transition: fill .15s; }
+.heart svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; transition: fill .15s; }
 .bar nav .heart:hover, .bar nav .heart[aria-expanded="true"] { color: hsl(340 75% 55%); }
 .heart:hover svg, .heart[aria-expanded="true"] svg { fill: currentColor; fill-opacity: .18; }
 .supportmenu { right: 0; width: 200px; padding: 6px; }
