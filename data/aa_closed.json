@@ -11,7 +11,7 @@
   "released": "2026-08-26",
   "price_in": 0.1,
   "price_out": 0.3,
-  "tps": 115.1
+  "tps": 110.5
  },
  {
   "slug": "apodex-1-1",
@@ -39,7 +39,7 @@
   "released": "2026-07-24",
   "price_in": 0.2,
   "price_out": 0.7,
-  "tps": 1496.5
+  "tps": 1511.8
  },
  {
   "slug": "claude-fable-5-1",
@@ -53,7 +53,7 @@
   "released": "2026-09-01",
   "price_in": 10,
   "price_out": 50,
-  "tps": 68.6
+  "tps": 69.2
  },
  {
   "slug": "claude-fable-5-1-high",
@@ -67,7 +67,7 @@
   "released": "2026-09-01",
   "price_in": 10,
   "price_out": 50,
-  "tps": 58.0
+  "tps": 55.6
  },
  {
   "slug": "claude-fable-5-1-low",
@@ -81,7 +81,7 @@
   "released": "2026-09-01",
   "price_in": 10,
   "price_out": 50,
-  "tps": 57.4
+  "tps": 55.9
  },
  {
   "slug": "claude-fable-5-1-medium",
@@ -95,7 +95,7 @@
   "released": "2026-09-01",
   "price_in": 10,
   "price_out": 50,
-  "tps": 55.9
+  "tps": 55.6
  },
  {
   "slug": "claude-fable-5-1-xhigh",
@@ -109,7 +109,7 @@
   "released": "2026-09-01",
   "price_in": 10,
   "price_out": 50,
-  "tps": 64.1
+  "tps": 64.4
  },
  {
   "slug": "claude-haiku-5-5",
@@ -123,7 +123,7 @@
   "released": "2026-10-07",
   "price_in": 0.1,
   "price_out": 0.5,
-  "tps": 236.0
+  "tps": 235.0
  },
  {
   "slug": "claude-haiku-5-5-high",
@@ -137,7 +137,7 @@
   "released": "2026-10-07",
   "price_in": 0.1,
   "price_out": 0.5,
-  "tps": 179.4
+  "tps": 179.3
  },
  {
   "slug": "claude-haiku-5-5-low",
@@ -151,7 +151,7 @@
   "released": "2026-10-07",
   "price_in": 0.1,
   "price_out": 0.5,
-  "tps": 171.3
+  "tps": 171.2
  },
  {
   "slug": "claude-haiku-5-5-medium",
@@ -165,7 +165,7 @@
   "released": "2026-10-07",
   "price_in": 0.1,
   "price_out": 0.5,
-  "tps": 177.8
+  "tps": 175.7
  },
  {
   "slug": "claude-haiku-5-5-xhigh",
@@ -179,7 +179,7 @@
   "released": "2026-10-07",
   "price_in": 0.1,
   "price_out": 0.5,
-  "tps": 192.7
+  "tps": 192.5
  },
  {
   "slug": "claude-opus-5-5",
@@ -193,7 +193,7 @@
   "released": "2026-09-22",
   "price_in": 4,
   "price_out": 20,
-  "tps": 95.4
+  "tps": 95.7
  },
  {
   "slug": "claude-opus-5-5-high",
@@ -207,7 +207,7 @@
   "released": "2026-09-22",
   "price_in": 4,
   "price_out": 20,
-  "tps": 79.6
+  "tps": 77.3
  },
  {
   "slug": "claude-opus-5-5-low",
@@ -221,7 +221,7 @@
   "released": "2026-09-22",
   "price_in": 4,
   "price_out": 20,
-  "tps": 80.2
+  "tps": 79.5
  },
  {
   "slug": "claude-opus-5-5-medium",
@@ -235,7 +235,7 @@
   "released": "2026-09-22",
   "price_in": 4,
   "price_out": 20,
-  "tps": 81.0
+  "tps": 79.1
  },
  {
   "slug": "claude-opus-5-5-xhigh",
@@ -249,7 +249,7 @@
   "released": "2026-09-22",
   "price_in": 4,
   "price_out": 20,
-  "tps": 84.7
+  "tps": 83.1
  },
  {
   "slug": "claude-sonnet-5-5",
@@ -263,7 +263,7 @@
   "released": "2026-09-28",
   "price_in": 2,
   "price_out": 10,
-  "tps": 136.5
+  "tps": 133.9
  },
  {
   "slug": "claude-sonnet-5-5-high",
@@ -277,7 +277,7 @@
   "released": "2026-09-28",
   "price_in": 2,
   "price_out": 10,
-  "tps": 105.1
+  "tps": 102.1
  },
  {
   "slug": "claude-sonnet-5-5-low",
@@ -291,7 +291,7 @@
   "released": "2026-09-28",
   "price_in": 2,
   "price_out": 10,
-  "tps": 106.1
+  "tps": 101.3
  },
  {
   "slug": "claude-sonnet-5-5-medium",
@@ -305,7 +305,7 @@
   "released": "2026-09-28",
   "price_in": 2,
   "price_out": 10,
-  "tps": 107.2
+  "tps": 101.3
  },
  {
   "slug": "claude-sonnet-5-5-xhigh",
@@ -319,7 +319,7 @@
   "released": "2026-09-28",
   "price_in": 2,
   "price_out": 10,
-  "tps": 110.4
+  "tps": 105.8
  },
  {
   "slug": "deepseek-v4-flash-vision",
@@ -333,7 +333,7 @@
   "released": "2026-08-21",
   "price_in": 0.44,
   "price_out": 1.32,
-  "tps": 202.0
+  "tps": 199.3
  },
  {
   "slug": "doubao-seed-code",
@@ -375,7 +375,7 @@
   "released": "2026-02-19",
   "price_in": 2,
   "price_out": 12,
-  "tps": 131.0
+  "tps": 123.0
  },
  {
   "slug": "gemini-3-5-flash-lite",
@@ -389,7 +389,7 @@
   "released": "2026-07-21",
   "price_in": 0.3,
   "price_out": 2.5,
-  "tps": 454.3
+  "tps": 433.1
  },
  {
   "slug": "gemini-3-8-flash",
@@ -403,7 +403,7 @@
   "released": "2026-09-02",
   "price_in": 0.75,
   "price_out": 3.75,
-  "tps": 138.1
+  "tps": 136.9
  },
  {
   "slug": "gemini-3-8-flash-low",
@@ -459,7 +459,7 @@
   "released": "2026-09-30",
   "price_in": 2,
   "price_out": 10,
-  "tps": 83.1
+  "tps": 81.3
  },
  {
   "slug": "gpt-5-3-codex",
@@ -473,7 +473,7 @@
   "released": "2026-02-05",
   "price_in": 1.75,
   "price_out": 14,
-  "tps": 95.7
+  "tps": 84.2
  },
  {
   "slug": "gpt-5-5-instant-06-26",
@@ -487,7 +487,7 @@
   "released": "2026-06-25",
   "price_in": 5,
   "price_out": 30,
-  "tps": 156.4
+  "tps": 155.1
  },
  {
   "slug": "gpt-5-5-pro",
@@ -515,7 +515,7 @@
   "released": "2026-07-09",
   "price_in": 2,
   "price_out": 12,
-  "tps": 127.8
+  "tps": 118.1
  },
  {
   "slug": "gpt-5-6-terra-high",
@@ -529,7 +529,7 @@
   "released": "2026-07-09",
   "price_in": 2,
   "price_out": 12,
-  "tps": 117.0
+  "tps": 100.5
  },
  {
   "slug": "gpt-5-6-terra-low",
@@ -543,7 +543,7 @@
   "released": "2026-07-09",
   "price_in": 2,
   "price_out": 12,
-  "tps": 117.3
+  "tps": 103.9
  },
  {
   "slug": "gpt-5-6-terra-medium",
@@ -557,7 +557,7 @@
   "released": "2026-07-09",
   "price_in": 2,
   "price_out": 12,
-  "tps": 120.7
+  "tps": 106.3
  },
  {
   "slug": "gpt-5-6-terra-non-reasoning",
@@ -571,7 +571,7 @@
   "released": "2026-07-09",
   "price_in": 2,
   "price_out": 12,
-  "tps": 120.1
+  "tps": 107.1
  },
  {
   "slug": "gpt-5-6-terra-xhigh",
@@ -585,7 +585,7 @@
   "released": "2026-07-09",
   "price_in": 2,
   "price_out": 12,
-  "tps": 120.1
+  "tps": 107.5
  },
  {
   "slug": "gpt-6-1-sol",
@@ -613,7 +613,7 @@
   "released": "2026-09-29",
   "price_in": 2,
   "price_out": 10,
-  "tps": 47.8
+  "tps": 48.3
  },
  {
   "slug": "gpt-6-1-sol-low",
@@ -627,7 +627,7 @@
   "released": "2026-09-29",
   "price_in": 2,
   "price_out": 10,
-  "tps": 43.1
+  "tps": 44.0
  },
  {
   "slug": "gpt-6-1-sol-medium",
@@ -641,7 +641,7 @@
   "released": "2026-09-29",
   "price_in": 2,
   "price_out": 10,
-  "tps": 45.5
+  "tps": 46.5
  },
  {
   "slug": "gpt-6-1-sol-xhigh",
@@ -669,7 +669,7 @@
   "released": "2026-09-03",
   "price_in": 10,
   "price_out": 50,
-  "tps": 61.7
+  "tps": 56.3
  },
  {
   "slug": "gpt-6-astra-high",
@@ -683,7 +683,7 @@
   "released": "2026-09-03",
   "price_in": 10,
   "price_out": 50,
-  "tps": 54.1
+  "tps": 51.1
  },
  {
   "slug": "gpt-6-astra-low",
@@ -697,7 +697,7 @@
   "released": "2026-09-03",
   "price_in": 10,
   "price_out": 50,
-  "tps": 52.6
+  "tps": 47.6
  },
  {
   "slug": "gpt-6-astra-medium",
@@ -711,7 +711,7 @@
   "released": "2026-09-03",
   "price_in": 10,
   "price_out": 50,
-  "tps": 51.9
+  "tps": 51.2
  },
  {
   "slug": "gpt-6-astra-xhigh",
@@ -725,7 +725,7 @@
   "released": "2026-09-03",
   "price_in": 10,
   "price_out": 50,
-  "tps": 54.4
+  "tps": 52.5
  },
  {
   "slug": "gpt-6-luna",
@@ -739,7 +739,7 @@
   "released": "2026-09-22",
   "price_in": 0.1,
   "price_out": 0.5,
-  "tps": 120.0
+  "tps": 118.8
  },
  {
   "slug": "gpt-6-luna-high",
@@ -753,7 +753,7 @@
   "released": "2026-09-22",
   "price_in": 0.1,
   "price_out": 0.5,
-  "tps": 115.8
+  "tps": 124.5
  },
  {
   "slug": "gpt-6-luna-low",
@@ -767,7 +767,7 @@
   "released": "2026-09-22",
   "price_in": 0.1,
   "price_out": 0.5,
-  "tps": 121.8
+  "tps": 115.8
  },
  {
   "slug": "gpt-6-luna-medium",
@@ -795,7 +795,7 @@
   "released": "2026-09-22",
   "price_in": 0.1,
   "price_out": 0.5,
-  "tps": 120.6
+  "tps": 110.9
  },
  {
   "slug": "gpt-6-luna-xhigh",
@@ -809,7 +809,7 @@
   "released": "2026-09-22",
   "price_in": 0.1,
   "price_out": 0.5,
-  "tps": 116.4
+  "tps": 121.1
  },
  {
   "slug": "gpt-6-sol-daybreak-blue",
@@ -837,7 +837,7 @@
   "released": "2026-09-21",
   "price_in": 2,
   "price_out": 6,
-  "tps": 91.5
+  "tps": 88.4
  },
  {
   "slug": "grok-4-7-high",
@@ -851,7 +851,7 @@
   "released": "2026-09-21",
   "price_in": 2,
   "price_out": 6,
-  "tps": 86.7
+  "tps": 85.4
  },
  {
   "slug": "grok-4-7-low",
@@ -865,7 +865,7 @@
   "released": "2026-09-21",
   "price_in": 2,
   "price_out": 6,
-  "tps": 76.7
+  "tps": 73.9
  },
  {
   "slug": "jt-35b-flash",
@@ -963,7 +963,7 @@
   "released": "2026-09-08",
   "price_in": 0.25,
   "price_out": 0.75,
-  "tps": 781.4
+  "tps": 788.5
  },
  {
   "slug": "mi-dm-k-2-5-pro-dec28",
@@ -1005,7 +1005,7 @@
   "released": "2026-10-06",
   "price_in": 1.36,
   "price_out": 4.18,
-  "tps": 68.1
+  "tps": 74.0
  },
  {
   "slug": "motif-2-12-7b",
@@ -1022,34 +1022,6 @@
   "tps": null
  },
  {
-  "slug": "muse-spark-1-3",
-  "family": "muse-spark-1-3",
-  "name": "Muse Spark 1.3 (Max)",
-  "creator": "Meta",
-  "reasoning": true,
-  "index": 48.09,
-  "estimated": false,
-  "context": 1000000,
-  "released": "2026-09-02",
-  "price_in": 1.25,
-  "price_out": 4.25,
-  "tps": 114.5
- },
- {
-  "slug": "muse-spark-1-3-xhigh",
-  "family": "muse-spark-1-3",
-  "name": "Muse Spark 1.3 (Xhigh)",
-  "creator": "Meta",
-  "reasoning": true,
-  "index": 45.07,
-  "estimated": false,
-  "context": 1000000,
-  "released": "2026-09-02",
-  "price_in": 1.25,
-  "price_out": 4.25,
-  "tps": 280.7
- },
- {
   "slug": "muse-wonder",
   "family": "muse-wonder",
   "name": "Muse Wonder (Max)",
@@ -1061,7 +1033,7 @@
   "released": "2026-10-12",
   "price_in": 4,
   "price_out": 20,
-  "tps": 161.0
+  "tps": 145.1
  },
  {
   "slug": "muse-wonder-full",
@@ -1089,7 +1061,7 @@
   "released": "2025-10-29",
   "price_in": 0.3,
   "price_out": 2.5,
-  "tps": 170.3
+  "tps": 167.9
  },
  {
   "slug": "nova-2-0-lite-reasoning",
@@ -1103,7 +1075,7 @@
   "released": "2025-10-29",
   "price_in": 0.3,
   "price_out": 2.5,
-  "tps": 184.8
+  "tps": 177.1
  },
  {
   "slug": "nova-2-0-lite-reasoning-low",
@@ -1117,7 +1089,7 @@
   "released": "2025-10-29",
   "price_in": 0.3,
   "price_out": 2.5,
-  "tps": 175.2
+  "tps": 175.0
  },
  {
   "slug": "nova-2-0-lite-reasoning-medium",
@@ -1131,7 +1103,7 @@
   "released": "2025-10-29",
   "price_in": 0.3,
   "price_out": 2.5,
-  "tps": 199.9
+  "tps": 172.1
  },
  {
   "slug": "nova-2-0-omni",
@@ -1187,7 +1159,7 @@
   "released": null,
   "price_in": 1.25,
   "price_out": 10,
-  "tps": 113.3
+  "tps": 104.5
  },
  {
   "slug": "nova-2-0-pro-reasoning-low",
@@ -1201,7 +1173,7 @@
   "released": null,
   "price_in": 1.25,
   "price_out": 10,
-  "tps": 123.6
+  "tps": 117.7
  },
  {
   "slug": "nova-2-0-pro-reasoning-medium",
@@ -1229,7 +1201,7 @@
   "released": "2024-12-03",
   "price_in": 0.035,
   "price_out": 0.14,
-  "tps": 279.8
+  "tps": 276.3
  },
  {
   "slug": "nova-premier",
@@ -1257,7 +1229,7 @@
   "released": "2025-04-16",
   "price_in": 2,
   "price_out": 8,
-  "tps": 140.3
+  "tps": 108.3
  },
  {
   "slug": "quasar-438b",
@@ -1271,7 +1243,7 @@
   "released": "2026-08-10",
   "price_in": 0.6,
   "price_out": 1.8,
-  "tps": 182.8
+  "tps": 169.8
  },
  {
   "slug": "qwen3-5-omni-flash",
@@ -1285,7 +1257,7 @@
   "released": "2026-03-30",
   "price_in": 0.1,
   "price_out": 0.8,
-  "tps": 239.5
+  "tps": 228.6
  },
  {
   "slug": "qwen3-5-omni-plus",
@@ -1299,7 +1271,7 @@
   "released": "2026-03-30",
   "price_in": 0.4,
   "price_out": 4.8,
-  "tps": 91.6
+  "tps": 87.4
  },
  {
   "slug": "qwen3-7-plus",
@@ -1313,7 +1285,7 @@
   "released": "2026-06-01",
   "price_in": 0.4,
   "price_out": 1.6,
-  "tps": 58.4
+  "tps": 59.0
  },
  {
   "slug": "qwen3-8-max",
@@ -1327,7 +1299,7 @@
   "released": "2026-08-03",
   "price_in": 2,
   "price_out": 6,
-  "tps": 40.4
+  "tps": 40.7
  },
  {
   "slug": "solar-mini4",
@@ -1341,7 +1313,7 @@
   "released": "2026-09-22",
   "price_in": 0.1,
   "price_out": 0.4,
-  "tps": 121.0
+  "tps": 129.0
  },
  {
   "slug": "solar-pro4",
@@ -1349,12 +1321,12 @@
   "name": "Solar Pro 4",
   "creator": "Upstage",
   "reasoning": true,
-  "index": 26.56,
+  "index": null,
   "estimated": false,
   "context": 512000,
   "released": null,
   "price_in": 0.3,
   "price_out": 1.2,
-  "tps": 119.0
+  "tps": 119.2
  }
 ]
