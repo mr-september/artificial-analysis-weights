@@ -48,7 +48,7 @@ jobs:
           mkdir _site
           cp -r index.html assets _site/
           mkdir _site/data
-          cp data/models.json _site/data/
+          cp data/models.json data/models_v1.json _site/data/
       - uses: actions/upload-pages-artifact@v5
         with:
           path: _site

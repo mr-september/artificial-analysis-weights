@@ -17,6 +17,9 @@ DATA = Path(__file__).resolve().parent.parent / "data"
 HF_CACHE = DATA / "hf_cache.json"
 BENCH = ("terminalBench40", "terminalBench21", "terminalbenchHard", "tau2", "scicode", "apexAgents", "frontierCode", "livecodebench",
          "omniscienceAccuracy", "hle", "gpqa", "ifbench", "lcr", "mmmuPro", "gdpvalNormalized")
+# AA replaced its Intelligence Index around 2026-10-28 (new components, ~0.5-0.7x the old scale, most older models unscored).
+# data/models_v1.json is the frozen last snapshot of the old index and is never regenerated; models.json is the live new index.
+INDEX_VERSION = "v2"
 EFFORT = re.compile(r"non-reasoning|reasoning|\blow\b|medium|\bhigh\b|xhigh|minimal|adaptive|\bmax\b|effort", re.I)
 
 
@@ -184,9 +187,9 @@ def main():
             print("  + recent open models not in data/curated.json (consider featuring):", ", ".join(fresh))
     frontier = proprietary_frontier()
     old = load(DATA / "models.json", {})
-    if old.get("count") and len(models) < 0.8 * old["count"]:
+    if old.get("index") == INDEX_VERSION and old.get("count") and len(models) < 0.8 * old["count"]:
         sys.exit(f"refusing to overwrite: {len(models)} models vs {old['count']} before (scrape probably broke)")
-    out = {"generated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "count": len(models), "skipped": skipped, "models": models, "curated": curated, "frontier": frontier}
+    out = {"index": INDEX_VERSION, "generated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "count": len(models), "skipped": skipped, "models": models, "curated": curated, "frontier": frontier}
     if {k: v for k, v in old.items() if k != "generated"} == {k: v for k, v in out.items() if k != "generated"}:
         print("no data changes")
         HF_CACHE.write_text(json.dumps(cache, indent=0, sort_keys=True, ensure_ascii=False) + chr(10), encoding="utf8")

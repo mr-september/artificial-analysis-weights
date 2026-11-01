@@ -243,6 +243,20 @@
 "stored_gb": 854.2,
 "total_b": 427.04
 },
+"MiniMaxAI/MiniMax-M3.1-Flash": {
+"created": "2026-10-17",
+"downloads": 22850,
+"dtypes_b": {
+"BF16": 3.323,
+"F32": 0.046,
+"F8_E4M3": 10.56,
+"U8": 206.561
+},
+"license": "other",
+"repo": "MiniMaxAI/MiniMax-M3.1-Flash",
+"stored_gb": 252.4,
+"total_b": 220.491
+},
 "Motif-Technologies/Motif-3": {
 "created": "2026-08-07",
 "downloads": 2291,
@@ -945,6 +959,19 @@
 "stored_gb": 573.8,
 "total_b": 572.121
 },
+"inclusionAI/Ling-3.1-flash-1019": {
+"created": "2026-10-27",
+"downloads": 1651,
+"dtypes_b": {
+"BF16": 1.492,
+"F32": 0.001,
+"F8_E4M3": 570.629
+},
+"license": "mit",
+"repo": "inclusionAI/Ling-3.1-flash-1019",
+"stored_gb": 573.8,
+"total_b": 572.121
+},
 "inclusionAI/Ring-2.6-1T": {
 "created": "2026-05-14",
 "downloads": 1327,
@@ -1162,6 +1189,15 @@
 "repo": "mistralai/Ministral-3-8B-Instruct-2512",
 "stored_gb": 20.8,
 "total_b": 8.918
+},
+"mistralai/Mistral-Large-4-1T-A52B": {
+"created": "2026-09-30",
+"downloads": 4576,
+"dtypes_b": {},
+"license": "other",
+"repo": "mistralai/Mistral-Large-4-1T-A52B",
+"stored_gb": 1060.6,
+"total_b": null
 },
 "mistralai/Mistral-Medium-3.5-128B": {
 "created": "2026-03-31",

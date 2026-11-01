@@ -5,7 +5,7 @@
 
   // ---------------------------------------------------------------- state
   const DEFAULT = {
-    set: { mode: 'curated', months: 6 }, pick: null, x: 'total', xscale: 'log', prec: 'q4', prop: { on: false, sel: null }, reserve: 4, filter: '',
+    set: { mode: 'curated', months: 6 }, idx: 'v1', pick: null, x: 'total', xscale: 'log', prec: 'q4', prop: { on: false, sel: null }, reserve: 4, filter: '',
     hw: { mode: 'offload', vram: 24, gpu: 'rtx20-40', ram: 64, uGB: 64, uClass: 'fast', ssd: false },
   };
   const merge = (a, b) => ({ ...a, ...b, set: { ...a.set, ...b.set }, hw: { ...a.hw, ...b.hw }, prop: { ...a.prop, ...b.prop } });
@@ -16,15 +16,17 @@
 
   let hl = null;  // id of the model highlighted via a pick card or a pinned tooltip (not persisted)
   let data;
-  try { data = await (await fetch('data/models.json')).json(); }
-  catch (e) { $('#chart').insertAdjacentHTML('beforeend', '<p class="empty">Could not load data/models.json. If you opened this file directly, serve the folder over HTTP.</p>'); return; }
+  const DATA_FILE = state.idx === 'v2' ? 'data/models.json' : 'data/models_v1.json';
+  try { data = await (await fetch(DATA_FILE)).json(); }
+  catch (e) { $('#chart').insertAdjacentHTML('beforeend', `<p class="empty">Could not load ${DATA_FILE}. If you opened this file directly, serve the folder over HTTP.</p>`); return; }
   const models = data.models;
   Core.addLean(models);
   for (const m of models) {
     m.cls = m.lookup ? 'lookup' : m.arch.startsWith('moe') ? 'moe' : 'dense';
     m.slug = m.variants[0].slug;
   }
-  $('#updated').textContent = `Data refreshed ${data.generated.slice(0, 10)}.`;
+  const IDX_LABEL = state.idx === 'v2' ? 'Index v2' : 'Index v1';
+  $('#updated').textContent = state.idx === 'v2' ? `Data refreshed ${data.generated.slice(0, 10)}.` : `Index v1 is a frozen snapshot from ${data.generated.slice(0, 10)}; Artificial Analysis has replaced it with Index v2, so it is no longer updated.`;
 
   // ---------------------------------------------------------------- helpers
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -264,7 +266,7 @@
     const xt = log ? logTicks(x0, x1) : linTicks(x0, x1);
     scatter($('#main'), {
       pts, xlog: log, x0, x1, y0, y1, xTicks: xt, yTicks: linTicks(y0, y1, 6), xFmt: fmtB,
-      xTitle: `${state.x === 'active' ? 'Active' : 'Total'} parameters (billions, ${log ? 'log' : 'linear'} scale)`, yTitle: 'Artificial Analysis Intelligence Index',
+      xTitle: `${state.x === 'active' ? 'Active' : 'Total'} parameters (billions, ${log ? 'log' : 'linear'} scale)`, yTitle: `Artificial Analysis Intelligence ${IDX_LABEL}${state.idx === 'v2' ? '' : ' (frozen)'}`,
       height: W => Math.round(Math.min(560, Math.max(360, W * 0.56))), frontier: true, tip: m => tipHTML(m, false), aria: 'Scatter plot of intelligence index versus parameter count',
       under: ctx => propLinesSvg(lines, ctx),
     });
@@ -440,6 +442,11 @@
     if (state.pick) modes.push(['custom', `Custom (${state.pick.length})`]);
     seg($('#setmode'), modes, () => (state.pick ? 'custom' : state.set.mode), v => { if (v !== 'custom') { state.pick = null; state.set.mode = v; } });
     seg($('#xmode'), [['total', 'Total params'], ['active', 'Active params']], () => state.x, v => { state.x = v; });
+    seg($('#idxver'), [['v1', 'Index v1 (frozen)'], ['v2', 'Index v2 (new)']], () => state.idx, v => {
+      if (v === state.idx) return;
+      state.idx = v; state.pick = null; state.prop.sel = null; save();  // model ids differ between the two indexes
+      const u = new URL(location.href); u.searchParams.delete('state'); history.replaceState(null, '', u); location.reload();
+    });
     seg($('#xscale'), [['log', 'Log'], ['linear', 'Linear']], () => state.xscale, v => { state.xscale = v; });
     const m = $('#months'); m.value = state.set.months; $('#monthsOut').textContent = state.set.months + (state.set.months === 1 ? ' month' : ' months');
     m.oninput = () => { state.set.months = +m.value; $('#monthsOut').textContent = m.value + (m.value === '1' ? ' month' : ' months'); changed({ controls: false }); };

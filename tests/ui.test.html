@@ -77,10 +77,11 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   ok('other GPUs fall back to GGUF', /Q4_K_M/.test(d.querySelector('#pPrec').textContent));
 
   // model set switch
+  const nPicks = (await (await fetch('../data/models_v1.json')).json()).models.filter(m => m.featured).length;  // AA's picks: data-dependent
   const countBefore = d.querySelector('#setcount').textContent;
   d.querySelector('#setmode button[data-v="featured"]').click(); await sleep(200);
   const countAfter = d.querySelector('#setcount').textContent;
-  ok('featured set = 12 models', /^12 of/.test(countAfter), countBefore + ' -> ' + countAfter);
+  ok(`AA's picks = ${nPicks} models`, countAfter.startsWith(nPicks + ' of'), countBefore + ' -> ' + countAfter);
 
   ok('frontier models are added to preset views', /on the frontier/.test(d.querySelector('#setcount').textContent), d.querySelector('#setcount').textContent);
 
@@ -88,15 +89,15 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   d.querySelector('#pickBtn').click(); await sleep(150);
   const panel = d.querySelector('#pickPanel');
   ok('picker opens with a checkbox per model', !panel.hidden && panel.querySelectorAll('input[type=checkbox]').length > 100, panel.querySelectorAll('input').length);
-  ok('picker reflects current view', panel.querySelectorAll('input:checked').length === 12);
+  ok('picker reflects current view', panel.querySelectorAll('input:checked').length === nPicks);
   const first = panel.querySelector('input:checked'); first.checked = false; first.dispatchEvent(new w.Event('change', { bubbles: true })); await sleep(150);
-  ok('unchecking creates a custom set of 11', /11 chosen/.test(d.querySelector('#setcount').textContent) && /Custom \(11\)/.test(d.querySelector('#setmode').textContent), d.querySelector('#setcount').textContent);
+  ok('unchecking creates a custom set of n-1', d.querySelector('#setcount').textContent.startsWith((nPicks - 1) + ' chosen') && d.querySelector('#setmode').textContent.includes('Custom (' + (nPicks - 1) + ')'), d.querySelector('#setcount').textContent);
   ok('picker pins flagship labs first', [...panel.querySelectorAll('.lab span')].slice(0, 4).map(x => x.textContent).join() === 'Alibaba,Xiaomi,DeepSeek,Z AI', [...panel.querySelectorAll('.lab span')].slice(0, 4).map(x => x.textContent).join());
   panel.querySelector('#pkQ').value = 'qwen'; panel.querySelector('#pkQ').dispatchEvent(new w.Event('input'));
   ok('picker search hides others', [...panel.querySelectorAll('label.it')].filter(l => l.style.display !== 'none').length < 30);
   ok('custom selection does not get extra frontier points', !/frontier/.test(d.querySelector('#setcount').textContent), d.querySelector('#setcount').textContent);
   panel.querySelector('#pkReset').click(); await sleep(150);
-  ok('reset returns to the view', /^12 of/.test(d.querySelector('#setcount').textContent) && panel.hidden);
+  ok('reset returns to the view', d.querySelector('#setcount').textContent.startsWith(nPicks + ' of') && panel.hidden);
 
   // x axis toggle, y source toggle
   d.querySelector('#xmode button[data-v="active"]').click(); await sleep(100);
