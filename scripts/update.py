@@ -48,6 +48,23 @@ def aa_params(slugs):
     sys.exit("could not read parameters from any AA model page")
 
 
+def fit_projection(fams, v1best, min_pairs=8):
+    """v2 ~ a*v1 + b*v1^2 (no intercept: a zero score maps to zero; the quadratic term captures that the v2/v1 ratio rises with score),
+    least squares over families scored on both indexes. None when there are too few pairs. Leave-one-out RMSE on the 2026-11 data:
+    1.35 vs 1.78 for a straight line, which also went negative for low scores."""
+    pairs = [(v1best[f], max(r["index"] for r in vs if r["index"] is not None)) for f, vs in fams.items()
+             if f in v1best and any(r["index"] is not None for r in vs)]
+    n = len(pairs)
+    if n < min_pairs:
+        return None
+    s2, s3, s4 = (sum(x ** k for x, _ in pairs) for k in (2, 3, 4))
+    t1, t2 = sum(x * y for x, y in pairs), sum(x * x * y for x, y in pairs)
+    det = s2 * s4 - s3 * s3
+    a, b = (t1 * s4 - t2 * s3) / det, (s2 * t2 - s3 * t1) / det
+    sd = (sum((y - a * x - b * x * x) ** 2 for x, y in pairs) / (n - 2)) ** 0.5
+    return {"a": round(a, 4), "b": round(b, 5), "sd": round(sd, 2), "n": n, "x_min": min(x for x, _ in pairs), "x_max": max(x for x, _ in pairs)}
+
+
 def clean_name(name):
     m = re.search(r"\s*\(([^)]*)\)\s*$", name)
     return name[:m.start()] if m and EFFORT.search(m.group(1)) else name
@@ -101,13 +118,24 @@ def main():
     for r in rows:
         fams.setdefault(r["family"], []).append(r)
 
+    # Models AA has not scored on the current index get an estimate from their frozen v1 score (flagged "proj"; replaced by the real score once AA publishes one).
+    v1 = {m["id"]: m for m in load(DATA / "models_v1.json", {}).get("models", [])}
+    v1best = {f: m["best"] for f, m in v1.items()}
+    projection = fit_projection(fams, v1best)
     models, skipped = [], []
     for fam, vs in sorted(fams.items()):
         vs.sort(key=lambda r: -(r["index"] or -1))
         best = vs[0]
+        proj = None
         if best["index"] is None:
-            skipped.append({"family": fam, "why": "no intelligence index"})
-            continue
+            if not projection or fam not in v1best:
+                skipped.append({"family": fam, "why": "no intelligence index"})
+                continue
+            top_v1 = max(v1[fam]["variants"], key=lambda v: v["index"] or -1)["slug"]
+            best = next((v for v in vs if v["slug"] == top_v1), best)  # the variant that carried the v1 score
+            proj = {"from": v1best[fam]}
+            if not projection["x_min"] <= proj["from"] <= projection["x_max"]:
+                proj["extrap"] = True  # outside the range of v1 scores the fit was made on
         meta = next((aa[v["slug"]] for v in vs if v["slug"] in aa and aa[v["slug"]].get("parameters")), None) \
             or next((aa[v["slug"]] for v in vs if v["slug"] in aa), {})
         ov = overrides.get(fam, {})
@@ -160,10 +188,11 @@ def main():
             "total": round(total, 3), "active": round(active, 3), "lookup": lookup, "arch": arch,
             "native_gb": native_gb,
             "notes": notes,
-            "best": best["index"],
+            "best": best["index"] if proj is None else round(projection["a"] * proj["from"] + projection["b"] * proj["from"] ** 2, 2),
+            **({"proj": proj} if proj else {}),
             "featured": any(aa.get(v["slug"], {}).get("chartDefaultSelected") for v in vs),  # AA's own model-picker default
             "bench": {k: round(aa[best["slug"]][k], 4) for k in BENCH if isinstance(aa.get(best["slug"], {}).get(k), (int, float))},
-            "variants": [{k: v[k] for k in ("slug", "name", "index", "estimated", "reasoning", "tps", "price_in", "price_out", "context")} for v in vs if v["index"] is not None],
+            "variants": [{k: v[k] for k in ("slug", "name", "index", "estimated", "reasoning", "tps", "price_in", "price_out", "context")} for v in vs if v["index"] is not None or proj],
         })
         if "q4_gb" in ov:
             models[-1]["q4"] = {"gb": ov["q4_gb"], "lookup_gb": ov["q4_lookup_gb"], **({"src": ov["q4_src"]} if "q4_src" in ov else {})}
@@ -189,14 +218,14 @@ def main():
     old = load(DATA / "models.json", {})
     if old.get("index") == INDEX_VERSION and old.get("count") and len(models) < 0.8 * old["count"]:
         sys.exit(f"refusing to overwrite: {len(models)} models vs {old['count']} before (scrape probably broke)")
-    out = {"index": INDEX_VERSION, "generated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "count": len(models), "skipped": skipped, "models": models, "curated": curated, "frontier": frontier}
+    out = {"index": INDEX_VERSION, "generated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "count": len(models), "projection": projection, "skipped": skipped, "models": models, "curated": curated, "frontier": frontier}
     if {k: v for k, v in old.items() if k != "generated"} == {k: v for k, v in out.items() if k != "generated"}:
         print("no data changes")
         HF_CACHE.write_text(json.dumps(cache, indent=0, sort_keys=True, ensure_ascii=False) + chr(10), encoding="utf8")
         return
     (DATA / "models.json").write_text(json.dumps(out, separators=(",", ":"), ensure_ascii=False) + "\n", encoding="utf8")
     HF_CACHE.write_text(json.dumps(cache, indent=0, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf8")
-    print(f"{len(models)} models, skipped {skipped}")
+    print(f"{len(models)} models ({sum(1 for m in models if 'proj' in m)} projected from v1 via {projection}), skipped {skipped}")
     for m in models:
         for n in m["notes"]:
             if "HF safetensors header counts" in n:

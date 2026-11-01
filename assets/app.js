@@ -5,7 +5,7 @@
 
   // ---------------------------------------------------------------- state
   const DEFAULT = {
-    set: { mode: 'curated', months: 6 }, idx: 'v1', pick: null, x: 'total', xscale: 'log', prec: 'q4', prop: { on: false, sel: null }, reserve: 4, filter: '',
+    set: { mode: 'curated', months: 6 }, idx: 'v1', proj: false, pick: null, x: 'total', xscale: 'log', prec: 'q4', prop: { on: false, sel: null }, reserve: 4, filter: '',
     hw: { mode: 'offload', vram: 24, gpu: 'rtx20-40', ram: 64, uGB: 64, uClass: 'fast', ssd: false },
   };
   const merge = (a, b) => ({ ...a, ...b, set: { ...a.set, ...b.set }, hw: { ...a.hw, ...b.hw }, prop: { ...a.prop, ...b.prop } });
@@ -19,14 +19,17 @@
   const DATA_FILE = state.idx === 'v2' ? 'data/models.json' : 'data/models_v1.json';
   try { data = await (await fetch(DATA_FILE)).json(); }
   catch (e) { $('#chart').insertAdjacentHTML('beforeend', `<p class="empty">Could not load ${DATA_FILE}. If you opened this file directly, serve the folder over HTTP.</p>`); return; }
-  const models = data.models;
+  const projOn = state.idx === 'v2' && state.proj;  // estimated scores for models AA has not scored on Index v2 (see data.projection)
+  const models = data.models.filter(m => projOn || !m.proj);
+  const live = new Set(models.map(m => m.id));
+  for (const g of data.curated) g.ids = g.ids.filter(i => live.has(i));
   Core.addLean(models);
   for (const m of models) {
     m.cls = m.lookup ? 'lookup' : m.arch.startsWith('moe') ? 'moe' : 'dense';
     m.slug = m.variants[0].slug;
   }
   const IDX_LABEL = state.idx === 'v2' ? 'Index v2' : 'Index v1';
-  $('#updated').textContent = state.idx === 'v2' ? `Data refreshed ${data.generated.slice(0, 10)}.` : `Index v1 is a frozen snapshot from ${data.generated.slice(0, 10)}; Artificial Analysis has replaced it with Index v2, so it is no longer updated.`;
+  $('#updated').textContent = state.idx === 'v2' ? `Data refreshed ${data.generated.slice(0, 10)}.` + (projOn && data.projection ? ` Dashed, faint points are estimates for models not yet scored on Index v2: v2 ≈ ${data.projection.a.toFixed(2)}·v1 + ${data.projection.b.toFixed(4)}·v1², fitted on the ${data.projection.n} models scored on both (residual SD ${data.projection.sd.toFixed(1)}). They are replaced by real scores as Artificial Analysis publishes them.` : '') : `Index v1 is a frozen snapshot from ${data.generated.slice(0, 10)}; Artificial Analysis has replaced it with Index v2, so it is no longer updated.`;
 
   // ---------------------------------------------------------------- helpers
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -87,7 +90,7 @@
     const boxes = [];  // label boxes already taken: axis labels first, then point labels
     if (c.under) { const u = c.under({ sx, sy, M, iw, ih, W, H, pts }); g += u.svg ?? u; boxes.push(...(u.avoid ?? [])); }
     if (c.frontier) {
-      const f = Core.frontier(pts.filter(p => p.linkX == null).map(p => ({ x: p.x, y: p.y, px: p.px, py: p.py })));
+      const f = Core.frontier(pts.filter(p => p.linkX == null && !p.proj).map(p => ({ x: p.x, y: p.y, px: p.px, py: p.py })));
       if (f.length > 1) g += `<path class="front" d="${f.map((p, i) => (i ? 'L' : 'M') + p.px.toFixed(1) + ' ' + p.py.toFixed(1)).join('')}"/>`;
     }
     // tinted pill linking a lookup-table model's two points (without / with lookup tables)
@@ -103,7 +106,7 @@
       g += `<g class="pt${p.faded ? ' faded' : ''}" data-i="${i}">` +
         (p.hl ? `<circle cx="${p.px}" cy="${p.py}" r="${r + 5}" fill="none" stroke="var(--brand)" stroke-width="2"/>` : '') +
         (p.emph ? `<circle cx="${p.px}" cy="${p.py}" r="${r + 3.5}" fill="none" stroke="var(--fg)" stroke-opacity=".7" stroke-width="1.6"/>` : '') +
-        `<circle cx="${p.px}" cy="${p.py}" r="${r}" fill="${p.hollow || p.ring ? 'var(--card)' : col}" fill-opacity="${p.hollow || p.ring ? 1 : .86}" stroke="${col}" stroke-width="${p.hollow ? 1.8 : p.ring ? 2 : 1}" ${p.hollow ? 'stroke-dasharray="3 2"' : ''}/></g>`;
+        `<circle cx="${p.px}" cy="${p.py}" r="${r}" fill="${p.ring ? 'var(--card)' : p.proj ? col : p.hollow ? 'var(--card)' : col}" fill-opacity="${p.ring ? 1 : p.proj ? .18 : p.hollow ? 1 : .86}" stroke="${col}" stroke-opacity="${p.proj ? .8 : 1}" stroke-width="${p.proj ? 1.5 : p.hollow ? 1.8 : p.ring ? 2 : 1}" ${p.proj || p.hollow ? `stroke-dasharray="${p.proj ? '2 2' : '3 2'}"` : ''}/></g>`;
     }
     // Labels, highest priority first. Each tries the four spots around its dot; if all are taken it becomes a callout:
     // the nearest free spot on widening rings around the dot, joined to it by a thin leader line.
@@ -178,7 +181,7 @@
   const aaLink = m => `<a href="${aaUrl(m)}" target="_blank" rel="noopener">Artificial Analysis ↗</a>`;
   function tipHTML(m, withHw = true) {
     const e = m.ev, q = quantNow(), gb = m.total * Core.gbPerB(m, q);
-    const idx = m.best.toFixed(1) + (m.variants[0].estimated ? ' (AA est.)' : '');
+    const idx = m.proj ? `≈ ${m.best.toFixed(1)} (projected from v1 ${m.proj.from.toFixed(1)}${m.proj.extrap ? ', outside the fitted range' : ''}; ±${data.projection.sd.toFixed(1)})` : m.best.toFixed(1) + (m.variants[0].estimated ? ' (AA est.)' : '');
     const params = `${fmtB(m.total)} total · ${fmtB(m.active)} active` + (m.lookup ? ` · ${fmtB(m.lookup)} lookup` : '');
     const rows = [['Intelligence', idx], ['Parameters', params]];
     if (m.lookup) rows.push(['Without lookup tables', fmtB(m.total - m.lookup)]);
@@ -238,14 +241,14 @@
     if (state.pick) return [];
     const ids = new Set(base.map(m => m.id));
     const xOf = m => (state.x === 'active' ? m.active : m.total - m.lookup);
-    return Core.frontier(models.map(m => ({ x: xOf(m), y: m.best, m }))).map(p => p.m).filter(m => !ids.has(m.id));
+    return Core.frontier(models.filter(m => !m.proj).map(m => ({ x: xOf(m), y: m.best, m }))).map(p => p.m).filter(m => !ids.has(m.id));
   }
 
   function drawMain() {
     const base = inSet(), extra = frontierExtras(base), set = base.concat(extra);
     const f = state.filter.trim().toLowerCase();
     const xv = m => (state.x === 'active' ? m.active : m.total);
-    const pts = set.map(m => ({ x: xv(m), y: m.best, m, color: colorOf(m), hollow: m.variants[0].estimated, hl: hl === m.id }));
+    const pts = set.map(m => ({ x: xv(m), y: m.best, m, color: colorOf(m), hollow: m.variants[0].estimated, proj: !!m.proj, hl: hl === m.id }));
     const log = state.xscale === 'log';
     $('#setcount').textContent = state.pick ? `${base.length} chosen` : `${base.length} of ${models.length} open models` + (extra.length ? ` + ${extra.length} on the frontier` : '');
     if (!pts.length) { $('#main').innerHTML = '<p class="empty">No models match this view. Widen the model set above.</p>'; return; }
@@ -254,11 +257,11 @@
     const x0 = log ? xmin / 1.5 : 0, x1 = xmax * (log ? 1.6 : 1.06);
     const rankIdx = Core.ranks(pts.map(p => p.y));
     const fx = p => (state.x === 'total' && p.m.lookup ? p.m.total - p.m.lookup : p.x);  // frontier uses the size without lookup tables
-    const fr = new Set(Core.frontier(pts.map(p => ({ x: fx(p), y: p.y, m: p.m }))).map(p => p.m.id));
+    const fr = new Set(Core.frontier(pts.filter(p => !p.proj).map(p => ({ x: fx(p), y: p.y, m: p.m }))).map(p => p.m.id));
     pts.forEach((p, i) => { p.name = p.m.name; p.label = (fr.has(p.m.id) ? 2 : 0) + rankIdx[i]; p.faded = !!f && !(p.m.name + ' ' + p.m.creator).toLowerCase().includes(f); });
     for (const m of lk) {
       const par = pts.find(p => p.m === m); par.linkX = m.total - m.lookup;
-      pts.push({ x: par.linkX, y: m.best, m, color: par.color, ring: true, faded: par.faded, hl: par.hl, r: 4.5 });
+      pts.push({ x: par.linkX, y: m.best, m, color: par.color, ring: true, proj: par.proj, faded: par.faded, hl: par.hl, r: 4.5 });
     }
     const lines = propLines();
     const ys = pts.map(p => p.y).concat(lines.map(l => l.best));
@@ -270,7 +273,7 @@
       height: W => Math.round(Math.min(560, Math.max(360, W * 0.56))), frontier: true, tip: m => tipHTML(m, false), aria: 'Scatter plot of intelligence index versus parameter count',
       under: ctx => propLinesSvg(lines, ctx),
     });
-    $('#mainLegend').innerHTML = legend([...ARCH_KEY.slice(0, 2), [ARCH_KEY[2][0], 'Lookup tables (ring: size without them, shaded span: the tables)'], [swatch('var(--muted)', true), 'Score estimated by AA']]);
+    $('#mainLegend').innerHTML = legend([...ARCH_KEY.slice(0, 2), [ARCH_KEY[2][0], 'Lookup tables (ring: size without them, shaded span: the tables)'], [swatch('var(--muted)', true), 'Score estimated by AA'], ...(models.some(m => m.proj) ? [['<i class="dot proj"></i>', 'Projected from Index v1 (estimate, not a measurement)']] : [])]);
   }
 
   // ---------------------------------------------------------------- quadrant
@@ -286,8 +289,8 @@
     // on the speed/intelligence frontier (nothing is both faster and smarter) get a ring, so balanced picks stand out.
     const lo = Math.min(...rows.map(m => m.best)), hi = Math.max(...rows.map(m => m.best));
     const rOf = m => 3 + 14 * (hi > lo ? (m.best - lo) / (hi - lo) : 0.5);  // higher score, visibly bigger dot
-    const best = new Set(Core.frontier(rows.map(m => ({ x: m.active, y: m.best, m }))).map(p => p.m.id));
-    const pts = rows.map(m => ({ x: m.lean, y: -Math.log(m.active), m, color: colorOf(m), hollow: m.variants[0].estimated, hl: hl === m.id, name: m.name, r: rOf(m), emph: best.has(m.id), label: m.best + (best.has(m.id) ? 100 : 0) }));
+    const best = new Set(Core.frontier(rows.filter(m => !m.proj).map(m => ({ x: m.active, y: m.best, m }))).map(p => p.m.id));
+    const pts = rows.map(m => ({ x: m.lean, y: -Math.log(m.active), m, color: colorOf(m), hollow: m.variants[0].estimated, proj: !!m.proj, hl: hl === m.id, name: m.name, r: rOf(m), emph: best.has(m.id), label: m.best + (best.has(m.id) ? 100 : 0) }));
     const sizeKey = `<svg width="52" height="22" aria-hidden="true"><circle cx="6" cy="11" r="3.5" fill="var(--muted)" fill-opacity=".5"/><circle cx="34" cy="11" r="10" fill="var(--muted)" fill-opacity=".5"/></svg>`;
     const ringKey = `<svg width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="5" fill="var(--muted)" fill-opacity=".5"/><circle cx="11" cy="11" r="8.5" fill="none" stroke="var(--fg)" stroke-opacity=".7" stroke-width="1.6"/></svg>`;
     $('#quadLegend').innerHTML = legend([...ARCH_KEY, [sizeKey, `bigger dot = higher Intelligence Index (${lo.toFixed(0)}–${hi.toFixed(0)})`], [ringKey, 'ring = best speed / intelligence trade-off'], ['', shown]]);
@@ -321,7 +324,7 @@
   // ---------------------------------------------------------------- picks
   function drawPicks() {
     const set = inSet();
-    const ok = set.filter(usable);
+    const ok = set.filter(usable).filter(m => !m.proj);  // recommendations rest on measured scores only
     const by = (list, key) => list.reduce((a, m) => (a == null || key(m) > key(a) ? m : a), null);
     const picks = [];
     const smart = by(ok, m => m.best);
@@ -421,7 +424,7 @@
     const f = state.filter.trim().toLowerCase(), q = quantNow();
     const cols = [
       ['name', 'Model', m => m.name, m => `<a href="${aaUrl(m)}" target="_blank" rel="noopener">${esc(m.name)}</a>`], ['creator', 'Lab', m => m.creator, m => esc(m.creator)],
-      ['best', 'Index', m => m.best, m => m.best.toFixed(1)], ['total', 'Total', m => m.total, m => fmtB(m.total)], ['active', 'Active', m => m.active, m => fmtB(m.active)],
+      ['best', 'Index', m => m.best, m => (m.proj ? '≈ ' : '') + m.best.toFixed(1)], ['total', 'Total', m => m.total, m => fmtB(m.total)], ['active', 'Active', m => m.active, m => fmtB(m.active)],
       ['lookup', 'Lookup', m => m.lookup, m => (m.lookup ? fmtB(m.lookup) : '—')], ['gb', 'Weights @ ' + q.label, m => m.ev.total, m => fmtGB(m.ev.total)],
       ['fit', 'On your hardware', m => ({ fit: 3, offload: 2, ssd: 1, none: 0 }[m.ev.cls]), m => `<span class="badge ${m.ev.cls}">${CLS_SHORT[m.ev.cls]}</span>`],
       ['links', 'Links', null, m => `<a href="${aaUrl(m)}" target="_blank" rel="noopener">AA</a>` + (m.repo ? ` · <a href="https://huggingface.co/${m.repo}" target="_blank" rel="noopener">HF</a>` : '')],
@@ -447,6 +450,9 @@
       state.idx = v; state.pick = null; state.prop.sel = null; save();  // model ids differ between the two indexes
       const u = new URL(location.href); u.searchParams.delete('state'); history.replaceState(null, '', u); location.reload();
     });
+    const pb = $('#projBtn');
+    pb.hidden = state.idx !== 'v2'; pb.setAttribute('aria-pressed', String(!!state.proj));
+    pb.onclick = () => { state.proj = !state.proj; save(); location.reload(); };
     seg($('#xscale'), [['log', 'Log'], ['linear', 'Linear']], () => state.xscale, v => { state.xscale = v; });
     const m = $('#months'); m.value = state.set.months; $('#monthsOut').textContent = state.set.months + (state.set.months === 1 ? ' month' : ' months');
     m.oninput = () => { state.set.months = +m.value; $('#monthsOut').textContent = m.value + (m.value === '1' ? ' month' : ' months'); changed({ controls: false }); };

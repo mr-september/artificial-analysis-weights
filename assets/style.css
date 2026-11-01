@@ -58,6 +58,7 @@ input[type=checkbox] { accent-color: var(--brand); width: 15px; height: 15px; }
 label.tog { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; cursor: pointer; }
 .chip { font: inherit; font-size: 12.5px; padding: 5px 10px; border: 1px solid var(--border); border-radius: 999px; background: var(--card); color: var(--fg); cursor: pointer; }
 .chip:hover { border-color: var(--brand); }
+.chip[aria-pressed="true"] { background: var(--fg); border-color: var(--fg); color: var(--bg); }
 .pills { display: flex; flex-wrap: wrap; gap: 6px; }
 .pill { font: inherit; font-size: 13.5px; font-variant-numeric: tabular-nums; padding: 6px 14px; border: 1px solid var(--border); border-radius: 999px; background: var(--card); color: var(--fg); cursor: pointer; transition: background .12s, border-color .12s, color .12s; }
 .pill:hover { border-color: var(--brand); }
@@ -77,6 +78,7 @@ label.tog { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5
 .legend svg { flex: none; }
 .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 .dot.hollow { background: none !important; border: 1.6px dashed currentColor; }
+.dot.proj { background: color-mix(in srgb, var(--muted) 22%, transparent); border: 1.5px dashed var(--muted); }
 
 /* ---------- charts ---------- */
 .chart { position: relative; width: 100%; }

@@ -147,6 +147,16 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   d.querySelector('#table th[data-k="total"]').click(); await sleep(50);
   const firstTotals = [...d.querySelectorAll('#table tbody tr td:nth-child(4)')].slice(0, 2).map(x => x.textContent);
   ok('table sorts by total', d.querySelector('#table th[data-k="total"]').getAttribute('aria-sort') === 'descending', firstTotals.join());
+  // Index v2: projected points are opt-in, drawn faint and dashed, and kept out of the frontier line and the recommendations
+  const load2 = async st => { const g = document.createElement('iframe'); g.style.cssText = 'width:1300px;height:2400px;border:0'; g.src = '../index.html?state=' + encodeURIComponent(JSON.stringify({ idx: 'v2', set: { mode: 'all' }, ...st })); document.body.appendChild(g); await new Promise(r => g.addEventListener('load', r)); await sleep(800); return g.contentDocument; };
+  const v2 = await load2({}), v2p = await load2({ proj: true });
+  const projPts = x => x.querySelectorAll('#main .pt circle[stroke-dasharray="2 2"]').length;
+  ok('v2 without the projection toggle shows only scored models', projPts(v2) === 0 && /^\d+ of \d+ open models/.test(v2.querySelector('#setcount').textContent) && v2.querySelector('#projBtn').getAttribute('aria-pressed') === 'false', v2.querySelector('#setcount').textContent);
+  const nProj = +v2p.querySelector('#setcount').textContent.match(/of (\d+)/)[1] - +v2.querySelector('#setcount').textContent.match(/of (\d+)/)[1];
+  ok('projection toggle adds dashed estimate markers', nProj > 20 && projPts(v2p) === nProj && v2p.querySelector('#projBtn').getAttribute('aria-pressed') === 'true' && !!v2p.querySelector('#mainLegend .dot.proj'), nProj + ' / ' + projPts(v2p));
+  ok('projection toggle is hidden on v1', d.querySelector('#projBtn').hidden);
+  const projNames = new Set((await (await fetch('../data/models.json')).json()).models.filter(m => m.proj).map(m => m.name));
+  ok('picks never recommend a projected model', v2p.querySelectorAll('#picks .pick b').length > 0 && ![...v2p.querySelectorAll('#picks .pick b')].some(b => projNames.has(b.textContent)), [...v2p.querySelectorAll('#picks .pick b')].map(b => b.textContent).join());
   document.getElementById('out').textContent = (fail ? 'FAILED ' + fail : 'ALL PASSED') + '\n' + out.join('\n');
 })().catch(e => { document.getElementById('out').textContent = 'ERROR ' + e.stack; });
 </script>
