@@ -106,7 +106,7 @@
       g += `<g class="pt${p.faded ? ' faded' : ''}" data-i="${i}">` +
         (p.hl ? `<circle cx="${p.px}" cy="${p.py}" r="${r + 5}" fill="none" stroke="var(--brand)" stroke-width="2"/>` : '') +
         (p.emph ? `<circle cx="${p.px}" cy="${p.py}" r="${r + 3.5}" fill="none" stroke="var(--fg)" stroke-opacity=".7" stroke-width="1.6"/>` : '') +
-        `<circle cx="${p.px}" cy="${p.py}" r="${r}" fill="${p.ring ? 'var(--card)' : p.proj ? col : p.hollow ? 'var(--card)' : col}" fill-opacity="${p.ring ? 1 : p.proj ? .18 : p.hollow ? 1 : .86}" stroke="${col}" stroke-opacity="${p.proj ? .8 : 1}" stroke-width="${p.proj ? 1.5 : p.hollow ? 1.8 : p.ring ? 2 : 1}" ${p.proj || p.hollow ? `stroke-dasharray="${p.proj ? '2 2' : '3 2'}"` : ''}/></g>`;
+        `<circle cx="${p.px}" cy="${p.py}" r="${r}" fill="${p.ring || (p.hollow && !p.proj) ? 'var(--card)' : col}" fill-opacity="${p.proj ? .18 : p.hollow || p.ring ? 1 : .86}" stroke="${col}" stroke-opacity="${p.proj ? .8 : 1}" stroke-width="${p.proj ? 1.5 : p.hollow ? 1.8 : p.ring ? 2 : 1}" ${p.proj || p.hollow ? `stroke-dasharray="${p.proj ? '2 2' : '3 2'}"` : ''}/></g>`;
     }
     // Labels, highest priority first. Each tries the four spots around its dot; if all are taken it becomes a callout:
     // the nearest free spot on widening rings around the dot, joined to it by a thin leader line.
