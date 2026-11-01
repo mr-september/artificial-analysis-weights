@@ -90,6 +90,7 @@ label.tog { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5
 .chart .axlab { font-size: 14px; font-weight: 600; letter-spacing: -.005em; fill: var(--fg); paint-order: stroke; stroke: var(--card); stroke-width: 4px; stroke-linejoin: round; }
 .chart .plabel { font-size: 11px; fill: var(--fg); paint-order: stroke; stroke: var(--card); stroke-width: 3px; stroke-linejoin: round; pointer-events: none; }
 .chart .front { fill: none; stroke: var(--fg); stroke-opacity: .28; stroke-width: 1.4; stroke-dasharray: 4 4; }
+.chart .front.est { stroke-opacity: .16; stroke-dasharray: 1.5 4; }
 .chart .pt { cursor: pointer; transition: opacity .15s; }
 .chart .pt.faded { opacity: .22; }
 .tip { position: absolute; z-index: 5; min-width: 220px; max-width: min(290px, 100%); padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--r); background: var(--card); color: var(--fg); box-shadow: 0 8px 28px rgb(0 0 0 / .16); font-size: 12.5px; line-height: 1.45; user-select: text; cursor: auto; }

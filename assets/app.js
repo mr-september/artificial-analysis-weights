@@ -90,8 +90,12 @@
     const boxes = [];  // label boxes already taken: axis labels first, then point labels
     if (c.under) { const u = c.under({ sx, sy, M, iw, ih, W, H, pts }); g += u.svg ?? u; boxes.push(...(u.avoid ?? [])); }
     if (c.frontier) {
-      const f = Core.frontier(pts.filter(p => p.linkX == null && !p.proj).map(p => ({ x: p.x, y: p.y, px: p.px, py: p.py })));
-      if (f.length > 1) g += `<path class="front" d="${f.map((p, i) => (i ? 'L' : 'M') + p.px.toFixed(1) + ' ' + p.py.toFixed(1)).join('')}"/>`;
+      const f = Core.frontier(pts.filter(p => p.linkX == null).map(p => ({ x: p.x, y: p.y, px: p.px, py: p.py, proj: p.proj })));
+      // segments that touch a projected point are drawn fainter: that part of the frontier rests on an estimate
+      for (const est of [false, true]) {
+        const d = f.slice(1).map((b, k) => [f[k], b]).filter(([a, b]) => !!(a.proj || b.proj) === est).map(([a, b]) => `M${a.px.toFixed(1)} ${a.py.toFixed(1)}L${b.px.toFixed(1)} ${b.py.toFixed(1)}`).join('');
+        if (d) g += `<path class="front${est ? ' est' : ''}" d="${d}"/>`;
+      }
     }
     // tinted pill linking a lookup-table model's two points (without / with lookup tables)
     for (const p of pts) {
@@ -241,7 +245,7 @@
     if (state.pick) return [];
     const ids = new Set(base.map(m => m.id));
     const xOf = m => (state.x === 'active' ? m.active : m.total - m.lookup);
-    return Core.frontier(models.filter(m => !m.proj).map(m => ({ x: xOf(m), y: m.best, m }))).map(p => p.m).filter(m => !ids.has(m.id));
+    return Core.frontier(models.map(m => ({ x: xOf(m), y: m.best, m }))).map(p => p.m).filter(m => !ids.has(m.id));
   }
 
   function drawMain() {
@@ -257,7 +261,7 @@
     const x0 = log ? xmin / 1.5 : 0, x1 = xmax * (log ? 1.6 : 1.06);
     const rankIdx = Core.ranks(pts.map(p => p.y));
     const fx = p => (state.x === 'total' && p.m.lookup ? p.m.total - p.m.lookup : p.x);  // frontier uses the size without lookup tables
-    const fr = new Set(Core.frontier(pts.filter(p => !p.proj).map(p => ({ x: fx(p), y: p.y, m: p.m }))).map(p => p.m.id));
+    const fr = new Set(Core.frontier(pts.map(p => ({ x: fx(p), y: p.y, m: p.m }))).map(p => p.m.id));
     pts.forEach((p, i) => { p.name = p.m.name; p.label = (fr.has(p.m.id) ? 2 : 0) + rankIdx[i]; p.faded = !!f && !(p.m.name + ' ' + p.m.creator).toLowerCase().includes(f); });
     for (const m of lk) {
       const par = pts.find(p => p.m === m); par.linkX = m.total - m.lookup;
@@ -289,7 +293,7 @@
     // on the speed/intelligence frontier (nothing is both faster and smarter) get a ring, so balanced picks stand out.
     const lo = Math.min(...rows.map(m => m.best)), hi = Math.max(...rows.map(m => m.best));
     const rOf = m => 3 + 14 * (hi > lo ? (m.best - lo) / (hi - lo) : 0.5);  // higher score, visibly bigger dot
-    const best = new Set(Core.frontier(rows.filter(m => !m.proj).map(m => ({ x: m.active, y: m.best, m }))).map(p => p.m.id));
+    const best = new Set(Core.frontier(rows.map(m => ({ x: m.active, y: m.best, m }))).map(p => p.m.id));
     const pts = rows.map(m => ({ x: m.lean, y: -Math.log(m.active), m, color: colorOf(m), hollow: m.variants[0].estimated, proj: !!m.proj, hl: hl === m.id, name: m.name, r: rOf(m), emph: best.has(m.id), label: m.best + (best.has(m.id) ? 100 : 0) }));
     const sizeKey = `<svg width="52" height="22" aria-hidden="true"><circle cx="6" cy="11" r="3.5" fill="var(--muted)" fill-opacity=".5"/><circle cx="34" cy="11" r="10" fill="var(--muted)" fill-opacity=".5"/></svg>`;
     const ringKey = `<svg width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="5" fill="var(--muted)" fill-opacity=".5"/><circle cx="11" cy="11" r="8.5" fill="none" stroke="var(--fg)" stroke-opacity=".7" stroke-width="1.6"/></svg>`;
@@ -438,7 +442,7 @@
   // ---------------------------------------------------------------- controls
   function seg(el, items, get, set) {
     el.innerHTML = items.map(([v, l]) => `<button aria-pressed="${get() === v}" data-v="${v}">${l}</button>`).join('');
-    el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { set(b.dataset.v); changed(); }));
+    el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { if (set(b.dataset.v) !== false) changed(); }));
   }
   function drawControls() {
     const modes = [['curated', 'Featured'], ['recent', 'Recent'], ['featured', 'AA\'s picks'], ['all', 'All']];
@@ -446,9 +450,10 @@
     seg($('#setmode'), modes, () => (state.pick ? 'custom' : state.set.mode), v => { if (v !== 'custom') { state.pick = null; state.set.mode = v; } });
     seg($('#xmode'), [['total', 'Total params'], ['active', 'Active params']], () => state.x, v => { state.x = v; });
     seg($('#idxver'), [['v1', 'Index v1 (frozen)'], ['v2', 'Index v2 (new)']], () => state.idx, v => {
-      if (v === state.idx) return;
+      if (v === state.idx) return false;
       state.idx = v; state.pick = null; state.prop.sel = null; save();  // model ids differ between the two indexes
       const u = new URL(location.href); u.searchParams.delete('state'); history.replaceState(null, '', u); location.reload();
+      return false;  // the reload redraws everything
     });
     const pb = $('#projBtn');
     pb.hidden = state.idx !== 'v2'; pb.setAttribute('aria-pressed', String(!!state.proj));
