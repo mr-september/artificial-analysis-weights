@@ -156,7 +156,7 @@
 },
 "LLM360/K2-V2-Instruct": {
 "created": "2025-12-03",
-"downloads": 1037,
+"downloads": 1266,
 "dtypes_b": {},
 "license": "apache-2.0",
 "repo": "LLM360/K2-V2-Instruct",
@@ -290,6 +290,17 @@
 "repo": "Nanbeige/Nanbeige4.1-3B",
 "stored_gb": 7.9,
 "total_b": 3.934
+},
+"Nanbeige/Nanbeige4.3-33B": {
+"created": "2026-10-24",
+"downloads": 18657,
+"dtypes_b": {
+"BF16": 33.119
+},
+"license": "apache-2.0",
+"repo": "Nanbeige/Nanbeige4.3-33B",
+"stored_gb": 66.2,
+"total_b": 33.119
 },
 "NousResearch/DeepHermes-3-Llama-3-8B-Preview": {
 "created": "2025-02-12",
@@ -1192,7 +1203,7 @@
 },
 "mistralai/Mistral-Large-4-1T-A52B": {
 "created": "2026-09-30",
-"downloads": 4576,
+"downloads": 8200,
 "dtypes_b": {},
 "license": "other",
 "repo": "mistralai/Mistral-Large-4-1T-A52B",

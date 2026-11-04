@@ -37,9 +37,9 @@
   "estimated": false,
   "context": 65536,
   "released": "2025-09-02",
-  "price_in": 0.1,
-  "price_out": 0.2,
-  "tps": 148.2
+  "price_in": null,
+  "price_out": null,
+  "tps": null
  },
  {
   "slug": "apriel-v1-6-15b-thinker",
@@ -81,7 +81,7 @@
   "released": "2025-03-13",
   "price_in": 2.5,
   "price_out": 10,
-  "tps": 17.9
+  "tps": null
  },
  {
   "slug": "command-a-plus",
@@ -95,7 +95,7 @@
   "released": "2026-05-20",
   "price_in": 0,
   "price_out": 0,
-  "tps": 148.2
+  "tps": null
  },
  {
   "slug": "deephermes-3-llama-3-1-8b-preview",
@@ -131,13 +131,27 @@
   "name": "DeepSeek V4.1 Flash 1017 (Max)",
   "creator": "DeepSeek",
   "reasoning": true,
-  "index": 32.49,
+  "index": 32.59,
   "estimated": false,
   "context": 1000000,
   "released": "2026-10-17",
   "price_in": 0.3,
   "price_out": 1.2,
-  "tps": 175.0
+  "tps": null
+ },
+ {
+  "slug": "deepseek-v4-1-flash-1017-high",
+  "family": "deepseek-v4-1-flash-1017",
+  "name": "DeepSeek V4.1 Flash 1017 (High)",
+  "creator": "DeepSeek",
+  "reasoning": true,
+  "index": 28.64,
+  "estimated": false,
+  "context": 1000000,
+  "released": "2026-10-17",
+  "price_in": 0.3,
+  "price_out": 1.2,
+  "tps": null
  },
  {
   "slug": "deepseek-v4-1-flash-1017-non-reasoning",
@@ -149,9 +163,9 @@
   "estimated": false,
   "context": 1000000,
   "released": "2026-10-17",
-  "price_in": 0.44999999999999996,
-  "price_out": 1.7999999999999998,
-  "tps": 1486.0
+  "price_in": 0.3,
+  "price_out": 1.2,
+  "tps": null
  },
  {
   "slug": "deepseek-v4-pro",
@@ -165,7 +179,7 @@
   "released": "2026-08-13",
   "price_in": 1.32,
   "price_out": 3.96,
-  "tps": 80.7
+  "tps": null
  },
  {
   "slug": "deepseek-v4-pro-non-reasoning",
@@ -179,7 +193,7 @@
   "released": "2026-08-13",
   "price_in": 1.32,
   "price_out": 3.96,
-  "tps": 87.5
+  "tps": null
  },
  {
   "slug": "diffusiongemma-26b-a4b",
@@ -361,7 +375,7 @@
   "released": "2026-06-03",
   "price_in": 0.1,
   "price_out": 0.3,
-  "tps": 113.3
+  "tps": null
  },
  {
   "slug": "gemma-4-12b-non-reasoning",
@@ -375,7 +389,7 @@
   "released": "2026-06-03",
   "price_in": 0.1,
   "price_out": 0.3,
-  "tps": 117.8
+  "tps": null
  },
  {
   "slug": "gemma-4-26b-a4b",
@@ -389,7 +403,7 @@
   "released": "2026-04-02",
   "price_in": 0.1,
   "price_out": 0.34,
-  "tps": 99.9
+  "tps": null
  },
  {
   "slug": "gemma-4-26b-a4b-non-reasoning",
@@ -403,7 +417,7 @@
   "released": "2026-04-02",
   "price_in": 0.115,
   "price_out": 0.4,
-  "tps": 119.2
+  "tps": null
  },
  {
   "slug": "gemma-4-31b",
@@ -417,7 +431,7 @@
   "released": "2026-04-02",
   "price_in": 0,
   "price_out": 0,
-  "tps": 35.1
+  "tps": null
  },
  {
   "slug": "gemma-4-31b-non-reasoning",
@@ -431,7 +445,7 @@
   "released": "2026-04-02",
   "price_in": 0.16499999999999998,
   "price_out": 0.4,
-  "tps": 60.8
+  "tps": null
  },
  {
   "slug": "gemma-4-e2b",
@@ -473,7 +487,7 @@
   "released": "2026-04-03",
   "price_in": 0.02,
   "price_out": 0.1,
-  "tps": 42.9
+  "tps": null
  },
  {
   "slug": "gemma-4-e4b-non-reasoning",
@@ -487,7 +501,7 @@
   "released": "2026-04-03",
   "price_in": 0.02,
   "price_out": 0.1,
-  "tps": 44.2
+  "tps": null
  },
  {
   "slug": "glm-5-3",
@@ -501,7 +515,7 @@
   "released": "2026-08-18",
   "price_in": 1.4,
   "price_out": 4.4,
-  "tps": 75.8
+  "tps": null
  },
  {
   "slug": "glm-5-3-flash",
@@ -509,13 +523,13 @@
   "name": "GLM-5.3-Flash",
   "creator": "Z AI",
   "reasoning": true,
-  "index": 27.75,
+  "index": 27.8,
   "estimated": false,
   "context": 1000000,
   "released": "2026-08-26",
   "price_in": 0.15,
   "price_out": 0.5,
-  "tps": 68.7
+  "tps": null
  },
  {
   "slug": "glm-5-3-low",
@@ -523,13 +537,13 @@
   "name": "GLM-5.3 (Low)",
   "creator": "Z AI",
   "reasoning": true,
-  "index": 23.06,
+  "index": 23.11,
   "estimated": false,
   "context": 1000000,
   "released": "2026-08-18",
   "price_in": 1.4,
   "price_out": 4.4,
-  "tps": 72.1
+  "tps": null
  },
  {
   "slug": "gpt-oss-120b",
@@ -543,7 +557,7 @@
   "released": "2025-08-05",
   "price_in": 0.15,
   "price_out": 0.6,
-  "tps": 206.4
+  "tps": null
  },
  {
   "slug": "gpt-oss-120b-low",
@@ -557,7 +571,7 @@
   "released": "2025-08-05",
   "price_in": 0.125,
   "price_out": 0.595,
-  "tps": 250.3
+  "tps": null
  },
  {
   "slug": "gpt-oss-20b",
@@ -571,7 +585,7 @@
   "released": "2025-08-05",
   "price_in": 0.05,
   "price_out": 0.22,
-  "tps": 143.0
+  "tps": null
  },
  {
   "slug": "gpt-oss-20b-low",
@@ -585,7 +599,7 @@
   "released": "2025-08-05",
   "price_in": 0.07,
   "price_out": 0.3,
-  "tps": 216.7
+  "tps": null
  },
  {
   "slug": "granite-4-0-350m",
@@ -691,13 +705,13 @@
   "name": "Granite 4.2 8B",
   "creator": "IBM",
   "reasoning": true,
-  "index": null,
+  "index": 5.1,
   "estimated": false,
   "context": 131072,
   "released": "2026-08-25",
   "price_in": 0.06,
   "price_out": 0.25,
-  "tps": 57.3
+  "tps": null
  },
  {
   "slug": "hermes-4-llama-3-1-405b",
@@ -711,7 +725,7 @@
   "released": "2025-08-27",
   "price_in": 1,
   "price_out": 3,
-  "tps": 38.4
+  "tps": null
  },
  {
   "slug": "hermes-4-llama-3-1-405b-reasoning",
@@ -725,7 +739,7 @@
   "released": "2025-08-27",
   "price_in": 1,
   "price_out": 3,
-  "tps": 39.7
+  "tps": null
  },
  {
   "slug": "hermes-4-llama-3-1-70b",
@@ -767,7 +781,7 @@
   "released": "2026-07-06",
   "price_in": 0.136,
   "price_out": 0.5549999999999999,
-  "tps": 86.1
+  "tps": null
  },
  {
   "slug": "hyperclova-x-seed-think-32b",
@@ -809,7 +823,7 @@
   "released": "2026-07-15",
   "price_in": 1,
   "price_out": 4.05,
-  "tps": 195.7
+  "tps": null
  },
  {
   "slug": "inkling-small",
@@ -823,7 +837,7 @@
   "released": "2026-07-30",
   "price_in": 0.3,
   "price_out": 1.2,
-  "tps": 204.2
+  "tps": null
  },
  {
   "slug": "intellect-3",
@@ -884,7 +898,7 @@
  {
   "slug": "k-exaone-2-0-0803",
   "family": "k-exaone-2-0-0803",
-  "name": "K-EXAONE 2.0 0803",
+  "name": "K-EXAONE 2.0",
   "creator": "LG AI Research",
   "reasoning": true,
   "index": null,
@@ -929,13 +943,13 @@
   "name": "K2 Horizon 375B A23B",
   "creator": "Institute of Foundation Models",
   "reasoning": true,
-  "index": 17.77,
+  "index": 17.82,
   "estimated": false,
   "context": 524288,
   "released": "2026-09-03",
   "price_in": 0,
   "price_out": 0,
-  "tps": 154.1
+  "tps": null
  },
  {
   "slug": "k2-horizon-7b",
@@ -1033,7 +1047,7 @@
   "released": "2026-06-12",
   "price_in": 0.95,
   "price_out": 4,
-  "tps": 46.7
+  "tps": null
  },
  {
   "slug": "kimi-linear-48b-a3b-instruct",
@@ -1173,7 +1187,7 @@
   "released": "2026-08-06",
   "price_in": 0,
   "price_out": 0,
-  "tps": 56.4
+  "tps": null
  },
  {
   "slug": "ling-3-1-flash",
@@ -1187,7 +1201,7 @@
   "released": "2026-10-01",
   "price_in": 0.3,
   "price_out": 0.9,
-  "tps": 212.7
+  "tps": null
  },
  {
   "slug": "ling-3-1-flash-1019",
@@ -1195,7 +1209,7 @@
   "name": "Ling 3.1 Flash 1019",
   "creator": "InclusionAI",
   "reasoning": true,
-  "index": 29.47,
+  "index": 29.57,
   "estimated": false,
   "context": 1048576,
   "released": null,
@@ -1243,7 +1257,7 @@
   "released": "2024-09-25",
   "price_in": 0.345,
   "price_out": 0.345,
-  "tps": 30.3
+  "tps": null
  },
  {
   "slug": "llama-3-2-instruct-90b-vision",
@@ -1271,7 +1285,7 @@
   "released": "2024-12-06",
   "price_in": 0.6,
   "price_out": 0.71,
-  "tps": 91.2
+  "tps": null
  },
  {
   "slug": "llama-4-maverick",
@@ -1285,7 +1299,7 @@
   "released": "2025-04-05",
   "price_in": 0.25,
   "price_out": 0.9199999999999999,
-  "tps": 48.1
+  "tps": null
  },
  {
   "slug": "llama-4-scout",
@@ -1299,7 +1313,7 @@
   "released": "2025-04-05",
   "price_in": 0.18,
   "price_out": 0.66,
-  "tps": 132.8
+  "tps": null
  },
  {
   "slug": "longcat-2-0",
@@ -1313,7 +1327,7 @@
   "released": "2026-06-29",
   "price_in": 0.75,
   "price_out": 2.95,
-  "tps": 77.2
+  "tps": null
  },
  {
   "slug": "longcat-flash-lite",
@@ -1341,7 +1355,7 @@
   "released": "2025-09-17",
   "price_in": 0.5,
   "price_out": 1.5,
-  "tps": 105.9
+  "tps": null
  },
  {
   "slug": "mimo-v2-6-flash",
@@ -1355,7 +1369,7 @@
   "released": "2026-09-21",
   "price_in": 0.14,
   "price_out": 0.28,
-  "tps": 45.3
+  "tps": null
  },
  {
   "slug": "mimo-v2-6-pro",
@@ -1369,7 +1383,7 @@
   "released": "2026-09-21",
   "price_in": 0.435,
   "price_out": 0.87,
-  "tps": 49.4
+  "tps": null
  },
  {
   "slug": "minicpm-v4-6-1-3b",
@@ -1433,13 +1447,13 @@
   "name": "MiniMax-M3",
   "creator": "MiniMax",
   "reasoning": true,
-  "index": 18.73,
+  "index": 18.88,
   "estimated": false,
   "context": 1000000,
   "released": "2026-06-01",
   "price_in": 0.3,
   "price_out": 1.2,
-  "tps": 106.2
+  "tps": null
  },
  {
   "slug": "minimax-m3-1-flash",
@@ -1447,13 +1461,13 @@
   "name": "MiniMax-M3.1-Flash",
   "creator": "MiniMax",
   "reasoning": true,
-  "index": 28.91,
+  "index": 29.06,
   "estimated": false,
   "context": 1000000,
   "released": "2026-10-19",
   "price_in": 0.15,
   "price_out": 0.6,
-  "tps": 118.9
+  "tps": null
  },
  {
   "slug": "ministral-3-14b",
@@ -1467,7 +1481,7 @@
   "released": "2025-12-02",
   "price_in": 0.2,
   "price_out": 0.2,
-  "tps": 56.7
+  "tps": null
  },
  {
   "slug": "ministral-3-3b",
@@ -1481,7 +1495,7 @@
   "released": "2025-12-02",
   "price_in": 0.1,
   "price_out": 0.1,
-  "tps": 181.4
+  "tps": null
  },
  {
   "slug": "ministral-3-8b",
@@ -1495,7 +1509,7 @@
   "released": "2025-12-02",
   "price_in": 0.15,
   "price_out": 0.15,
-  "tps": 91.1
+  "tps": null
  },
  {
   "slug": "mistral-large-4",
@@ -1503,13 +1517,13 @@
   "name": "Mistral Large 4 (High)",
   "creator": "Mistral",
   "reasoning": true,
-  "index": 26.02,
+  "index": 26.12,
   "estimated": false,
   "context": 1000000,
   "released": "2026-10-29",
   "price_in": 0.7,
   "price_out": 2.1,
-  "tps": 161.3
+  "tps": null
  },
  {
   "slug": "mistral-large-4-medium",
@@ -1517,7 +1531,7 @@
   "name": "Mistral Large 4 (Medium)",
   "creator": "Mistral",
   "reasoning": true,
-  "index": 23.08,
+  "index": 23.13,
   "estimated": false,
   "context": 1000000,
   "released": "2026-10-29",
@@ -1537,7 +1551,7 @@
   "released": "2026-04-29",
   "price_in": 1.5,
   "price_out": 7.5,
-  "tps": 156.7
+  "tps": null
  },
  {
   "slug": "mistral-small-4",
@@ -1551,7 +1565,7 @@
   "released": "2026-03-16",
   "price_in": 0.15,
   "price_out": 0.6,
-  "tps": 171.7
+  "tps": null
  },
  {
   "slug": "mistral-small-4-non-reasoning",
@@ -1565,7 +1579,7 @@
   "released": "2026-03-16",
   "price_in": 0.15,
   "price_out": 0.6,
-  "tps": 162.4
+  "tps": null
  },
  {
   "slug": "molmo-7b-d",
@@ -1621,7 +1635,7 @@
   "released": "2026-08-10",
   "price_in": 0.3,
   "price_out": 1.2,
-  "tps": 106.3
+  "tps": null
  },
  {
   "slug": "muse-spark-open",
@@ -1629,13 +1643,13 @@
   "name": "Muse Spark Open (Xhigh)",
   "creator": "Meta",
   "reasoning": true,
-  "index": 24.68,
+  "index": 24.88,
   "estimated": false,
   "context": 1048576,
   "released": "2026-10-15",
   "price_in": 1.25,
   "price_out": 4.25,
-  "tps": 139.3
+  "tps": null
  },
  {
   "slug": "nanbeige4-1-3b",
@@ -1647,6 +1661,20 @@
   "estimated": false,
   "context": 256000,
   "released": "2026-02-11",
+  "price_in": null,
+  "price_out": null,
+  "tps": null
+ },
+ {
+  "slug": "nanbeige4-3-33b",
+  "family": "nanbeige4-3-33b",
+  "name": "Nanbeige4.3-33B",
+  "creator": "Nanbeige",
+  "reasoning": true,
+  "index": 20.41,
+  "estimated": false,
+  "context": 524288,
+  "released": "2026-10-25",
   "price_in": null,
   "price_out": null,
   "tps": null
@@ -1691,7 +1719,7 @@
   "released": "2026-08-11",
   "price_in": 0.06,
   "price_out": 0.2,
-  "tps": 292.8
+  "tps": null
  },
  {
   "slug": "nemotron-3-5-super-vl",
@@ -1705,7 +1733,7 @@
   "released": "2026-10-15",
   "price_in": 0.2,
   "price_out": 0.5,
-  "tps": 474.1
+  "tps": null
  },
  {
   "slug": "nemotron-3-nano-omni-30b-a3b",
@@ -1719,7 +1747,7 @@
   "released": "2026-04-29",
   "price_in": 0.5,
   "price_out": 0.9,
-  "tps": 230.5
+  "tps": null
  },
  {
   "slug": "nemotron-cascade-2-30b-a3b",
@@ -1761,7 +1789,7 @@
   "released": "2026-06-09",
   "price_in": 0,
   "price_out": 0,
-  "tps": 69.5
+  "tps": null
  },
  {
   "slug": "nvidia-nemotron-3-nano-30b-a3b",
@@ -1775,7 +1803,7 @@
   "released": "2025-12-15",
   "price_in": 0.05,
   "price_out": 0.2,
-  "tps": 243.2
+  "tps": null
  },
  {
   "slug": "nvidia-nemotron-3-nano-30b-a3b-reasoning",
@@ -1789,7 +1817,7 @@
   "released": "2025-12-15",
   "price_in": 0.05,
   "price_out": 0.2,
-  "tps": 254.7
+  "tps": null
  },
  {
   "slug": "nvidia-nemotron-3-nano-4b",
@@ -1817,7 +1845,7 @@
   "released": null,
   "price_in": 0.6,
   "price_out": 2.7,
-  "tps": 152.8
+  "tps": null
  },
  {
   "slug": "nvidia-nemotron-nano-12b-v2-vl",
@@ -1831,7 +1859,7 @@
   "released": "2025-10-28",
   "price_in": 0.2,
   "price_out": 0.6,
-  "tps": 203.3
+  "tps": null
  },
  {
   "slug": "nvidia-nemotron-nano-12b-v2-vl-reasoning",
@@ -1859,7 +1887,7 @@
   "released": "2025-08-18",
   "price_in": 0.05,
   "price_out": 0.195,
-  "tps": 171.7
+  "tps": null
  },
  {
   "slug": "nvidia-nemotron-nano-9b-v2-reasoning",
@@ -1873,7 +1901,7 @@
   "released": "2025-08-18",
   "price_in": 0.04,
   "price_out": 0.16,
-  "tps": 212.7
+  "tps": null
  },
  {
   "slug": "olmo-3-1-32b-instruct",
@@ -1943,7 +1971,7 @@
   "released": "2024-12-12",
   "price_in": 0.125,
   "price_out": 0.5,
-  "tps": 40.6
+  "tps": null
  },
  {
   "slug": "phi-4-mini",
@@ -1957,7 +1985,7 @@
   "released": "2025-02-26",
   "price_in": 0.075,
   "price_out": 0.3,
-  "tps": 45.3
+  "tps": null
  },
  {
   "slug": "phi-4-multimodal",
@@ -2013,7 +2041,7 @@
   "released": "2026-02-24",
   "price_in": 0.4,
   "price_out": 3.2,
-  "tps": 129.1
+  "tps": null
  },
  {
   "slug": "qwen3-5-122b-a10b-non-reasoning",
@@ -2027,7 +2055,7 @@
   "released": "2026-02-24",
   "price_in": 0.4,
   "price_out": 3.2,
-  "tps": 142.0
+  "tps": null
  },
  {
   "slug": "qwen3-5-2b",
@@ -2069,7 +2097,7 @@
   "released": "2026-02-16",
   "price_in": 0.6,
   "price_out": 3.6,
-  "tps": 59.3
+  "tps": null
  },
  {
   "slug": "qwen3-5-397b-a17b-non-reasoning",
@@ -2083,7 +2111,7 @@
   "released": "2026-02-16",
   "price_in": 0.6,
   "price_out": 3.6,
-  "tps": 59.5
+  "tps": null
  },
  {
   "slug": "qwen3-5-4b",
@@ -2097,7 +2125,7 @@
   "released": "2026-03-02",
   "price_in": 0.03,
   "price_out": 0.15,
-  "tps": 13.4
+  "tps": null
  },
  {
   "slug": "qwen3-5-4b-non-reasoning",
@@ -2111,7 +2139,7 @@
   "released": "2026-03-02",
   "price_in": 0.03,
   "price_out": 0.15,
-  "tps": 15.0
+  "tps": null
  },
  {
   "slug": "qwen3-5-9b",
@@ -2125,7 +2153,7 @@
   "released": "2026-03-02",
   "price_in": 0.135,
   "price_out": 0.2,
-  "tps": 60.9
+  "tps": null
  },
  {
   "slug": "qwen3-5-9b-non-reasoning",
@@ -2139,7 +2167,7 @@
   "released": "2026-03-02",
   "price_in": 0.17,
   "price_out": 0.25,
-  "tps": 87.7
+  "tps": null
  },
  {
   "slug": "qwen3-6-35b-a3b",
@@ -2153,7 +2181,7 @@
   "released": "2026-04-16",
   "price_in": 0.375,
   "price_out": 2.25,
-  "tps": 132.7
+  "tps": null
  },
  {
   "slug": "qwen3-6-35b-a3b-non-reasoning",
@@ -2167,7 +2195,7 @@
   "released": "2026-04-16",
   "price_in": 0.375,
   "price_out": 2.25,
-  "tps": 142.6
+  "tps": null
  },
  {
   "slug": "qwen3-8-2-4t-a95b",
@@ -2181,7 +2209,7 @@
   "released": "2026-08-12",
   "price_in": 2,
   "price_out": 6,
-  "tps": 39.2
+  "tps": null
  },
  {
   "slug": "qwen3-8-27b",
@@ -2195,7 +2223,7 @@
   "released": "2026-08-14",
   "price_in": 0.5,
   "price_out": 3,
-  "tps": 38.3
+  "tps": null
  },
  {
   "slug": "qwen3-8-27b-low",
@@ -2209,7 +2237,7 @@
   "released": "2026-08-14",
   "price_in": 0.5,
   "price_out": 3,
-  "tps": 43.0
+  "tps": null
  },
  {
   "slug": "qwen3-8-27b-medium",
@@ -2223,7 +2251,7 @@
   "released": "2026-08-14",
   "price_in": 0.5,
   "price_out": 3,
-  "tps": 42.5
+  "tps": null
  },
  {
   "slug": "qwen3-8-27b-non-reasoning",
@@ -2237,7 +2265,7 @@
   "released": "2026-08-14",
   "price_in": 0.5,
   "price_out": 3,
-  "tps": 42.9
+  "tps": null
  },
  {
   "slug": "qwen3-8-flash-next",
@@ -2251,7 +2279,7 @@
   "released": "2026-08-26",
   "price_in": 0.15,
   "price_out": 0.47,
-  "tps": 51.1
+  "tps": null
  },
  {
   "slug": "qwen3-coder-next",
@@ -2265,7 +2293,7 @@
   "released": "2026-02-03",
   "price_in": 0.31,
   "price_out": 1,
-  "tps": 77.7
+  "tps": null
  },
  {
   "slug": "qwen3-next-80b-a3b-instruct",
@@ -2279,7 +2307,7 @@
   "released": "2025-09-11",
   "price_in": 0.1,
   "price_out": 1.1,
-  "tps": 130.5
+  "tps": null
  },
  {
   "slug": "qwen3-next-80b-a3b-reasoning",
@@ -2307,7 +2335,7 @@
   "released": "2025-09-22",
   "price_in": 0.25,
   "price_out": 0.97,
-  "tps": 95.6
+  "tps": null
  },
  {
   "slug": "qwen3-omni-30b-a3b-reasoning",
@@ -2321,7 +2349,7 @@
   "released": "2025-09-22",
   "price_in": 0.25,
   "price_out": 0.97,
-  "tps": 102.2
+  "tps": null
  },
  {
   "slug": "r1-1776",
@@ -2349,7 +2377,7 @@
   "released": "2026-10-16",
   "price_in": 0.4,
   "price_out": 1.2,
-  "tps": 299.3
+  "tps": null
  },
  {
   "slug": "reka-flash-3",
@@ -2363,7 +2391,7 @@
   "released": "2025-03-10",
   "price_in": 0.1,
   "price_out": 0.2,
-  "tps": 88.8
+  "tps": null
  },
  {
   "slug": "ring-2-6-1t",
@@ -2377,7 +2405,7 @@
   "released": "2026-05-08",
   "price_in": 0.3,
   "price_out": 2.5,
-  "tps": 113.6
+  "tps": null
  },
  {
   "slug": "ring-flash-2-0",
@@ -2405,7 +2433,7 @@
   "released": "2026-03-06",
   "price_in": 0.042,
   "price_out": 0.17,
-  "tps": 158.6
+  "tps": null
  },
  {
   "slug": "sarvam-30b",
@@ -2475,7 +2503,7 @@
   "released": null,
   "price_in": 1,
   "price_out": 2.7,
-  "tps": 165.4
+  "tps": null
  },
  {
   "slug": "tiny-aya-global",
