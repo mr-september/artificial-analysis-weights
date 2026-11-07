@@ -156,7 +156,7 @@
 },
 "LLM360/K2-V2-Instruct": {
 "created": "2025-12-03",
-"downloads": 1266,
+"downloads": 1391,
 "dtypes_b": {},
 "license": "apache-2.0",
 "repo": "LLM360/K2-V2-Instruct",
@@ -1203,7 +1203,7 @@
 },
 "mistralai/Mistral-Large-4-1T-A52B": {
 "created": "2026-09-30",
-"downloads": 8200,
+"downloads": 11206,
 "dtypes_b": {},
 "license": "other",
 "repo": "mistralai/Mistral-Large-4-1T-A52B",
@@ -1259,6 +1259,19 @@
 "repo": "moonshotai/Kimi-K3",
 "stored_gb": 1560.9,
 "total_b": 2779.932
+},
+"moonshotai/Kimi-K3.1-Pro": {
+"created": "2026-11-02",
+"downloads": 22571,
+"dtypes_b": {
+"BF16": 57.358,
+"F32": 0.011,
+"U8": 2722.741
+},
+"license": "other",
+"repo": "moonshotai/Kimi-K3.1-Pro",
+"stored_gb": 1561.3,
+"total_b": 2780.11
 },
 "moonshotai/Kimi-Linear-48B-A3B-Instruct": {
 "created": "2025-10-30",

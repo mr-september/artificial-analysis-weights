@@ -9,8 +9,8 @@
   "estimated": false,
   "context": 1000000,
   "released": "2026-08-26",
-  "price_in": 0.1,
-  "price_out": 0.3,
+  "price_in": null,
+  "price_out": null,
   "tps": null
  },
  {
@@ -910,6 +910,20 @@
   "tps": null
  },
  {
+  "slug": "inkling-2-small",
+  "family": "inkling-2-small",
+  "name": "Inkling 2 Small",
+  "creator": "Thinking Machines",
+  "reasoning": true,
+  "index": 30.63,
+  "estimated": false,
+  "context": 1024000,
+  "released": null,
+  "price_in": 0.3,
+  "price_out": 1,
+  "tps": null
+ },
+ {
   "slug": "jt-35b-flash",
   "family": "jt-35b-flash",
   "name": "JT-35B-Flash",
@@ -977,20 +991,6 @@
   "released": "2026-03-27",
   "price_in": null,
   "price_out": null,
-  "tps": null
- },
- {
-  "slug": "kimi-k3-1-pro",
-  "family": "kimi-k3-1-pro",
-  "name": "Kimi K3.1 Pro",
-  "creator": "Kimi",
-  "reasoning": true,
-  "index": 46.45,
-  "estimated": false,
-  "context": 1000000,
-  "released": "2026-10-23",
-  "price_in": 2,
-  "price_out": 10,
   "tps": null
  },
  {
@@ -1075,6 +1075,20 @@
   "released": "2026-10-12",
   "price_in": null,
   "price_out": null,
+  "tps": null
+ },
+ {
+  "slug": "muse-wonder-high",
+  "family": "muse-wonder",
+  "name": "Muse Wonder (High)",
+  "creator": "Meta",
+  "reasoning": true,
+  "index": 40.53,
+  "estimated": false,
+  "context": 1048576,
+  "released": "2026-10-12",
+  "price_in": 4,
+  "price_out": 20,
   "tps": null
  },
  {
@@ -1269,8 +1283,8 @@
   "estimated": false,
   "context": 1000000,
   "released": "2026-08-10",
-  "price_in": 0.11,
-  "price_out": 0.33,
+  "price_in": null,
+  "price_out": null,
   "tps": null
  },
  {
@@ -1355,6 +1369,20 @@
   "released": null,
   "price_in": 0.3,
   "price_out": 1.2,
+  "tps": null
+ },
+ {
+  "slug": "tencent-hy4",
+  "family": "tencent-hy4",
+  "name": "Tencent Hy4",
+  "creator": "Tencent",
+  "reasoning": true,
+  "index": 34.56,
+  "estimated": false,
+  "context": 1048576,
+  "released": null,
+  "price_in": 0.834,
+  "price_out": 2.501,
   "tps": null
  }
 ]
