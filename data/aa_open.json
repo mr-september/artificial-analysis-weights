@@ -551,7 +551,7 @@
   "name": "gpt-oss-120b (High)",
   "creator": "OpenAI",
   "reasoning": true,
-  "index": null,
+  "index": 3.82,
   "estimated": false,
   "context": 131072,
   "released": "2025-08-05",

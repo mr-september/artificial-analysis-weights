@@ -156,7 +156,7 @@
 },
 "LLM360/K2-V2-Instruct": {
 "created": "2025-12-03",
-"downloads": 1391,
+"downloads": 1493,
 "dtypes_b": {},
 "license": "apache-2.0",
 "repo": "LLM360/K2-V2-Instruct",
@@ -1203,7 +1203,7 @@
 },
 "mistralai/Mistral-Large-4-1T-A52B": {
 "created": "2026-09-30",
-"downloads": 11206,
+"downloads": 12541,
 "dtypes_b": {},
 "license": "other",
 "repo": "mistralai/Mistral-Large-4-1T-A52B",
