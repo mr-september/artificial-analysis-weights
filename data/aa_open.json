@@ -373,8 +373,8 @@
   "estimated": false,
   "context": 262144,
   "released": "2026-06-03",
-  "price_in": 0.1,
-  "price_out": 0.3,
+  "price_in": null,
+  "price_out": null,
   "tps": null
  },
  {
@@ -387,8 +387,8 @@
   "estimated": false,
   "context": 262144,
   "released": "2026-06-03",
-  "price_in": 0.1,
-  "price_out": 0.3,
+  "price_in": null,
+  "price_out": null,
   "tps": null
  },
  {
@@ -401,8 +401,8 @@
   "estimated": false,
   "context": 256000,
   "released": "2026-04-02",
-  "price_in": 0.1,
-  "price_out": 0.34,
+  "price_in": 0.09,
+  "price_out": 0.32,
   "tps": null
  },
  {
@@ -415,7 +415,7 @@
   "estimated": false,
   "context": 256000,
   "released": "2026-04-02",
-  "price_in": 0.115,
+  "price_in": 0.13,
   "price_out": 0.4,
   "tps": null
  },
@@ -443,7 +443,7 @@
   "estimated": false,
   "context": 256000,
   "released": "2026-04-02",
-  "price_in": 0.16499999999999998,
+  "price_in": 0.15,
   "price_out": 0.4,
   "tps": null
  },
@@ -826,6 +826,20 @@
   "tps": null
  },
  {
+  "slug": "inkling-2-small",
+  "family": "inkling-2-small",
+  "name": "Inkling 2 Small",
+  "creator": "Thinking Machines",
+  "reasoning": true,
+  "index": 30.63,
+  "estimated": false,
+  "context": 1024000,
+  "released": null,
+  "price_in": 0.3,
+  "price_out": 1,
+  "tps": null
+ },
+ {
   "slug": "inkling-small",
   "family": "inkling-small",
   "name": "Inkling Small",
@@ -896,8 +910,8 @@
   "tps": null
  },
  {
-  "slug": "k-exaone-2-0-0803",
-  "family": "k-exaone-2-0-0803",
+  "slug": "k-exaone-2-0",
+  "family": "k-exaone-2-0",
   "name": "K-EXAONE 2.0",
   "creator": "LG AI Research",
   "reasoning": true,
@@ -1312,7 +1326,7 @@
   "context": 1000000,
   "released": "2025-04-05",
   "price_in": 0.25,
-  "price_out": 0.9199999999999999,
+  "price_out": 0.97,
   "tps": null
  },
  {
@@ -1759,8 +1773,8 @@
   "estimated": false,
   "context": 256000,
   "released": "2026-04-29",
-  "price_in": 0.5,
-  "price_out": 0.9,
+  "price_in": null,
+  "price_out": null,
   "tps": null
  },
  {
@@ -2287,7 +2301,7 @@
   "name": "Qwen3.8-Flash-Next",
   "creator": "Alibaba",
   "reasoning": true,
-  "index": null,
+  "index": 28.58,
   "estimated": false,
   "context": 256000,
   "released": "2026-08-26",

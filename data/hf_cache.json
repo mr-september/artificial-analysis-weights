@@ -156,7 +156,7 @@
 },
 "LLM360/K2-V2-Instruct": {
 "created": "2025-12-03",
-"downloads": 1493,
+"downloads": 1764,
 "dtypes_b": {},
 "license": "apache-2.0",
 "repo": "LLM360/K2-V2-Instruct",
@@ -1203,7 +1203,7 @@
 },
 "mistralai/Mistral-Large-4-1T-A52B": {
 "created": "2026-09-30",
-"downloads": 12541,
+"downloads": 14078,
 "dtypes_b": {},
 "license": "other",
 "repo": "mistralai/Mistral-Large-4-1T-A52B",
@@ -1612,6 +1612,20 @@
 "repo": "thinkingmachines/Inkling",
 "stored_gb": 1904.8,
 "total_b": 952.378
+},
+"thinkingmachines/Inkling-2-Small": {
+"created": "2026-11-04",
+"downloads": 1064,
+"dtypes_b": {
+"BF16": 6.982,
+"F32": 0.001,
+"F8_E4M3": 128.421,
+"U8": 247.669
+},
+"license": "apache-2.0",
+"repo": "thinkingmachines/Inkling-2-Small",
+"stored_gb": 393.5,
+"total_b": 383.073
 },
 "thinkingmachines/Inkling-Small": {
 "created": "2026-07-27",
